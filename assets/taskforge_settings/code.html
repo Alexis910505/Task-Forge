@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TaskForge Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline": "#767587",
+                      "inverse-on-surface": "#eef0ff",
+                      "secondary-container": "#d5e3fc",
+                      "surface-bright": "#faf8ff",
+                      "on-tertiary": "#ffffff",
+                      "secondary-fixed": "#d5e3fc",
+                      "secondary": "#515f74",
+                      "tertiary-container": "#00893c",
+                      "on-error-container": "#93000a",
+                      "on-primary-fixed": "#09006b",
+                      "on-secondary": "#ffffff",
+                      "primary": "#4744e5",
+                      "on-secondary-fixed-variant": "#3a485b",
+                      "on-secondary-container": "#57657a",
+                      "surface-container-highest": "#dae2fd",
+                      "primary-fixed": "#e1dfff",
+                      "tertiary-fixed-dim": "#4ae176",
+                      "surface-tint": "#4745e5",
+                      "surface-dim": "#d2d9f4",
+                      "on-tertiary-fixed": "#002109",
+                      "on-background": "#131b2e",
+                      "tertiary-fixed": "#6bff8f",
+                      "on-surface-variant": "#464555",
+                      "primary-fixed-dim": "#c1c1ff",
+                      "inverse-surface": "#283044",
+                      "outline-variant": "#c7c4d8",
+                      "surface-container": "#eaedff",
+                      "on-error": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary-fixed": "#0d1c2e",
+                      "on-surface": "#131b2e",
+                      "error-container": "#ffdad6",
+                      "inverse-primary": "#c1c1ff",
+                      "primary-container": "#6161ff",
+                      "on-primary-container": "#ffffff",
+                      "surface-container-high": "#e2e7ff",
+                      "surface-variant": "#dae2fd",
+                      "on-tertiary-container": "#ffffff",
+                      "surface": "#faf8ff",
+                      "on-tertiary-fixed-variant": "#005321",
+                      "error": "#ba1a1a",
+                      "tertiary": "#006d2e",
+                      "on-primary": "#ffffff",
+                      "surface-container-low": "#f2f3ff",
+                      "secondary-fixed-dim": "#b9c7df",
+                      "on-primary-fixed-variant": "#2c24ce",
+                      "background": "#faf8ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "space-8": "2rem",
+                      "space-4": "1rem",
+                      "space-2": "0.5rem",
+                      "gutter": "1.5rem",
+                      "sidebar-width": "260px",
+                      "space-1": "0.25rem",
+                      "container-max": "1440px",
+                      "space-6": "1.5rem",
+                      "base": "4px"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": ["Inter"],
+                      "title-md": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "mono-label": ["Inter"],
+                      "label-bold": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "display-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "title-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "mono-label": ["13px", {"lineHeight": "18px", "fontWeight": "500"}],
+                      "label-bold": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-surface">
+<!-- Desktop Side Navigation -->
+<aside class="w-sidebar-width h-screen hidden md:flex flex-col bg-inverse-surface dark:bg-surface-container-lowest border-r border-outline-variant dark:border-outline fixed left-0 top-0 h-full z-40">
+<div class="p-6 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-fixed-dim flex items-center justify-center rounded-lg">
+<span class="material-symbols-outlined text-on-primary-fixed-variant" data-icon="token">token</span>
+</div>
+<div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-black text-primary-fixed-dim">TaskForge</h1>
+<p class="font-label-bold text-[10px] text-on-surface-variant/60 uppercase tracking-widest">Enterprise Ops</p>
+</div>
+</div>
+<nav class="flex-1 px-3 space-y-1 mt-4">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/80 hover:text-on-surface hover:bg-on-secondary-fixed-variant/20 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+<span class="font-label-bold text-label-bold">Work</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/80 hover:text-on-surface hover:bg-on-secondary-fixed-variant/20 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-label-bold text-label-bold">Team</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/80 hover:text-on-surface hover:bg-on-secondary-fixed-variant/20 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="domain">domain</span>
+<span class="font-label-bold text-label-bold">Departments</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/80 hover:text-on-surface hover:bg-on-secondary-fixed-variant/20 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="bar_chart">bar_chart</span>
+<span class="font-label-bold text-label-bold">Reports</span>
+</a>
+</nav>
+<div class="px-3 pb-6 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-primary-fixed-dim border-l-4 border-primary-fixed-dim bg-secondary-container/10 scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-bold text-label-bold">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/80 hover:text-on-surface hover:bg-on-secondary-fixed-variant/20 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+<span class="font-label-bold text-label-bold">Support</span>
+</a>
+</div>
+</aside>
+<!-- Top App Bar -->
+<header class="flex justify-between items-center w-full px-gutter md:pl-[276px] h-16 bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline fixed top-0 z-30">
+<div class="flex items-center gap-4">
+<span class="md:hidden material-symbols-outlined text-on-surface" data-icon="menu">menu</span>
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-1.5 bg-surface-container-low border border-outline-variant rounded-full text-body-sm focus:outline-none focus:ring-2 focus:ring-primary/20 w-64" placeholder="Search settings..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-primary text-on-primary px-4 py-1.5 rounded-lg font-label-bold text-label-bold hover:opacity-90 transition-all active:opacity-80">
+                Create
+            </button>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-full cursor-pointer" data-icon="notifications">notifications</span>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img alt="User Profile" data-alt="A professional headshot of a middle-aged male executive in a sleek, modern corporate office environment. He is wearing a dark navy suit and has a confident, approachable expression. The lighting is bright and even, reflecting a clean and professional industrial-modern workspace aesthetic with soft-focus office backgrounds and blue-toned architectural elements." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAhpkizQ-ygmRmYGaafegKeb6rq7cyeEe-yTHmV7CytKoIl_iPtf_j-OBNAYwYhh4GztG0GokuOFdgnYG9kOTQrbUgK142lMtabrFFeuffovDqsJ81vEPq7C-UePvsmCOyLzvfSCXn02ReC4SUp2kdTIoOgm5IE82agOqOTL7_ABCH6mEAPzoNtmCOHcBfCWP1DzSy8vOKWHgMNzwjfML7QjGuLZT2cq-hHtiSte5aP68BJL4vEtzSw1hQOzwi4Y-mMAWl6ZSsvTVz"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="md:ml-[260px] pt-24 pb-20 md:pb-8 px-gutter min-h-screen">
+<div class="max-w-container-max mx-auto">
+<!-- Settings Header -->
+<div class="mb-8">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Workspace Settings</h2>
+<p class="text-on-surface-variant font-body-sm mt-1">Manage your team's operational environment and global preferences.</p>
+</div>
+<div class="flex flex-col lg:flex-row gap-8">
+<!-- Inner Sidebar Navigation -->
+<nav class="lg:w-64 flex flex-row lg:flex-col gap-1 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide shrink-0">
+<button class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container rounded-xl font-label-bold text-label-bold whitespace-nowrap">
+<span class="material-symbols-outlined" data-icon="business">business</span>
+                        Workspace
+                    </button>
+<button class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl font-label-bold text-label-bold whitespace-nowrap transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications_active">notifications_active</span>
+                        Notifications
+                    </button>
+<button class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl font-label-bold text-label-bold whitespace-nowrap transition-colors">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+                        Security &amp; SSO
+                    </button>
+<button class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl font-label-bold text-label-bold whitespace-nowrap transition-colors">
+<span class="material-symbols-outlined" data-icon="credit_card">credit_card</span>
+                        Billing &amp; Plans
+                    </button>
+<button class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl font-label-bold text-label-bold whitespace-nowrap transition-colors">
+<span class="material-symbols-outlined" data-icon="integration_instructions">integration_instructions</span>
+                        API &amp; Webhooks
+                    </button>
+</nav>
+<!-- Configuration Panels (Bento Grid Style) -->
+<div class="flex-1 grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- General Information Card -->
+<section class="md:col-span-8 bg-surface-container-lowest border border-outline-variant p-6 rounded-xl">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-title-md text-title-md">General Information</h3>
+<button class="text-primary font-label-bold text-label-bold hover:underline">Edit Info</button>
+</div>
+<div class="space-y-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="font-label-bold text-label-bold text-on-surface-variant uppercase">Workspace Name</label>
+<input class="w-full px-4 py-2 bg-surface border border-outline-variant rounded focus:border-primary focus:ring-0 transition-all font-body-sm" type="text" value="TaskForge Enterprise"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-bold text-label-bold text-on-surface-variant uppercase">Timezone</label>
+<select class="w-full px-4 py-2 bg-surface border border-outline-variant rounded focus:border-primary focus:ring-0 transition-all font-body-sm">
+<option>UTC-05:00 Eastern Time (US &amp; Canada)</option>
+<option>UTC+00:00 London (GMT)</option>
+</select>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-bold text-label-bold text-on-surface-variant uppercase">Workspace URL</label>
+<div class="flex items-center">
+<span class="px-3 py-2 bg-surface-container border border-r-0 border-outline-variant rounded-l font-body-sm text-on-surface-variant">taskforge.io/</span>
+<input class="w-full px-4 py-2 bg-surface border border-outline-variant rounded-r focus:border-primary focus:ring-0 transition-all font-body-sm" type="text" value="tf-enterprise-ops"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Workspace Branding Card -->
+<section class="md:col-span-4 bg-surface-container-lowest border border-outline-variant p-6 rounded-xl flex flex-col items-center justify-center text-center">
+<h3 class="font-label-bold text-label-bold text-on-surface-variant uppercase mb-4 w-full text-left">Logo &amp; Icon</h3>
+<div class="w-24 h-24 bg-surface-container-high rounded-full flex items-center justify-center mb-4 border-2 border-dashed border-outline-variant group cursor-pointer hover:border-primary transition-colors">
+<span class="material-symbols-outlined text-outline group-hover:text-primary" data-icon="add_a_photo">add_a_photo</span>
+</div>
+<p class="font-body-sm text-on-surface-variant mb-4">Upload a high-resolution PNG or SVG logo for your portal.</p>
+<button class="w-full py-2 border border-outline-variant rounded-lg font-label-bold text-label-bold hover:bg-surface-container transition-colors">Upload New</button>
+</section>
+<!-- Notification Preferences -->
+<section class="md:col-span-6 bg-surface-container-lowest border border-outline-variant p-6 rounded-xl">
+<h3 class="font-title-md text-title-md mb-6">Email Preferences</h3>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<div>
+<p class="font-body-lg text-body-lg">Task Escalations</p>
+<p class="font-body-sm text-on-surface-variant">Notify when high-priority tasks are overdue.</p>
+</div>
+<div class="w-12 h-6 bg-primary rounded-full relative cursor-pointer">
+<div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-outline-variant/30">
+<div>
+<p class="font-body-lg text-body-lg">Weekly Analytics</p>
+<p class="font-body-sm text-on-surface-variant">Receive a summary of fleet and asset performance.</p>
+</div>
+<div class="w-12 h-6 bg-surface-container-highest rounded-full relative cursor-pointer">
+<div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-outline-variant/30">
+<div>
+<p class="font-body-lg text-body-lg">Deployment Alerts</p>
+<p class="font-body-sm text-on-surface-variant">Alerts for personnel deployment status changes.</p>
+</div>
+<div class="w-12 h-6 bg-primary rounded-full relative cursor-pointer">
+<div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Billing Summary -->
+<section class="md:col-span-6 bg-inverse-surface text-on-primary-fixed-dim p-6 rounded-xl relative overflow-hidden">
+<div class="relative z-10">
+<div class="flex justify-between items-start mb-8">
+<div>
+<p class="font-label-bold text-label-bold opacity-60 uppercase tracking-widest mb-1">Current Plan</p>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-white">Enterprise Elite</h3>
+</div>
+<span class="bg-tertiary text-on-tertiary px-3 py-1 rounded-full text-[10px] font-bold">ACTIVE</span>
+</div>
+<div class="flex items-end justify-between">
+<div>
+<p class="font-label-bold text-label-bold opacity-60 uppercase mb-1">Next Billing Cycle</p>
+<p class="font-body-lg text-body-lg text-white">Oct 12, 2024</p>
+</div>
+<div class="text-right">
+<p class="font-label-bold text-label-bold opacity-60 uppercase mb-1">Annual Total</p>
+<p class="font-title-md text-title-md text-white">$12,400.00</p>
+</div>
+</div>
+<button class="mt-8 w-full py-3 bg-white text-inverse-surface rounded-xl font-label-bold text-label-bold hover:bg-opacity-90 transition-all">Manage Subscription</button>
+</div>
+<!-- Abstract background graphic -->
+<div class="absolute -bottom-10 -right-10 w-48 h-48 bg-primary/20 rounded-full blur-3xl"></div>
+</section>
+<!-- Security / SSO Card -->
+<section class="md:col-span-12 bg-surface-container-lowest border border-outline-variant p-6 rounded-xl">
+<div class="flex items-center gap-4 mb-6">
+<div class="p-3 bg-error-container rounded-lg">
+<span class="material-symbols-outlined text-on-error-container" data-icon="lock_person">lock_person</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md">Single Sign-On (SSO)</h3>
+<p class="text-on-surface-variant font-body-sm">Enforce SAML or OAuth authentication for all workspace members.</p>
+</div>
+<button class="ml-auto bg-primary text-on-primary px-6 py-2 rounded-lg font-label-bold text-label-bold hover:opacity-90 transition-all">Configure SSO</button>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+<div class="p-4 border border-outline-variant rounded-lg flex items-center gap-3 bg-surface-container-low">
+<span class="material-symbols-outlined text-primary" data-icon="shield">shield</span>
+<span class="font-label-bold text-label-bold">2FA Mandatory</span>
+</div>
+<div class="p-4 border border-outline-variant rounded-lg flex items-center gap-3 bg-surface-container-low">
+<span class="material-symbols-outlined text-primary" data-icon="history">history</span>
+<span class="font-label-bold text-label-bold">90-Day Rotation</span>
+</div>
+<div class="p-4 border border-outline-variant rounded-lg flex items-center gap-3 bg-surface-container-low opacity-50">
+<span class="material-symbols-outlined" data-icon="vpn_key">vpn_key</span>
+<span class="font-label-bold text-label-bold">IP Whitelisting</span>
+</div>
+</div>
+</section>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 pb-safe bg-surface dark:bg-surface-container-lowest border-t border-outline-variant dark:border-outline md:hidden shadow-sm">
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+<span class="font-label-bold text-label-bold">Work</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-label-bold text-label-bold">Team</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined" data-icon="domain">domain</span>
+<span class="font-label-bold text-label-bold">Depts</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary bg-primary-container/20 rounded-xl px-3 py-1 scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-bold text-label-bold">Settings</span>
+</a>
+</nav>
+</body></html>

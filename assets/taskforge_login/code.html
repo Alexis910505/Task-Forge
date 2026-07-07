@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed-dim": "#c1c1ff",
+                    "inverse-surface": "#283044",
+                    "tertiary": "#006d2e",
+                    "on-tertiary": "#ffffff",
+                    "background": "#faf8ff",
+                    "on-secondary-fixed-variant": "#3a485b",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-container": "#57657a",
+                    "tertiary-fixed": "#6bff8f",
+                    "on-tertiary-fixed-variant": "#005321",
+                    "on-surface-variant": "#464555",
+                    "surface-container-high": "#e2e7ff",
+                    "tertiary-fixed-dim": "#4ae176",
+                    "on-tertiary-container": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "tertiary-container": "#00893c",
+                    "secondary": "#515f74",
+                    "primary-fixed": "#e1dfff",
+                    "error-container": "#ffdad6",
+                    "surface-tint": "#4745e5",
+                    "on-error": "#ffffff",
+                    "on-primary-fixed": "#09006b",
+                    "surface-container-low": "#f2f3ff",
+                    "surface-variant": "#dae2fd",
+                    "surface-dim": "#d2d9f4",
+                    "on-primary": "#ffffff",
+                    "surface-bright": "#faf8ff",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-on-surface": "#eef0ff",
+                    "on-background": "#131b2e",
+                    "on-surface": "#131b2e",
+                    "surface": "#faf8ff",
+                    "on-tertiary-fixed": "#002109",
+                    "primary-container": "#6161ff",
+                    "primary": "#4744e5",
+                    "outline": "#767587",
+                    "inverse-primary": "#c1c1ff",
+                    "on-primary-fixed-variant": "#2c24ce",
+                    "secondary-container": "#d5e3fc",
+                    "on-primary-container": "#ffffff",
+                    "surface-container": "#eaedff",
+                    "on-secondary-fixed": "#0d1c2e",
+                    "secondary-fixed": "#d5e3fc",
+                    "secondary-fixed-dim": "#b9c7df",
+                    "outline-variant": "#c7c4d8",
+                    "surface-container-highest": "#dae2fd",
+                    "error": "#ba1a1a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "base": "4px",
+                    "space-8": "2rem",
+                    "space-1": "0.25rem",
+                    "sidebar-width": "260px",
+                    "space-6": "1.5rem",
+                    "gutter": "1.5rem",
+                    "container-max": "1440px",
+                    "space-4": "1rem",
+                    "space-2": "0.5rem"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "title-md": ["Inter"],
+                    "label-bold": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "mono-label": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "title-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-bold": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "mono-label": ["13px", {"lineHeight": "18px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .brand-gradient {
+            background: radial-gradient(circle at top right, #e1dfff 0%, #faf8ff 60%);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="font-body-lg text-on-background bg-background min-h-screen flex items-center justify-center brand-gradient">
+<main class="w-full max-w-[440px] px-gutter py-space-8">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-space-8 md:p-10 flex flex-col items-center">
+<div class="mb-space-8 flex flex-col items-center">
+<div class="w-16 h-16 mb-space-4">
+<img alt="TaskForge Logo" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrirgcfBc0b5OpmNDZdxYn21B-yvJmgIB6U0o2fdO5gDrXjbg7UO69-PyjuzASTnxhJllRoD3jAozKdlYcRkRQY8MKkZVn-f0gVZuUdBodpWIs8O_ASQT-o6emsPYVRzdJ-EU4lv3jHkqG4ihJZsk2nLkEoFCmsrt4q89sWmRAooYBYFvYvfw7XvRpPLYw6jOdFAAmVsbTAwq13AUXfH1yQ8oEiEcQ_G9Vep8N4p-dOYJZsI2GqrZDx9RP8rakJ35AKNz8CtZWadog"/>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface text-center">Welcome back</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-space-2 text-center">Enter your details to access your workspace</p>
+</div>
+<form class="w-full space-y-space-6">
+<div class="space-y-space-2">
+<label class="block font-label-bold text-label-bold text-on-surface-variant" for="email">EMAIL ADDRESS</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]" data-icon="mail">mail</span>
+</div>
+<input class="block w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant rounded-lg text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" id="email" placeholder="name@company.com" type="email"/>
+</div>
+</div>
+<div class="space-y-space-2">
+<div class="flex justify-between items-center">
+<label class="block font-label-bold text-label-bold text-on-surface-variant" for="password">PASSWORD</label>
+<a class="font-label-bold text-label-bold text-primary hover:text-primary-container transition-colors" href="#">Forgot password?</a>
+</div>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]" data-icon="lock">lock</span>
+</div>
+<input class="block w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant rounded-lg text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" id="password" placeholder="••••••••" type="password"/>
+</div>
+</div>
+<div class="pt-space-2">
+<button class="w-full bg-primary text-on-primary py-4 rounded-xl font-label-bold text-label-bold uppercase tracking-widest hover:bg-primary-container active:scale-[0.98] transition-all shadow-sm" type="submit">
+                        Sign In
+                    </button>
+</div>
+</form>
+<div class="mt-space-8 w-full">
+<div class="relative flex items-center mb-space-6">
+<div class="flex-grow border-t border-outline-variant"></div>
+<span class="flex-shrink mx-4 font-label-bold text-label-bold text-outline">OR CONTINUE WITH</span>
+<div class="flex-grow border-t border-outline-variant"></div>
+</div>
+<div class="grid grid-cols-2 gap-space-4">
+<button class="flex items-center justify-center gap-space-2 px-4 py-2 border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface hover:bg-surface-container-low transition-colors">
+<img alt="Google Logo" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-Jb_ohPFbYkZv1c72WcMPb4HptDOmBZOC1yMLnGYCg0WjHoe04GasrLtOoM8Ke5sDbVCd9Rz-I9BnNRHC5MaLDXeq07Y6MkgTRUlnxQc9K-U4Yy82EkwRFwABeuJlr69THSkRrWdiDhIVD34nmgsa0aVdyRyhWqT5zdMNZko_j5LwdgdwqulOGhBymsATAKpeId4zfMAwNLdPutOad9gcGk28WupjZ-11ribIsAq5S03m0XlCgUPO22x6k-4xC9huCLyyDPEY-h1C"/>
+                        Google
+                    </button>
+<button class="flex items-center justify-center gap-space-2 px-4 py-2 border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="terminal">terminal</span>
+                        SSO
+                    </button>
+</div>
+</div>
+<div class="mt-space-8 text-center">
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                    Don't have an account? 
+                    <a class="font-label-bold text-label-bold text-primary hover:text-primary-container" href="#">Contact Admin</a>
+</p>
+</div>
+</div>
+<footer class="mt-space-8 flex justify-center gap-space-6">
+<a class="font-label-bold text-label-bold text-on-surface-variant hover:text-on-surface" href="#">Privacy Policy</a>
+<a class="font-label-bold text-label-bold text-on-surface-variant hover:text-on-surface" href="#">Terms of Service</a>
+<a class="font-label-bold text-label-bold text-on-surface-variant hover:text-on-surface" href="#">System Status</a>
+</footer>
+</main>
+</body></html>

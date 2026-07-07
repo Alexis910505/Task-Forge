@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-primary": "#c1c1ff",
+                    "on-primary-container": "#ffffff",
+                    "on-error": "#ffffff",
+                    "inverse-on-surface": "#eef0ff",
+                    "on-tertiary-fixed-variant": "#005321",
+                    "secondary-container": "#d5e3fc",
+                    "primary-fixed": "#e1dfff",
+                    "background": "#faf8ff",
+                    "on-primary-fixed": "#09006b",
+                    "secondary": "#515f74",
+                    "surface-container-low": "#f2f3ff",
+                    "surface-container-high": "#e2e7ff",
+                    "surface-dim": "#d2d9f4",
+                    "on-secondary-fixed-variant": "#3a485b",
+                    "primary-fixed-dim": "#c1c1ff",
+                    "surface-tint": "#4745e5",
+                    "inverse-surface": "#283044",
+                    "on-secondary-fixed": "#0d1c2e",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-container": "#ffffff",
+                    "on-background": "#131b2e",
+                    "on-secondary-container": "#57657a",
+                    "tertiary-fixed-dim": "#4ae176",
+                    "outline-variant": "#c7c4d8",
+                    "on-secondary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "primary": "#4744e5",
+                    "on-error-container": "#93000a",
+                    "on-surface": "#131b2e",
+                    "surface-variant": "#dae2fd",
+                    "surface-container": "#eaedff",
+                    "on-tertiary-fixed": "#002109",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-highest": "#dae2fd",
+                    "outline": "#767587",
+                    "tertiary-container": "#00893c",
+                    "primary-container": "#6161ff",
+                    "secondary-fixed": "#d5e3fc",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed-dim": "#b9c7df",
+                    "on-surface-variant": "#464555",
+                    "tertiary-fixed": "#6bff8f",
+                    "surface-bright": "#faf8ff",
+                    "on-primary-fixed-variant": "#2c24ce",
+                    "error-container": "#ffdad6",
+                    "tertiary": "#006d2e",
+                    "surface": "#faf8ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "space-8": "2rem",
+                    "sidebar-width": "260px",
+                    "space-1": "0.25rem",
+                    "space-4": "1rem",
+                    "gutter": "1.5rem",
+                    "space-2": "0.5rem",
+                    "base": "4px",
+                    "container-max": "1440px",
+                    "space-6": "1.5rem"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "title-md": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "label-bold": ["Inter"],
+                    "mono-label": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "title-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-bold": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "mono-label": ["13px", {"lineHeight": "18px", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline fixed top-0 left-0 z-50 flex justify-between items-center w-full px-space-4 h-16">
+<div class="flex items-center gap-space-2">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim">grid_view</span>
+<div class="flex flex-col">
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-primary dark:text-primary-fixed-dim tracking-tight">TaskForge</span>
+</div>
+</div>
+<!-- Organization Switcher -->
+<button class="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-surface-container-high dark:bg-surface-container-highest hover:bg-surface-container-highest transition-colors active:scale-95 duration-100">
+<span class="font-label-bold text-label-bold text-on-surface">Global Logistics</span>
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim">expand_more</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-20 px-space-4 max-w-container-max mx-auto">
+<!-- Search Section -->
+<div class="mt-space-4 relative">
+<div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline">search</span>
+</div>
+<input class="w-full bg-surface-container border border-outline-variant rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-body-sm transition-all shadow-sm" placeholder="Search assets by name or code..." type="text"/>
+</div>
+<!-- Filter Chips (Horizontal Scroll) -->
+<div class="flex overflow-x-auto no-scrollbar gap-2 mt-6 py-1">
+<button class="flex items-center justify-center whitespace-nowrap px-4 py-2 bg-primary-container text-on-primary-container rounded-full font-label-bold text-label-bold shadow-sm">All Assets</button>
+<button class="flex items-center justify-center whitespace-nowrap px-4 py-2 bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container rounded-full font-label-bold text-label-bold">Vehicles</button>
+<button class="flex items-center justify-center whitespace-nowrap px-4 py-2 bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container rounded-full font-label-bold text-label-bold">Tools</button>
+<button class="flex items-center justify-center whitespace-nowrap px-4 py-2 bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container rounded-full font-label-bold text-label-bold">Machinery</button>
+<button class="flex items-center justify-center whitespace-nowrap px-4 py-2 bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container rounded-full font-label-bold text-label-bold">HVAC</button>
+<button class="flex items-center justify-center whitespace-nowrap px-4 py-2 bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container rounded-full font-label-bold text-label-bold">Electronics</button>
+</div>
+<!-- Assets List (Asymmetric Layout/Modern Cards) -->
+<section class="mt-8 space-y-4">
+<h2 class="font-title-md text-title-md text-on-surface mb-2">Fleet &amp; Equipment</h2>
+<!-- Asset Card 1: Active Vehicle -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-3">
+<div class="flex gap-4">
+<div class="w-16 h-16 rounded-xl overflow-hidden bg-surface-container border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A clean, industrial white heavy-duty logistics truck parked in a well-lit, modern warehouse facility. The lighting is crisp and bright, emphasizing the vehicle's sturdy metallic build and high-functioning design. The overall aesthetic is minimalist and efficient, with a professional corporate color palette of soft whites and deep slates." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaNhw4s9t0MuF72N0AEhqEj-60U_KCitWObqAu7wk2C8H6ow7d_C5S6nP5Ca_iUnGPlmvY2p6X2pNLvR1XJzo0Hp-FWWwa00aVcEWPIMGwvrNSbNyGBotNpOhSpeYikJTyY05XIu3dc2o3gjWz5TfZpT1bNSl-wn0yS1J5eYtQfY6SE8b6E7wJhkwG-QmjsL_n125Vzp44h1VkICTvSma3JhBunGxHL3hSCiIyMOo-1iNVUhqu3Ejxyjs1W6MPRw75K00j628HxfZm"/>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface leading-tight">Delivery Truck Alpha</h3>
+<p class="font-mono-label text-mono-label text-outline uppercase tracking-wider mt-1">VEH-001</p>
+</div>
+</div>
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-2 py-1 rounded font-label-bold text-label-bold uppercase">ACTIVE</span>
+</div>
+<div class="flex items-center gap-6 mt-4 pt-4 border-t border-outline-variant/30">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-outline">category</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Vehicle</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-outline">location_on</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">North Bay Hub</span>
+</div>
+</div>
+</div>
+<!-- Asset Card 2: Maintenance Tool -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-3">
+<div class="flex gap-4">
+<div class="w-16 h-16 rounded-xl overflow-hidden bg-surface-container border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="High-precision industrial power drill and mechanical tools arranged on a clean, light grey metallic workbench. The photography is sharp with a shallow depth of field, highlighting the technical details of the machinery. The setting is a professional, high-stakes workshop with bright, even lighting and a systematic, organized layout." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5em4IIoVv33wwBfGzefXShAaUXqeRFk1gC4WO2nbz68DIqNHYYMoPrmJvuBNERL7DXpPdXhcMWtl4BpT1MizFjmUuuHooaAw1o9NG1IqXxGRQaWZhjqL9osjFLGMMkEHGZKooi9pAmdyB88dqps1jg6qE_vmmfyvR3LWhhP6X8iK2QFb22lLMHUSO6EKhwQwMUQbam2umE6dE3gB0bluFiiXd2r6oEMR3uA3K9MHu1-3cwqoc_EFwdNWBYMNAYORahvp5mIRkNrKV"/>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface leading-tight">Precision Impact Drill</h3>
+<p class="font-mono-label text-mono-label text-outline uppercase tracking-wider mt-1">TLS-449</p>
+</div>
+</div>
+<span class="bg-secondary-container text-on-secondary-container px-2 py-1 rounded font-label-bold text-label-bold uppercase">MAINTENANCE</span>
+</div>
+<div class="flex items-center gap-6 mt-4 pt-4 border-t border-outline-variant/30">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-outline">category</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Tools</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-outline">location_on</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Workshop B</span>
+</div>
+</div>
+</div>
+<!-- Asset Card 3: Offline HVAC -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow opacity-90">
+<div class="flex justify-between items-start mb-3">
+<div class="flex gap-4">
+<div class="w-16 h-16 rounded-xl overflow-hidden bg-surface-container border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="Modern rooftop HVAC industrial air conditioning unit with sleek metallic vents against a clear bright sky. The shot is architectural and systematic, emphasizing the heavy-duty utility of the machinery. Lighting is natural and high-contrast, creating a sense of industrial reliability and modern engineering excellence." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkTsWRCe3hnv7Ct-dnWZmS_N39fs5-zW6KCRlv1n5zTS4DP477CAQcmJAsda1cTDWowNVbPcpG5IFL-RN2k5LLK7Vyd6cv8gvgkqs4gKGnh-5x7XtoWXyLKrP7ZHQ_uega7Zul2CNiw5KnXiuQUYKpwtFUh52TlXd9YnXuwoIKX5uOI0BOZjSnvqoIUYbHO1RrMYAIwKNmGNXpmVzNok6Fh4Rl-bFu-6yvJPvLYGKjvqwFJUCbyrVA2NOgE4Sg0ywV2oHLBNx83SkE"/>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface leading-tight">Central AC Unit 04</h3>
+<p class="font-mono-label text-mono-label text-outline uppercase tracking-wider mt-1">HVC-882</p>
+</div>
+</div>
+<span class="bg-error-container text-on-error-container px-2 py-1 rounded font-label-bold text-label-bold uppercase">OFFLINE</span>
+</div>
+<div class="flex items-center gap-6 mt-4 pt-4 border-t border-outline-variant/30">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-outline">category</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">HVAC</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-outline">location_on</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Main Office</span>
+</div>
+</div>
+</div>
+<!-- Asset Card 4: Active Machinery -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-3">
+<div class="flex gap-4">
+<div class="w-16 h-16 rounded-xl overflow-hidden bg-surface-container border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="An industrial yellow forklift operating inside a massive, clean logistics center. High ceilings and professional warehouse lighting create a bright, spacious environment. The imagery focuses on the functional power and precision of industrial machinery, maintaining a systematic and architectural aesthetic aligned with high-end corporate tools." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbSFsVjjzQ8J9bykm7XEb2ahA0FVFuT-TTEAMOyEUG0oOQgEmzTmX-u_KB_fwjLVwmSNYTkW7aKGdgpbxKm3CoerXIRAkxX7spLchBuVu9BJvvaFaKglK7JLZ2FOgSDZZhyWwNRQWgHmxGJ7AKkbma45GGhCgyhUue-kmCuqIJDJT2VgunvwPm6IYlbp24w6OqVph3EkA7qQptNPN9nAMYQOmoW2AnQizs26wKdrc96hlUzKwuRRMFW30_ug6pzKh-rswhtDSbsMom"/>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface leading-tight">Heavy Duty Forklift</h3>
+<p class="font-mono-label text-mono-label text-outline uppercase tracking-wider mt-1">MCH-112</p>
+</div>
+</div>
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-2 py-1 rounded font-label-bold text-label-bold uppercase">ACTIVE</span>
+</div>
+<div class="flex items-center gap-6 mt-4 pt-4 border-t border-outline-variant/30">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-outline">category</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Machinery</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-outline">location_on</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Loading Dock 4</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Action Button -->
+<button class="fixed bottom-24 right-6 w-14 h-14 bg-primary-container text-on-primary-container rounded-xl shadow-lg flex items-center justify-center hover:bg-primary transition-all active:scale-90 duration-200 z-50">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 600;">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-space-2 pb-safe pt-2 h-20 bg-surface/90 backdrop-blur-md border-t border-outline-variant dark:border-outline">
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined">assignment</span>
+<span class="font-label-bold text-label-bold">Work</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-bold text-label-bold">Team</span>
+</div>
+<!-- Active Tab: Assets -->
+<div class="flex flex-col items-center justify-center text-primary dark:text-inverse-primary bg-primary-container/20 rounded-full px-4 py-1 active:scale-90 duration-200 transition-all">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-bold text-label-bold">Assets</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-bold text-label-bold">Alerts</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-bold text-label-bold">Profile</span>
+</div>
+</nav>
+</body></html>

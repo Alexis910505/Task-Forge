@@ -1,0 +1,365 @@
+{
+  "@@locale": "es",
+  "appTitle": "TaskForge",
+  "loginSubtitle": "Inicia sesión para continuar",
+  "loginWelcomeTitle": "Bienvenido de nuevo",
+  "loginWelcomeSubtitle": "Introduce tus datos para acceder al espacio de trabajo",
+  "loginEmailPlaceholder": "nombre@empresa.com",
+  "dashboardHello": "Hola",
+  "dashboardHelloName": "Hola, {name}",
+  "@dashboardHelloName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardTagline": "Resumen del estado de tu operación hoy.",
+  "dashboardUrgentTitle": "Tareas urgentes",
+  "dashboardUrgentCta": "Ver lista crítica",
+  "dashboardAssignedTitle": "Asignadas a mí",
+  "dashboardAssignedCta": "Revisar tareas activas",
+  "dashboardOutputTitle": "Producción semanal",
+  "dashboardOutputTrend": "+{value}%",
+  "@dashboardOutputTrend": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardSeeAll": "Ver todo",
+  "dashboardCriticalBadge": "CRÍTICO",
+  "emailLabel": "Correo",
+  "passwordLabel": "Contraseña",
+  "firstNameLabel": "Nombre",
+  "lastNameLabel": "Apellido",
+  "registerPasswordLabel": "Contraseña (mín. 8)",
+  "submitRegister": "Crear cuenta",
+  "submitLogin": "Entrar",
+  "loginKeepSignedInTitle": "Mantener la sesión iniciada",
+  "loginKeepSignedInSubtitle": "Guarda el acceso de forma segura en el dispositivo. La contraseña no se almacena.",
+  "genericRequestError": "No se pudo completar la solicitud",
+  "navDashboard": "Trabajo",
+  "navKanban": "Kanban",
+  "navMyTasks": "Lista",
+  "navReports": "Reportes",
+  "navSettings": "Ajustes",
+  "navOrganization": "Organización",
+  "navProfile": "Perfil",
+  "profileSubtitle": "Tu cuenta en esta organización.",
+  "profileRoleLabel": "Rol",
+  "navRailHome": "Trabajo",
+  "navRailTasks": "Tareas",
+  "navRailReports": "Reportes",
+  "navRailSettings": "Ajustes",
+  "navRailOrgShort": "Org.",
+  "drawerBrand": "TaskForge",
+  "drawerAccountSection": "Cuenta",
+  "syncPendingTooltip": "Cambios o fotos pendientes de sincronizar",
+  "signOut": "Salir",
+  "settingsTitle": "Ajustes",
+  "settingsWorkspaceTitle": "Ajustes del espacio de trabajo",
+  "settingsWorkspaceSubtitle": "Gestiona el entorno operativo de tu equipo y las preferencias globales.",
+  "settingsTabWorkspace": "Espacio de trabajo",
+  "settingsTabNotifications": "Notificaciones",
+  "settingsTabSecurity": "Seguridad y SSO",
+  "settingsTabApi": "API y webhooks",
+  "settingsGeneralInfo": "Información general",
+  "settingsEditInfo": "Editar datos",
+  "settingsWorkspaceName": "Nombre del espacio",
+  "settingsWorkspaceUrl": "URL del espacio",
+  "settingsTimezone": "Zona horaria",
+  "settingsLogoSection": "Logo e icono",
+  "settingsLogoHint": "PNG, JPG, WEBP o SVG. Logo hasta 5 MB; icono hasta 1 MB.",
+  "settingsUploadLogo": "Subir logo",
+  "settingsUploadIcon": "Subir icono",
+  "settingsUploading": "Subiendo…",
+  "settingsBrandingUploadFailed": "No se pudo subir la imagen",
+  "settingsEmailPreferences": "Preferencias de correo",
+  "settingsTaskEscalations": "Escalado de tareas",
+  "settingsTaskEscalationsDesc": "Avisar cuando tareas de alta prioridad estén vencidas.",
+  "settingsWeeklyAnalytics": "Analítica semanal",
+  "settingsWeeklyAnalyticsDesc": "Resumen de rendimiento de flota y activos.",
+  "settingsDeploymentAlerts": "Alertas de despliegue",
+  "settingsDeploymentAlertsDesc": "Cambios en el estado de despliegue del personal.",
+  "settingsSsoTitle": "Inicio de sesión único (SSO)",
+  "settingsSsoDesc": "Exige autenticación SAML u OAuth para todos los miembros.",
+  "settingsConfigureSso": "Configurar SSO",
+  "settingsFeature2fa": "2FA obligatorio",
+  "settingsFeatureRotation": "Rotación 90 días",
+  "settingsFeatureIp": "Lista blanca IP",
+  "settingsSecuritySoon": "SSO e IP whitelisting estarán disponibles en una próxima versión.",
+  "settingsApiTitle": "API y webhooks",
+  "settingsApiDesc": "Genera claves para integrar TaskForge con tus sistemas.",
+  "settingsGenerateKey": "Generar clave API",
+  "settingsApiSoon": "Gestión de claves API próximamente.",
+  "settingsLanguage": "Idioma",
+  "settingsLanguageSectionDesc": "Elige inglés o español. Se guarda en este dispositivo.",
+  "settingsLanguageEnglish": "Inglés",
+  "settingsLanguageSpanish": "Español",
+  "settingsSave": "Guardar",
+  "settingsCancel": "Cancelar",
+  "settingsSaving": "Guardando…",
+  "settingsSaveFailed": "No se pudieron guardar los ajustes",
+  "settingsReadOnlyHint": "Solo administradores y managers pueden modificar estos ajustes.",
+  "settingsLoadFailed": "No se pudieron cargar los ajustes de la organización",
+  "settingsNoOrgAccess": "Tu rol no puede ver la configuración del espacio de trabajo.",
+  "dashboardSummary": "Resumen",
+  "dashboardRetry": "Reintentar",
+  "dashboardOfflineBanner": "Sin conexión o error de red. Mostrando el último resumen guardado en el dispositivo.",
+  "dashboardRefresh": "Actualizar",
+  "dashboardActiveUsers": "Usuarios activos",
+  "dashboardTotalTasks": "Tareas totales",
+  "dashboardOverdue": "Vencidas",
+  "dashboardByStatus": "Estados",
+  "dashboardRecentTasks": "Tareas recientes",
+  "dashboardRecentActivity": "Actividad reciente",
+  "dashboardQuickAction": "Acción rápida",
+  "activity_task_created": "Nueva tarea: {task}",
+  "@activity_task_created": {
+    "placeholders": {
+      "task": { "type": "String" }
+    }
+  },
+  "activity_task_assigned": "{user} fue asignado a {task}",
+  "@activity_task_assigned": {
+    "placeholders": {
+      "user": { "type": "String" },
+      "task": { "type": "String" }
+    }
+  },
+  "activity_task_status_changed": "Estado actualizado en {task}",
+  "@activity_task_status_changed": {
+    "placeholders": {
+      "task": { "type": "String" }
+    }
+  },
+  "activity_task_completed": "Tarea completada: {task}",
+  "@activity_task_completed": {
+    "placeholders": {
+      "task": { "type": "String" }
+    }
+  },
+  "activity_comment_added": "{user} comentó en {task}",
+  "@activity_comment_added": {
+    "placeholders": {
+      "user": { "type": "String" },
+      "task": { "type": "String" }
+    }
+  },
+  "activity_attachment_added": "{user} subió evidencia a {task}",
+  "@activity_attachment_added": {
+    "placeholders": {
+      "user": { "type": "String" },
+      "task": { "type": "String" }
+    }
+  },
+  "myTasksTitle": "Mis tareas",
+  "myTasksSubtitle": "Prioridad, SLA y tablero",
+  "myTasksSearchHint": "Buscar tareas, IDs o activos…",
+  "myTasksTabAll": "Todas",
+  "myTasksTabTodo": "Por hacer",
+  "myTasksTabInProgress": "En curso",
+  "myTasksTabCompleted": "Terminadas",
+  "myTasksCompletedOn": "Completada {date}",
+  "@myTasksCompletedOn": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "myTasksEmpty": "No tienes tareas asignadas",
+  "myTasksNewTask": "Nueva tarea",
+  "myTasksNewTaskSoon": "Crear tarea estará disponible pronto",
+  "myTasksDueTomorrow": "Vence mañana",
+  "myTasksDueToday": "Hoy, {time}",
+  "@myTasksDueToday": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "myTasksOverdueHours": "Vencida hace {hours}h",
+  "@myTasksOverdueHours": {
+    "placeholders": {
+      "hours": { "type": "int" }
+    }
+  },
+  "myTasksOverdueDays": "Vencida hace {days}d",
+  "@myTasksOverdueDays": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "reportsTitle": "Reportes",
+  "reportsDashboardTitle": "Panel de reportes",
+  "reportsDashboardSubtitle": "Métricas operativas y estado de sincronización",
+  "reportsExportReport": "Exportar informe",
+  "reportsEfficiencyLabel": "Eficiencia %",
+  "reportsTasksCompletedLabel": "Tareas completadas",
+  "reportsAvgTimeLabel": "Tiempo medio",
+  "reportsEfficiencyTrendUp": "+{value}% vs semana anterior",
+  "@reportsEfficiencyTrendUp": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "reportsEfficiencyTrendDown": "{value}% vs semana anterior",
+  "@reportsEfficiencyTrendDown": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "reportsTasksTarget": "Objetivo: {count} unidades",
+  "@reportsTasksTarget": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "reportsAvgTimeDelay": "+{minutes}m de retraso detectado",
+  "@reportsAvgTimeDelay": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+  "reportsDeptPerformance": "Rendimiento por departamento",
+  "reportsCapacity": "{percent}% capacidad",
+  "@reportsCapacity": {
+    "placeholders": { "percent": { "type": "int" } }
+  },
+  "reportsSyncQueue": "Cola de sincronización",
+  "reportsForceSync": "Forzar sincronización",
+  "reportsSyncOffline": "Sin conexión: sincroniza cuando vuelva la red",
+  "reportsSyncDone": "Cola vacía: todo sincronizado",
+  "reportsSystemHealth": "Estado del sistema",
+  "reportsNetworkStable": "Red estable",
+  "reportsNetworkOffline": "Sin conexión",
+  "reportsLastBackup": "Última copia local hace {minutes} min",
+  "@reportsLastBackup": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+  "reportsNoDeptData": "Sin datos de departamentos en este periodo",
+  "reportsExportPdf": "Documento PDF",
+  "reportsExportPdfHint": "Formato imprimible de alta fidelidad",
+  "reportsExportExcel": "Hoja Excel",
+  "reportsExportExcelHint": "Datos en bruto para análisis",
+  "reportsExportCycleNote": "La exportación incluye datos del periodo actual.",
+  "reportsExportSaved": "Informe guardado en documentos de la app",
+  "reportsExportFailed": "No se pudo exportar el informe",
+  "reportsCompleted7d": "Completadas (7d)",
+  "reportsAvgTime": "Tiempo medio",
+  "reportsOpenOverdue": "Vencidas abiertas",
+  "reportsExportHint": "La exportación PDF / Excel se conectará al módulo Nest `reports`.",
+  "orgTitle": "Organización",
+  "orgCurrentSection": "ORGANIZACIÓN ACTUAL",
+  "orgPlanDemo": "Plan Enterprise",
+  "orgChangeSection": "CAMBIAR ORGANIZACIÓN",
+  "orgAcme": "Acme Logistics",
+  "orgInvitePending": "Invitación pendiente",
+  "orgDemoName": "TaskForge Demo",
+  "kanbanOfflineSaved": "Sin conexión: cambio guardado en el dispositivo; se sincronizará al recuperar la red.",
+  "kanbanMoveFailed": "No se pudo mover la tarea: {error}",
+  "@kanbanMoveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "kanbanBoardId": "ID del tablero",
+  "kanbanLoad": "Cargar",
+  "kanbanCachedTitle": "Datos en caché",
+  "kanbanCachedSubtitle": "Última copia local del tablero. Conecta para actualizar.",
+  "kanbanLoadHint": "Pega el id del tablero",
+  "kanbanEmptyState": "Carga un tablero para ver columnas Backlog → Completed.",
+  "kanbanBoardIdRequired": "Indica un id de tablero",
+  "kanbanEvidenceTooltip": "Evidencia fotográfica",
+  "taskDetailTaskId": "ID de tarea: {id}",
+  "@taskDetailTaskId": {
+    "placeholders": {
+      "id": { "type": "String" }
+    }
+  },
+  "taskDetailChangeStatus": "Cambiar estado",
+  "taskDetailDescription": "Descripción",
+  "taskDetailNoDescription": "Sin descripción",
+  "taskDetailAddEvidence": "Añadir evidencia fotográfica",
+  "taskDetailEvidenceGallery": "Galería de evidencias",
+  "taskDetailPhotosCount": "{count} fotos",
+  "@taskDetailPhotosCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "taskDetailNoPhotos": "Aún no hay fotos de evidencia",
+  "taskDetailCommentHint": "Añade un comentario rápido…",
+  "taskDetailCommentFailed": "No se pudo enviar el comentario",
+  "taskDetailStatusUpdated": "Estado actualizado",
+  "taskDetailStatusBacklog": "Backlog",
+  "taskDetailStatusTodo": "Por hacer",
+  "taskDetailStatusInProgress": "En curso",
+  "taskDetailStatusReview": "En revisión",
+  "taskDetailStatusCompleted": "Terminada",
+  "profilePerformanceTitle": "Resumen de rendimiento",
+  "profileLast30Days": "Últimos 30 días",
+  "profileEfficiencyRating": "Índice de eficiencia",
+  "profileTasksDone": "Tareas hechas",
+  "profileAvgTime": "Tiempo medio",
+  "profileTrendUp": "+{value}%",
+  "@profileTrendUp": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "profileMySettings": "Mis ajustes",
+  "profileHelpSupport": "Ayuda y soporte",
+  "profileSecurityPrivacy": "Seguridad y privacidad",
+  "profileComingSoon": "Disponible próximamente",
+  "profileRoleAdmin": "Administrador",
+  "profileRoleManager": "Responsable de equipo",
+  "profileRoleWorker": "Técnico de campo",
+  "profileRoleInspector": "Inspector",
+  "profileRoleViewer": "Solo lectura",
+  "profileNoDepartment": "Operaciones",
+  "profileHoursUnit": "{hours}h",
+  "@profileHoursUnit": {
+    "placeholders": { "hours": { "type": "String" } }
+  },
+  "notificationsTitle": "Notificaciones",
+  "notificationsSubtitle": "Mantente al día del progreso de tu equipo",
+  "notificationsEmpty": "Sin notificaciones",
+  "notificationsEmptyHint": "Cuando te asignen tareas o comenten, aparecerán aquí.",
+  "notificationsMarkAllRead": "Marcar todo como leído",
+  "notificationsMarkingAll": "Marcando…",
+  "notificationsSectionNewAlerts": "Alertas nuevas",
+  "notificationsSectionYesterday": "Ayer · {date}",
+  "@notificationsSectionYesterday": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "notificationsSectionEarlier": "Anteriores",
+  "notificationsViewDetails": "Ver detalle",
+  "notificationsDismiss": "Descartar",
+  "notificationsStatusChanged": "Estado actualizado:",
+  "notificationsThreadLabel": "Hilo: {name}",
+  "@notificationsThreadLabel": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "notificationsTypeTaskAssigned": "Nueva tarea asignada",
+  "notificationsTypeTaskUpdated": "Actualización de tarea",
+  "notificationsTypeComment": "Comentario",
+  "notificationsTypeMention": "Mención",
+  "notificationsTypeSystem": "Aviso del sistema",
+  "createTaskTitle": "Nueva tarea",
+  "createTaskOfflineBadge": "SIN CONEXIÓN",
+  "createTaskFieldTitle": "Título de la tarea",
+  "createTaskTitleHint": "p. ej. Revisión de bomba hidráulica",
+  "createTaskTitleRequired": "El título es obligatorio",
+  "createTaskFieldCategory": "Categoría",
+  "createTaskCategoryMaintenance": "Mantenimiento",
+  "createTaskCategoryRepair": "Reparación",
+  "createTaskCategorySafety": "Seguridad",
+  "createTaskCategoryAudit": "Auditoría",
+  "createTaskFieldAsset": "Activo / ubicación",
+  "createTaskAssetHint": "Buscar activo o ubicación…",
+  "createTaskFieldPriority": "Prioridad",
+  "createTaskPriorityLow": "Baja",
+  "createTaskPriorityMedium": "Media",
+  "createTaskPriorityUrgent": "Urgente",
+  "createTaskFieldPhotos": "Evidencia fotográfica",
+  "createTaskAddPhoto": "Añadir foto",
+  "createTaskPhotosHint": "Hasta 4 fotos · se subirán al sincronizar",
+  "createTaskOfflineFooter": "Sin conexión: la tarea se sincronizará al reconectar",
+  "createTaskSave": "Guardar tarea",
+  "createTaskSavedOnline": "Tarea creada en el servidor",
+  "createTaskSavedOffline": "Tarea guardada localmente; se sincronizará al conectar",
+  "createTaskBoardRequired": "Abre Kanban con conexión al menos una vez para elegir tablero"
+}

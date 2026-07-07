@@ -1,0 +1,365 @@
+{
+  "@@locale": "en",
+  "appTitle": "TaskForge",
+  "loginSubtitle": "Sign in to continue",
+  "loginWelcomeTitle": "Welcome back",
+  "loginWelcomeSubtitle": "Enter your details to access your workspace",
+  "loginEmailPlaceholder": "name@company.com",
+  "dashboardHello": "Hello",
+  "dashboardHelloName": "Hello, {name}",
+  "@dashboardHelloName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardTagline": "Here's an overview of your operational status today.",
+  "dashboardUrgentTitle": "Urgent Tasks",
+  "dashboardUrgentCta": "View critical list",
+  "dashboardAssignedTitle": "Assigned to Me",
+  "dashboardAssignedCta": "Review active tasks",
+  "dashboardOutputTitle": "Weekly Output",
+  "dashboardOutputTrend": "+{value}%",
+  "@dashboardOutputTrend": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardSeeAll": "See all",
+  "dashboardCriticalBadge": "CRITICAL",
+  "emailLabel": "Email",
+  "passwordLabel": "Password",
+  "firstNameLabel": "First name",
+  "lastNameLabel": "Last name",
+  "registerPasswordLabel": "Password (min. 8)",
+  "submitRegister": "Create account",
+  "submitLogin": "Sign in",
+  "loginKeepSignedInTitle": "Keep me signed in",
+  "loginKeepSignedInSubtitle": "Securely stores your session on this device. Your password is not saved.",
+  "genericRequestError": "Could not complete the request",
+  "navDashboard": "Work",
+  "navKanban": "Kanban",
+  "navMyTasks": "List",
+  "navReports": "Reports",
+  "navSettings": "Settings",
+  "navOrganization": "Organization",
+  "navProfile": "Profile",
+  "profileSubtitle": "Your account in this organization.",
+  "profileRoleLabel": "Role",
+  "navRailHome": "Work",
+  "navRailTasks": "Tasks",
+  "navRailReports": "Reports",
+  "navRailSettings": "Settings",
+  "navRailOrgShort": "Org.",
+  "drawerBrand": "TaskForge",
+  "drawerAccountSection": "Account",
+  "syncPendingTooltip": "Pending changes or photos to sync",
+  "signOut": "Sign out",
+  "settingsTitle": "Settings",
+  "settingsWorkspaceTitle": "Workspace Settings",
+  "settingsWorkspaceSubtitle": "Manage your team's operational environment and global preferences.",
+  "settingsTabWorkspace": "Workspace",
+  "settingsTabNotifications": "Notifications",
+  "settingsTabSecurity": "Security & SSO",
+  "settingsTabApi": "API & webhooks",
+  "settingsGeneralInfo": "General Information",
+  "settingsEditInfo": "Edit Info",
+  "settingsWorkspaceName": "Workspace Name",
+  "settingsWorkspaceUrl": "Workspace URL",
+  "settingsTimezone": "Timezone",
+  "settingsLogoSection": "Logo & Icon",
+  "settingsLogoHint": "PNG, JPG, WEBP or SVG. Logo up to 5 MB; icon up to 1 MB.",
+  "settingsUploadLogo": "Upload logo",
+  "settingsUploadIcon": "Upload icon",
+  "settingsUploading": "Uploading…",
+  "settingsBrandingUploadFailed": "Could not upload image",
+  "settingsEmailPreferences": "Email Preferences",
+  "settingsTaskEscalations": "Task Escalations",
+  "settingsTaskEscalationsDesc": "Notify when high-priority tasks are overdue.",
+  "settingsWeeklyAnalytics": "Weekly Analytics",
+  "settingsWeeklyAnalyticsDesc": "Receive a summary of fleet and asset performance.",
+  "settingsDeploymentAlerts": "Deployment Alerts",
+  "settingsDeploymentAlertsDesc": "Alerts for personnel deployment status changes.",
+  "settingsSsoTitle": "Single Sign-On (SSO)",
+  "settingsSsoDesc": "Enforce SAML or OAuth authentication for all workspace members.",
+  "settingsConfigureSso": "Configure SSO",
+  "settingsFeature2fa": "2FA Mandatory",
+  "settingsFeatureRotation": "90-Day Rotation",
+  "settingsFeatureIp": "IP Whitelisting",
+  "settingsSecuritySoon": "SSO and IP whitelisting will be available in a future release.",
+  "settingsApiTitle": "API & webhooks",
+  "settingsApiDesc": "Generate keys to integrate TaskForge with your systems.",
+  "settingsGenerateKey": "Generate API key",
+  "settingsApiSoon": "API key management coming soon.",
+  "settingsLanguage": "Language",
+  "settingsLanguageSectionDesc": "Choose English or Spanish. Saved on this device.",
+  "settingsLanguageEnglish": "English",
+  "settingsLanguageSpanish": "Spanish",
+  "settingsSave": "Save",
+  "settingsCancel": "Cancel",
+  "settingsSaving": "Saving…",
+  "settingsSaveFailed": "Could not save settings",
+  "settingsReadOnlyHint": "Only admins and managers can change these settings.",
+  "settingsLoadFailed": "Could not load organization settings",
+  "settingsNoOrgAccess": "Your role cannot view workspace settings.",
+  "dashboardSummary": "Summary",
+  "dashboardRetry": "Retry",
+  "dashboardOfflineBanner": "Offline or network error. Showing the last summary saved on this device.",
+  "dashboardRefresh": "Refresh",
+  "dashboardActiveUsers": "Active users",
+  "dashboardTotalTasks": "Total tasks",
+  "dashboardOverdue": "Overdue",
+  "dashboardByStatus": "By status",
+  "dashboardRecentTasks": "Recent tasks",
+  "dashboardRecentActivity": "Recent Activity",
+  "dashboardQuickAction": "Quick action",
+  "activity_task_created": "New task: {task}",
+  "@activity_task_created": {
+    "placeholders": {
+      "task": { "type": "String" }
+    }
+  },
+  "activity_task_assigned": "{user} assigned to {task}",
+  "@activity_task_assigned": {
+    "placeholders": {
+      "user": { "type": "String" },
+      "task": { "type": "String" }
+    }
+  },
+  "activity_task_status_changed": "Status updated on {task}",
+  "@activity_task_status_changed": {
+    "placeholders": {
+      "task": { "type": "String" }
+    }
+  },
+  "activity_task_completed": "Task completed: {task}",
+  "@activity_task_completed": {
+    "placeholders": {
+      "task": { "type": "String" }
+    }
+  },
+  "activity_comment_added": "{user} commented on {task}",
+  "@activity_comment_added": {
+    "placeholders": {
+      "user": { "type": "String" },
+      "task": { "type": "String" }
+    }
+  },
+  "activity_attachment_added": "{user} uploaded evidence to {task}",
+  "@activity_attachment_added": {
+    "placeholders": {
+      "user": { "type": "String" },
+      "task": { "type": "String" }
+    }
+  },
+  "myTasksTitle": "My tasks",
+  "myTasksSubtitle": "Priority, SLA and board",
+  "myTasksSearchHint": "Search tasks, IDs, or assets…",
+  "myTasksTabAll": "All",
+  "myTasksTabTodo": "To Do",
+  "myTasksTabInProgress": "In Progress",
+  "myTasksTabCompleted": "Done",
+  "myTasksCompletedOn": "Completed {date}",
+  "@myTasksCompletedOn": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "myTasksEmpty": "You have no assigned tasks",
+  "myTasksNewTask": "New task",
+  "myTasksNewTaskSoon": "Create task coming soon",
+  "myTasksDueTomorrow": "Due tomorrow",
+  "myTasksDueToday": "Due today, {time}",
+  "@myTasksDueToday": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "myTasksOverdueHours": "Overdue by {hours}h",
+  "@myTasksOverdueHours": {
+    "placeholders": {
+      "hours": { "type": "int" }
+    }
+  },
+  "myTasksOverdueDays": "Overdue by {days}d",
+  "@myTasksOverdueDays": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "reportsTitle": "Reports",
+  "reportsDashboardTitle": "Reporting Dashboard",
+  "reportsDashboardSubtitle": "Live operational metrics and sync status",
+  "reportsExportReport": "Export Report",
+  "reportsEfficiencyLabel": "Efficiency %",
+  "reportsTasksCompletedLabel": "Tasks Completed",
+  "reportsAvgTimeLabel": "Avg Time",
+  "reportsEfficiencyTrendUp": "+{value}% vs last week",
+  "@reportsEfficiencyTrendUp": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "reportsEfficiencyTrendDown": "{value}% vs last week",
+  "@reportsEfficiencyTrendDown": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "reportsTasksTarget": "Target: {count} units",
+  "@reportsTasksTarget": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "reportsAvgTimeDelay": "+{minutes}m delay detected",
+  "@reportsAvgTimeDelay": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+  "reportsDeptPerformance": "Department Performance",
+  "reportsCapacity": "{percent}% Capacity",
+  "@reportsCapacity": {
+    "placeholders": { "percent": { "type": "int" } }
+  },
+  "reportsSyncQueue": "Sync Queue",
+  "reportsForceSync": "Force Sync Now",
+  "reportsSyncOffline": "Offline: sync when connection returns",
+  "reportsSyncDone": "Queue empty: everything synced",
+  "reportsSystemHealth": "System Health",
+  "reportsNetworkStable": "Network Stable",
+  "reportsNetworkOffline": "Offline",
+  "reportsLastBackup": "Last local backup {minutes} min ago",
+  "@reportsLastBackup": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+  "reportsNoDeptData": "No department data for this period",
+  "reportsExportPdf": "PDF Document",
+  "reportsExportPdfHint": "High-fidelity printable format",
+  "reportsExportExcel": "Excel Spreadsheet",
+  "reportsExportExcelHint": "Raw data for analysis",
+  "reportsExportCycleNote": "Export includes data for the current period.",
+  "reportsExportSaved": "Report saved to app documents",
+  "reportsExportFailed": "Could not export report",
+  "reportsCompleted7d": "Completed (7d)",
+  "reportsAvgTime": "Average time",
+  "reportsOpenOverdue": "Open overdue",
+  "reportsExportHint": "PDF / Excel export will connect to the Nest `reports` module.",
+  "orgTitle": "Organization",
+  "orgCurrentSection": "CURRENT ORGANIZATION",
+  "orgPlanDemo": "Enterprise plan",
+  "orgChangeSection": "SWITCH ORGANIZATION",
+  "orgAcme": "Acme Logistics",
+  "orgInvitePending": "Invitation pending",
+  "orgDemoName": "TaskForge Demo",
+  "kanbanOfflineSaved": "Offline: change saved on device; will sync when back online.",
+  "kanbanMoveFailed": "Could not move task: {error}",
+  "@kanbanMoveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "kanbanBoardId": "Board ID",
+  "kanbanLoad": "Load",
+  "kanbanCachedTitle": "Cached data",
+  "kanbanCachedSubtitle": "Last local copy of the board. Connect to refresh.",
+  "kanbanLoadHint": "Paste board id",
+  "kanbanEmptyState": "Load a board to see columns from Backlog to Completed.",
+  "kanbanBoardIdRequired": "Enter a board id",
+  "kanbanEvidenceTooltip": "Photo evidence",
+  "taskDetailTaskId": "Task ID: {id}",
+  "@taskDetailTaskId": {
+    "placeholders": {
+      "id": { "type": "String" }
+    }
+  },
+  "taskDetailChangeStatus": "Change status",
+  "taskDetailDescription": "Description",
+  "taskDetailNoDescription": "No description",
+  "taskDetailAddEvidence": "Add photo evidence",
+  "taskDetailEvidenceGallery": "Evidence gallery",
+  "taskDetailPhotosCount": "{count} photos",
+  "@taskDetailPhotosCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "taskDetailNoPhotos": "No evidence photos yet",
+  "taskDetailCommentHint": "Add a quick comment…",
+  "taskDetailCommentFailed": "Could not send comment",
+  "taskDetailStatusUpdated": "Status updated",
+  "taskDetailStatusBacklog": "Backlog",
+  "taskDetailStatusTodo": "To do",
+  "taskDetailStatusInProgress": "In progress",
+  "taskDetailStatusReview": "In review",
+  "taskDetailStatusCompleted": "Completed",
+  "profilePerformanceTitle": "Performance summary",
+  "profileLast30Days": "Last 30 days",
+  "profileEfficiencyRating": "Efficiency rating",
+  "profileTasksDone": "Tasks done",
+  "profileAvgTime": "Avg. time",
+  "profileTrendUp": "+{value}%",
+  "@profileTrendUp": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "profileMySettings": "My settings",
+  "profileHelpSupport": "Help & support",
+  "profileSecurityPrivacy": "Security & privacy",
+  "profileComingSoon": "Coming soon",
+  "profileRoleAdmin": "Administrator",
+  "profileRoleManager": "Team lead",
+  "profileRoleWorker": "Field technician",
+  "profileRoleInspector": "Inspector",
+  "profileRoleViewer": "View only",
+  "profileNoDepartment": "Operations",
+  "profileHoursUnit": "{hours}h",
+  "@profileHoursUnit": {
+    "placeholders": { "hours": { "type": "String" } }
+  },
+  "notificationsTitle": "Notifications",
+  "notificationsSubtitle": "Stay updated with your team's progress",
+  "notificationsEmpty": "No notifications",
+  "notificationsEmptyHint": "When you're assigned tasks or mentioned, they'll show up here.",
+  "notificationsMarkAllRead": "Mark all as read",
+  "notificationsMarkingAll": "Marking…",
+  "notificationsSectionNewAlerts": "New alerts",
+  "notificationsSectionYesterday": "Yesterday · {date}",
+  "@notificationsSectionYesterday": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "notificationsSectionEarlier": "Earlier",
+  "notificationsViewDetails": "View details",
+  "notificationsDismiss": "Dismiss",
+  "notificationsStatusChanged": "Status updated:",
+  "notificationsThreadLabel": "Thread: {name}",
+  "@notificationsThreadLabel": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "notificationsTypeTaskAssigned": "New task assigned",
+  "notificationsTypeTaskUpdated": "Task update",
+  "notificationsTypeComment": "Comment",
+  "notificationsTypeMention": "Mention",
+  "notificationsTypeSystem": "System notice",
+  "createTaskTitle": "New Task",
+  "createTaskOfflineBadge": "OFFLINE",
+  "createTaskFieldTitle": "Task title",
+  "createTaskTitleHint": "e.g. Hydraulic pump inspection",
+  "createTaskTitleRequired": "Title is required",
+  "createTaskFieldCategory": "Category",
+  "createTaskCategoryMaintenance": "Maintenance",
+  "createTaskCategoryRepair": "Repair",
+  "createTaskCategorySafety": "Safety",
+  "createTaskCategoryAudit": "Audit",
+  "createTaskFieldAsset": "Asset / location",
+  "createTaskAssetHint": "Search asset or location…",
+  "createTaskFieldPriority": "Priority",
+  "createTaskPriorityLow": "Low",
+  "createTaskPriorityMedium": "Medium",
+  "createTaskPriorityUrgent": "Urgent",
+  "createTaskFieldPhotos": "Photo evidence",
+  "createTaskAddPhoto": "Add photo",
+  "createTaskPhotosHint": "Up to 4 photos · uploads when synced",
+  "createTaskOfflineFooter": "Working offline: task will sync when connected",
+  "createTaskSave": "Save task",
+  "createTaskSavedOnline": "Task created on server",
+  "createTaskSavedOffline": "Task saved locally; will sync when online",
+  "createTaskBoardRequired": "Open Kanban online once to load a board"
+}

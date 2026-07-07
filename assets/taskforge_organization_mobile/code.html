@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Organization Settings - TaskForge</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-primary": "#c1c1ff",
+                    "on-primary-container": "#ffffff",
+                    "on-error": "#ffffff",
+                    "inverse-on-surface": "#eef0ff",
+                    "on-tertiary-fixed-variant": "#005321",
+                    "secondary-container": "#d5e3fc",
+                    "primary-fixed": "#e1dfff",
+                    "background": "#faf8ff",
+                    "on-primary-fixed": "#09006b",
+                    "secondary": "#515f74",
+                    "surface-container-low": "#f2f3ff",
+                    "surface-container-high": "#e2e7ff",
+                    "surface-dim": "#d2d9f4",
+                    "on-secondary-fixed-variant": "#3a485b",
+                    "primary-fixed-dim": "#c1c1ff",
+                    "surface-tint": "#4745e5",
+                    "inverse-surface": "#283044",
+                    "on-secondary-fixed": "#0d1c2e",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-container": "#ffffff",
+                    "on-background": "#131b2e",
+                    "on-secondary-container": "#57657a",
+                    "tertiary-fixed-dim": "#4ae176",
+                    "outline-variant": "#c7c4d8",
+                    "on-secondary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "primary": "#4744e5",
+                    "on-error-container": "#93000a",
+                    "on-surface": "#131b2e",
+                    "surface-variant": "#dae2fd",
+                    "surface-container": "#eaedff",
+                    "on-tertiary-fixed": "#002109",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-highest": "#dae2fd",
+                    "outline": "#767587",
+                    "tertiary-container": "#00893c",
+                    "primary-container": "#6161ff",
+                    "secondary-fixed": "#d5e3fc",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed-dim": "#b9c7df",
+                    "on-surface-variant": "#464555",
+                    "tertiary-fixed": "#6bff8f",
+                    "surface-bright": "#faf8ff",
+                    "on-primary-fixed-variant": "#2c24ce",
+                    "error-container": "#ffdad6",
+                    "tertiary": "#006d2e",
+                    "surface": "#faf8ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "space-8": "2rem",
+                    "sidebar-width": "260px",
+                    "space-1": "0.25rem",
+                    "space-4": "1rem",
+                    "gutter": "1.5rem",
+                    "space-2": "0.5rem",
+                    "base": "4px",
+                    "container-max": "1440px",
+                    "space-6": "1.5rem"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "title-md": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "label-bold": ["Inter"],
+                    "mono-label": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "title-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-bold": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "mono-label": ["13px", {"lineHeight": "18px", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #faf8ff;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline fixed top-0 left-0 w-full z-50 flex justify-between items-center w-full px-space-4 h-16">
+<div class="flex items-center gap-space-4">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim cursor-pointer" data-icon="grid_view">grid_view</span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary dark:text-primary-fixed-dim tracking-tight">TaskForge</h1>
+</div>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim cursor-pointer" data-icon="expand_more">expand_more</span>
+</div>
+</header>
+<main class="pt-20 pb-24 px-space-4 max-w-lg mx-auto">
+<!-- Current Organization Section -->
+<section class="mb-space-8">
+<h2 class="font-label-bold text-label-bold text-outline uppercase tracking-widest mb-space-4">Current Organization</h2>
+<div class="bg-surface-container-low border border-outline-variant rounded-xl p-space-4 flex items-center gap-space-4">
+<div class="w-12 h-12 rounded-lg overflow-hidden bg-primary-container/20 flex items-center justify-center">
+<img alt="Apex Logistics Logo" class="w-full h-full object-cover" data-alt="A clean, minimalist logo for a modern logistics company featuring a stylized mountain peak inside a geometric hex frame. The design uses a sophisticated corporate palette of deep navy blue and vibrant primary blue. The aesthetic is professional and industrial-modern, set against a high-key studio background with soft directional lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBC896IMjrDp4JT5kUNQeDCzEn5YSWnA8y-PdoAq7DJfEBryeU13koqVL3VqdajK4-4nVwNuYUIGFTbgF4X17jFAlDOvJ69o-t6dyB9Nhv4d113iPr4MmQdxsk8VDvIi82nYeGReUGtLVfDMVJmGxf52z3xStLdhuqwyGq1WG5m7MWOhYOUHnDFpWnktU4lNqRr2J047Blz5IJMsvVxvianqQFd-Yqq8HoFr6avFi7qjWixl7Yl_IEW4-qD0iEjfqJBSa1-RsIyOBN5"/>
+</div>
+<div class="flex-1">
+<h3 class="font-title-md text-title-md text-on-surface">Apex Logistics</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Enterprise Plan • Sydney, AU</p>
+</div>
+<span class="material-symbols-outlined text-primary" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</section>
+<!-- Organization Settings Navigation -->
+<section class="mb-space-8">
+<h2 class="font-label-bold text-label-bold text-outline uppercase tracking-widest mb-space-4">Management</h2>
+<nav class="space-y-space-2">
+<a class="flex items-center justify-between p-space-4 bg-surface rounded-xl border border-outline-variant hover:bg-surface-container-high transition-colors active:scale-95 duration-100" href="#">
+<div class="flex items-center gap-space-4">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="domain">domain</span>
+<span class="font-body-lg text-body-lg">Organization Profile</span>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</a>
+<a class="flex items-center justify-between p-space-4 bg-surface rounded-xl border border-outline-variant hover:bg-surface-container-high transition-colors active:scale-95 duration-100" href="#">
+<div class="flex items-center gap-space-4">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="palette">palette</span>
+<span class="font-body-lg text-body-lg">Branding &amp; Logo</span>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</a>
+<a class="flex items-center justify-between p-space-4 bg-surface rounded-xl border border-outline-variant hover:bg-surface-container-high transition-colors active:scale-95 duration-100" href="#">
+<div class="flex items-center justify-between w-full">
+<div class="flex items-center gap-space-4">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="badge">badge</span>
+<span class="font-body-lg text-body-lg">Users &amp; Roles</span>
+</div>
+<div class="flex items-center gap-space-2">
+<span class="bg-tertiary/10 text-tertiary font-label-bold text-[10px] px-2 py-0.5 rounded-full">12 ACTIVE</span>
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</a>
+<a class="flex items-center justify-between p-space-4 bg-surface rounded-xl border border-outline-variant hover:bg-surface-container-high transition-colors active:scale-95 duration-100" href="#">
+<div class="flex items-center gap-space-4">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="payments">payments</span>
+<span class="font-body-lg text-body-lg">Billing &amp; Invoices</span>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</a>
+</nav>
+</section>
+<!-- Switch Organization Section -->
+<section class="mb-space-8">
+<div class="flex items-center justify-between mb-space-4">
+<h2 class="font-label-bold text-label-bold text-outline uppercase tracking-widest">Switch Organization</h2>
+<button class="text-primary font-label-bold text-label-bold">+ NEW TENANT</button>
+</div>
+<div class="space-y-space-2">
+<!-- Tenant Item 1 -->
+<div class="group flex items-center gap-space-4 p-space-4 bg-surface-container-lowest border border-outline-variant rounded-xl hover:border-primary transition-all cursor-pointer">
+<div class="w-10 h-10 rounded-lg bg-secondary-container flex items-center justify-center font-bold text-on-secondary-container">
+                        NF
+                    </div>
+<div class="flex-1">
+<h4 class="font-body-lg text-body-lg font-semibold text-on-surface">Nexus Freight</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Admin Access</p>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary" data-icon="swap_horiz">swap_horiz</span>
+</div>
+<!-- Tenant Item 2 -->
+<div class="group flex items-center gap-space-4 p-space-4 bg-surface-container-lowest border border-outline-variant rounded-xl hover:border-primary transition-all cursor-pointer">
+<div class="w-10 h-10 rounded-lg bg-surface-variant flex items-center justify-center font-bold text-on-surface-variant">
+                        VT
+                    </div>
+<div class="flex-1">
+<h4 class="font-body-lg text-body-lg font-semibold text-on-surface">Vanguard Tech</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Manager Access</p>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary" data-icon="swap_horiz">swap_horiz</span>
+</div>
+<!-- Tenant Item 3 -->
+<div class="group flex items-center gap-space-4 p-space-4 bg-surface-container-lowest border border-outline-variant rounded-xl hover:border-primary transition-all cursor-pointer">
+<div class="w-10 h-10 rounded-lg bg-surface-variant flex items-center justify-center font-bold text-on-surface-variant">
+                        SS
+                    </div>
+<div class="flex-1">
+<h4 class="font-body-lg text-body-lg font-semibold text-on-surface">Summit Services</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Viewer Access</p>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary" data-icon="swap_horiz">swap_horiz</span>
+</div>
+</div>
+</section>
+<!-- Danger Zone -->
+<section class="mb-space-8 pt-space-4 border-t border-outline-variant">
+<button class="w-full flex items-center justify-center gap-space-2 p-space-4 text-error font-label-bold text-label-bold hover:bg-error-container/20 rounded-xl transition-colors">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                LOGOUT FROM ALL TENANTS
+            </button>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-space-2 pb-safe pt-2 h-20 bg-surface dark:bg-inverse-surface border-t border-outline-variant dark:border-outline bg-surface/90 backdrop-blur-md rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+<span class="font-label-bold text-label-bold">Work</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-bold text-label-bold">Team</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-label-bold text-label-bold">Assets</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="font-label-bold text-label-bold">Alerts</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-inverse-primary bg-primary-container/20 rounded-full px-4 py-1 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person_role" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-bold text-label-bold">Profile</span>
+</a>
+</nav>
+</body></html>

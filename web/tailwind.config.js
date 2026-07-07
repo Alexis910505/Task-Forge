@@ -1,0 +1,61 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        background: '#faf8ff',
+        foreground: '#131b2e',
+        surface: '#faf8ff',
+        'surface-dim': '#d2d9f4',
+        'surface-container-lowest': '#ffffff',
+        'surface-container-low': '#f2f3ff',
+        'surface-container': '#eaedff',
+        'surface-container-high': '#e2e7ff',
+        'surface-container-highest': '#dae2fd',
+        'on-surface': '#131b2e',
+        'on-surface-variant': '#464555',
+        'inverse-surface': '#283044',
+        'inverse-on-surface': '#eef0ff',
+        outline: '#767587',
+        'outline-variant': '#c7c4d8',
+        primary: '#4744e5',
+        'on-primary': '#ffffff',
+        'primary-container': '#6161ff',
+        'on-primary-fixed': '#09006b',
+        'primary-fixed': '#e1dfff',
+        'primary-fixed-dim': '#c1c1ff',
+        secondary: '#515f74',
+        'on-secondary': '#ffffff',
+        'secondary-container': '#d5e3fc',
+        'on-secondary-container': '#57657a',
+        tertiary: '#006d2e',
+        'on-tertiary': '#ffffff',
+        'tertiary-container': '#00893c',
+        error: '#ba1a1a',
+        'on-error': '#ffffff',
+        'error-container': '#ffdad6',
+        'on-error-container': '#93000a',
+        /* Tokens usados por mapcn (controles del mapa) */
+        border: '#c7c4d8',
+        accent: '#e2e7ff',
+        ring: '#4744e5',
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      spacing: {
+        gutter: '1.5rem',
+        'sidebar-width': '260px',
+      },
+      maxWidth: {
+        container: '1440px',
+      },
+      borderRadius: {
+        soft: '0.125rem',
+      },
+    },
+  },
+  plugins: [],
+};

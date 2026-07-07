@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed-dim": "#c1c1ff",
+                    "inverse-surface": "#283044",
+                    "tertiary": "#006d2e",
+                    "on-tertiary": "#ffffff",
+                    "background": "#faf8ff",
+                    "on-secondary-fixed-variant": "#3a485b",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-container": "#57657a",
+                    "tertiary-fixed": "#6bff8f",
+                    "on-tertiary-fixed-variant": "#005321",
+                    "on-surface-variant": "#464555",
+                    "surface-container-high": "#e2e7ff",
+                    "tertiary-fixed-dim": "#4ae176",
+                    "on-tertiary-container": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "tertiary-container": "#00893c",
+                    "secondary": "#515f74",
+                    "primary-fixed": "#e1dfff",
+                    "error-container": "#ffdad6",
+                    "surface-tint": "#4745e5",
+                    "on-error": "#ffffff",
+                    "on-primary-fixed": "#09006b",
+                    "surface-container-low": "#f2f3ff",
+                    "surface-variant": "#dae2fd",
+                    "surface-dim": "#d2d9f4",
+                    "on-primary": "#ffffff",
+                    "surface-bright": "#faf8ff",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-on-surface": "#eef0ff",
+                    "on-background": "#131b2e",
+                    "on-surface": "#131b2e",
+                    "surface": "#faf8ff",
+                    "on-tertiary-fixed": "#002109",
+                    "primary-container": "#6161ff",
+                    "primary": "#4744e5",
+                    "outline": "#767587",
+                    "inverse-primary": "#c1c1ff",
+                    "on-primary-fixed-variant": "#2c24ce",
+                    "secondary-container": "#d5e3fc",
+                    "on-primary-container": "#ffffff",
+                    "surface-container": "#eaedff",
+                    "on-secondary-fixed": "#0d1c2e",
+                    "secondary-fixed": "#d5e3fc",
+                    "secondary-fixed-dim": "#b9c7df",
+                    "outline-variant": "#c7c4d8",
+                    "surface-container-highest": "#dae2fd",
+                    "error": "#ba1a1a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "base": "4px",
+                    "space-8": "2rem",
+                    "space-1": "0.25rem",
+                    "sidebar-width": "260px",
+                    "space-6": "1.5rem",
+                    "gutter": "1.5rem",
+                    "container-max": "1440px",
+                    "space-4": "1rem",
+                    "space-2": "0.5rem"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "title-md": ["Inter"],
+                    "label-bold": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "mono-label": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "title-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-bold": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "mono-label": ["13px", {"lineHeight": "18px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .safe-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+<!-- Top Navigation Anchor -->
+<header class="fixed top-0 left-0 right-0 h-16 bg-surface z-30 flex items-center justify-between px-gutter border-b border-outline-variant">
+<div class="flex items-center gap-space-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-all active:opacity-80">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary truncate">HVAC Unit Inspection</h1>
+</div>
+<div class="flex items-center gap-space-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-all active:opacity-80">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-16 pb-32 px-gutter overflow-y-auto">
+<!-- Status & Meta Section -->
+<section class="mt-space-6 flex items-center justify-between">
+<div class="flex flex-col gap-1">
+<span class="font-label-bold text-label-bold text-on-surface-variant">TASK ID: #TF-9821</span>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="font-label-bold text-label-bold text-tertiary uppercase tracking-wider">In Progress</span>
+</div>
+</div>
+<div class="relative group">
+<button class="flex items-center gap-2 px-4 py-2 bg-secondary-container text-on-secondary-container rounded-xl font-label-bold text-label-bold transition-all active:scale-95 shadow-sm">
+                    CHANGE STATUS
+                    <span class="material-symbols-outlined text-[18px]" data-icon="expand_more">expand_more</span>
+</button>
+</div>
+</section>
+<!-- Description Section -->
+<section class="mt-space-8">
+<h2 class="font-title-md text-title-md text-on-surface mb-space-2">Description</h2>
+<div class="bg-surface-container-low p-space-4 rounded-xl border border-outline-variant">
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+                    Perform a full diagnostic on the rooftop HVAC unit (Model-77X). Check refrigerant levels, clean external condenser coils, and inspect the main blower assembly for unusual vibration. Ensure all electrical connections are torqued to spec.
+                </p>
+</div>
+</section>
+<!-- Large One-Handed Action: Add Photo Evidence -->
+<section class="mt-space-8">
+<button class="w-full h-24 flex flex-col items-center justify-center gap-2 bg-primary text-on-primary rounded-xl shadow-lg transition-all active:scale-95 hover:bg-primary-container">
+<span class="material-symbols-outlined text-[32px]" data-icon="add_a_photo">add_a_photo</span>
+<span class="font-label-bold text-label-bold">ADD PHOTO EVIDENCE</span>
+</button>
+</section>
+<!-- Photo Gallery -->
+<section class="mt-space-8">
+<div class="flex items-center justify-between mb-space-2">
+<h2 class="font-title-md text-title-md text-on-surface">Evidence Gallery</h2>
+<span class="font-label-bold text-label-bold text-on-surface-variant">2 PHOTOS</span>
+</div>
+<div class="grid grid-cols-2 gap-space-4">
+<div class="aspect-square rounded-xl overflow-hidden border border-outline-variant relative group">
+<img class="w-full h-full object-cover" data-alt="A detailed close-up shot of a modern HVAC system's internal wiring and mechanical components. The lighting is bright and industrial, highlighting the metallic textures and colored wires. The aesthetic is clean and high-functioning, reflecting an industrial-modern operational environment with a professional, sharp focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfpZ8M-jvykcOC8QuBDxBBwYMVLi1wmt7mzFcj8H2WxnRo-D3ORZQsDO7u_KABdBiA4UzhJ4Ac-N2M8JBmrqBjgMGE1Ui3YgpyK4_AIRBXE5oREea2R2ILRKO26bTAZNSzNOymkJG_qU5uzvq6K3qBGcw64VyWxtbAXcUiCh8SHDVkJPxroLPNMRp1NNiiO4Eych_bSDCFkUHNsn2yK9Oq-5wxouXtgnEMk-jPfW9GCG6RmQIm2pDxS6SkqTjS_nNfIjNXHDJ7gnhc"/>
+<div class="absolute inset-0 bg-black/10 group-active:bg-black/20 transition-colors"></div>
+</div>
+<div class="aspect-square rounded-xl overflow-hidden border border-outline-variant relative group">
+<img class="w-full h-full object-cover" data-alt="A wide-angle outdoor shot of a commercial HVAC unit installed on a rooftop under a bright, clear blue sky. The lighting is harsh daylight, emphasizing the industrial reliability of the machinery. The visual style is systematic and architectural, capturing the rugged dependability of field equipment in a modern urban setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLH3cYlIrnRoonTZxeXgLNoa5w_FI4iGRP6iejk-eGVbInusDKMVtTR_SeOCyiZezpMl_aTccO47WkqEnV4kb1deZj3D9A61bvZN43vE46fK-f948Y1BfdkGzxT8WOs357vKeTR3a-kosNmdklNH7KEDMdIDMy7VzRvO3-gaKIFXoz7pvdewCih0QOAB1nmnMob8dCmdsEXd5TY4hdatiGw-nGeueMI8BReJ8OpXn_izxy6A6qtU1djkFVEfh3jJUNpN6XORZAAqXM"/>
+<div class="absolute inset-0 bg-black/10 group-active:bg-black/20 transition-colors"></div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Action Bar (Floating Comment Input) -->
+<footer class="fixed bottom-0 left-0 right-0 bg-surface-container-low border-t border-outline-variant z-40 px-gutter pt-space-4 safe-bottom">
+<div class="flex items-center gap-space-2 pb-space-4">
+<div class="flex-grow flex items-center bg-surface border border-outline rounded-full px-4 py-3 gap-3">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="comment">comment</span>
+<input class="bg-transparent border-none outline-none flex-grow font-body-sm text-body-sm text-on-surface focus:ring-0 placeholder:text-on-surface-variant" placeholder="Add a quick comment..." type="text"/>
+</div>
+<button class="w-12 h-12 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center active:scale-90 transition-all">
+<span class="material-symbols-outlined" data-icon="send">send</span>
+</button>
+</div>
+</footer>
+<!-- BottomNavBar (Shared Component Anchor) -->
+<!-- Suppressed due to task-focused intent of "Task Detail" screen which features a "Back" action -->
+<script>
+        // Placeholder for any interactive logic if needed in a real environment
+    </script>
+</body></html>

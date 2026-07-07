@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed-dim": "#c1c1ff",
+                        "inverse-surface": "#283044",
+                        "tertiary": "#006d2e",
+                        "on-tertiary": "#ffffff",
+                        "background": "#faf8ff",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#57657a",
+                        "tertiary-fixed": "#6bff8f",
+                        "on-tertiary-fixed-variant": "#005321",
+                        "on-surface-variant": "#464555",
+                        "surface-container-high": "#e2e7ff",
+                        "tertiary-fixed-dim": "#4ae176",
+                        "on-tertiary-container": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "tertiary-container": "#00893c",
+                        "secondary": "#515f74",
+                        "primary-fixed": "#e1dfff",
+                        "error-container": "#ffdad6",
+                        "surface-tint": "#4745e5",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#09006b",
+                        "surface-container-low": "#f2f3ff",
+                        "surface-variant": "#dae2fd",
+                        "surface-dim": "#d2d9f4",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#faf8ff",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#eef0ff",
+                        "on-background": "#131b2e",
+                        "on-surface": "#131b2e",
+                        "surface": "#faf8ff",
+                        "on-tertiary-fixed": "#002109",
+                        "primary-container": "#6161ff",
+                        "primary": "#4744e5",
+                        "outline": "#767587",
+                        "inverse-primary": "#c1c1ff",
+                        "on-primary-fixed-variant": "#2c24ce",
+                        "secondary-container": "#d5e3fc",
+                        "on-primary-container": "#ffffff",
+                        "surface-container": "#eaedff",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "secondary-fixed": "#d5e3fc",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "outline-variant": "#c7c4d8",
+                        "surface-container-highest": "#dae2fd",
+                        "error": "#ba1a1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "space-8": "2rem",
+                        "space-1": "0.25rem",
+                        "sidebar-width": "260px",
+                        "space-6": "1.5rem",
+                        "gutter": "1.5rem",
+                        "container-max": "1440px",
+                        "space-4": "1rem",
+                        "space-2": "0.5rem"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "title-md": ["Inter"],
+                        "label-bold": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "mono-label": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "title-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-bold": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "mono-label": ["13px", {"lineHeight": "18px", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-gutter md:pl-[276px] z-30 docked full-width top-0 h-16 bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline fixed">
+<div class="flex items-center gap-4">
+<span class="font-display-lg text-display-lg font-bold text-primary">TaskForge</span>
+</div>
+<div class="flex items-center gap-space-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-high transition-all p-2 rounded-full" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-high transition-all p-2 rounded-full" data-icon="settings">settings</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img alt="User Profile" data-alt="A professional headshot of a middle-aged male site manager wearing a subtle navy blue polo shirt. He has a confident and friendly expression, set against a clean, out-of-focus industrial office background. The lighting is soft and natural, emphasizing a professional and operational atmosphere consistent with a high-stakes enterprise environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpJPe8pVGNCAXmJMYwphHgsliJLEI9C3S2joayqhiWsuMkjI5SvFrcqsS99kM-TTToNoPTXUPJ70E0NK5BQOdL6BJFVhtTnolijWlxf_4PCED2BFhJLTia1On0EpCU1oDfAb8ryFHMOKamANxeQFZ0EbZvy8JfWW8e9E45IqeDUAfiS3An6AGh5EUycX8oZgsIQRthJJHe-1wbY_jmkefSIfnSZ6R4IQWXuiCkiQb5OvQ63ghSJcVnQgLKKoHnozsx7vA0-Qckynrz"/>
+</div>
+</div>
+</header>
+<!-- Sidebar (Desktop only) -->
+<aside class="w-sidebar-width h-screen hidden md:flex flex-col bg-inverse-surface dark:bg-surface-container-lowest border-r border-outline-variant dark:border-outline fixed left-0 top-0 z-40">
+<div class="p-space-6 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container" data-icon="assignment">assignment</span>
+</div>
+<div>
+<h1 class="font-title-md text-title-md text-primary-fixed-dim leading-none">TaskForge</h1>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant/60 font-bold">Enterprise Ops</p>
+</div>
+</div>
+<nav class="flex-1 px-space-2 py-space-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-primary-fixed-dim border-l-4 border-primary-fixed-dim bg-secondary-container/10 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+<span class="font-label-bold text-label-bold">Work</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/80 hover:text-on-surface hover:bg-on-secondary-fixed-variant/20 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-label-bold text-label-bold">Team</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/80 hover:text-on-surface hover:bg-on-secondary-fixed-variant/20 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="domain">domain</span>
+<span class="font-label-bold text-label-bold">Departments</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/80 hover:text-on-surface hover:bg-on-secondary-fixed-variant/20 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="bar_chart">bar_chart</span>
+<span class="font-label-bold text-label-bold">Reports</span>
+</a>
+</nav>
+<div class="p-space-4 mt-auto border-t border-white/5">
+<button class="w-full py-3 bg-primary text-on-primary font-label-bold text-label-bold rounded-xl flex items-center justify-center gap-2 active:scale-95 duration-150">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                New Task
+            </button>
+<div class="mt-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="settings">settings</span>
+<span class="text-xs font-medium">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="help_outline">help_outline</span>
+<span class="text-xs font-medium">Support</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 mt-16 pb-20 md:pb-8 md:pl-[260px] bg-background">
+<!-- Search and Filter Bar -->
+<div class="sticky top-16 z-20 bg-background/80 backdrop-blur-md px-gutter py-space-4 space-y-4">
+<div class="flex items-center gap-3">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/60 text-body-lg" data-icon="search">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-xl py-3 pl-10 pr-4 text-body-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="Search tasks, IDs, or assets..." type="text"/>
+</div>
+<button class="bg-surface-container-high p-3 rounded-xl border border-outline-variant flex items-center justify-center text-primary active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="filter_list">filter_list</span>
+</button>
+</div>
+<!-- Tabs -->
+<div class="flex border-b border-outline-variant">
+<button class="flex-1 py-3 text-center border-b-2 border-primary text-primary font-label-bold text-label-bold">All</button>
+<button class="flex-1 py-3 text-center border-b-2 border-transparent text-on-surface-variant font-label-bold text-label-bold">To Do</button>
+<button class="flex-1 py-3 text-center border-b-2 border-transparent text-on-surface-variant font-label-bold text-label-bold">In Progress</button>
+</div>
+</div>
+<!-- Task List Content -->
+<div class="px-gutter py-space-4 space-y-3">
+<!-- Task Item 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-4 rounded-xl flex items-center gap-4 hover:bg-surface-container-low transition-colors group">
+<div class="flex-shrink-0">
+<span class="material-symbols-outlined text-primary-container" data-icon="radio_button_unchecked">radio_button_unchecked</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<span class="bg-error-container text-on-error-container px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">High</span>
+<span class="text-on-surface-variant font-mono-label text-mono-label">#TF-9283</span>
+</div>
+<h3 class="font-title-md text-body-lg text-on-surface truncate group-hover:text-primary transition-colors">HVAC Unit Inspection - Sector B4</h3>
+<div class="flex items-center gap-4 mt-2">
+<div class="flex items-center gap-1 text-on-surface-variant/60">
+<span class="material-symbols-outlined text-[14px]" data-icon="calendar_today">calendar_today</span>
+<span class="font-label-bold text-[11px]">Due Today, 4:00 PM</span>
+</div>
+<div class="flex items-center gap-1 text-tertiary">
+<span class="material-symbols-outlined text-[14px]" data-icon="location_on">location_on</span>
+<span class="font-label-bold text-[11px]">Warehouse East</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/40" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- Task Item 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-4 rounded-xl flex items-center gap-4 hover:bg-surface-container-low transition-colors group">
+<div class="flex-shrink-0">
+<span class="material-symbols-outlined text-tertiary" data-icon="pending" style="font-variation-settings: 'FILL' 1;">pending</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<span class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Medium</span>
+<span class="text-on-surface-variant font-mono-label text-mono-label">#TF-9285</span>
+</div>
+<h3 class="font-title-md text-body-lg text-on-surface truncate group-hover:text-primary transition-colors">Inventory Reconciliation</h3>
+<div class="flex items-center gap-4 mt-2">
+<div class="flex items-center gap-1 text-on-surface-variant/60">
+<span class="material-symbols-outlined text-[14px]" data-icon="calendar_today">calendar_today</span>
+<span class="font-label-bold text-[11px]">Due Tomorrow</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant/60">
+<span class="material-symbols-outlined text-[14px]" data-icon="update">update</span>
+<span class="font-label-bold text-[11px]">24m elapsed</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/40" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- Task Item 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-4 rounded-xl flex items-center gap-4 hover:bg-surface-container-low transition-colors group">
+<div class="flex-shrink-0">
+<span class="material-symbols-outlined text-primary-container" data-icon="radio_button_unchecked">radio_button_unchecked</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<span class="bg-tertiary-container text-on-tertiary-container px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Low</span>
+<span class="text-on-surface-variant font-mono-label text-mono-label">#TF-9291</span>
+</div>
+<h3 class="font-title-md text-body-lg text-on-surface truncate group-hover:text-primary transition-colors">Replace Emergency Exit Signage</h3>
+<div class="flex items-center gap-4 mt-2">
+<div class="flex items-center gap-1 text-on-surface-variant/60">
+<span class="material-symbols-outlined text-[14px]" data-icon="calendar_today">calendar_today</span>
+<span class="font-label-bold text-[11px]">Oct 24, 2023</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/40" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- Task Item 4 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-4 rounded-xl flex items-center gap-4 hover:bg-surface-container-low transition-colors group">
+<div class="flex-shrink-0">
+<span class="material-symbols-outlined text-error" data-icon="priority_high">priority_high</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<span class="bg-error-container text-on-error-container px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Urgent</span>
+<span class="text-on-surface-variant font-mono-label text-mono-label">#TF-9302</span>
+</div>
+<h3 class="font-title-md text-body-lg text-on-surface truncate group-hover:text-primary transition-colors">Water Main Valve Repair</h3>
+<div class="flex items-center gap-4 mt-2">
+<div class="flex items-center gap-1 text-error">
+<span class="material-symbols-outlined text-[14px]" data-icon="warning">warning</span>
+<span class="font-label-bold text-[11px]">Overdue by 2h</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/40" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- Task Item 5 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-4 rounded-xl flex items-center gap-4 hover:bg-surface-container-low transition-colors group">
+<div class="flex-shrink-0">
+<span class="material-symbols-outlined text-primary-container" data-icon="radio_button_unchecked">radio_button_unchecked</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<span class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Medium</span>
+<span class="text-on-surface-variant font-mono-label text-mono-label">#TF-9305</span>
+</div>
+<h3 class="font-title-md text-body-lg text-on-surface truncate group-hover:text-primary transition-colors">Safety Audit - Zone 12</h3>
+<div class="flex items-center gap-4 mt-2">
+<div class="flex items-center gap-1 text-on-surface-variant/60">
+<span class="material-symbols-outlined text-[14px]" data-icon="calendar_today">calendar_today</span>
+<span class="font-label-bold text-[11px]">Oct 25, 2023</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/40" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 pb-safe bg-surface dark:bg-surface-container-lowest border-t border-outline-variant dark:border-outline md:hidden">
+<a class="flex flex-col items-center justify-center text-primary bg-primary-container/20 rounded-xl px-3 py-1 scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="assignment" style="font-variation-settings: 'FILL' 1;">assignment</span>
+<span class="font-label-bold text-[10px]">Work</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-label-bold text-[10px]">Team</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined" data-icon="domain">domain</span>
+<span class="font-label-bold text-[10px]">Depts</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined" data-icon="bar_chart">bar_chart</span>
+<span class="font-label-bold text-[10px]">Reports</span>
+</a>
+</nav>
+<!-- FAB -->
+<button class="fixed right-gutter bottom-20 md:bottom-gutter md:right-gutter z-30 w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center active:scale-95 duration-150 transition-all">
+<span class="material-symbols-outlined text-3xl" data-icon="add">add</span>
+</button>
+</body></html>

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-primary": "#c1c1ff",
+                    "on-primary-container": "#ffffff",
+                    "on-error": "#ffffff",
+                    "inverse-on-surface": "#eef0ff",
+                    "on-tertiary-fixed-variant": "#005321",
+                    "secondary-container": "#d5e3fc",
+                    "primary-fixed": "#e1dfff",
+                    "background": "#faf8ff",
+                    "on-primary-fixed": "#09006b",
+                    "secondary": "#515f74",
+                    "surface-container-low": "#f2f3ff",
+                    "surface-container-high": "#e2e7ff",
+                    "surface-dim": "#d2d9f4",
+                    "on-secondary-fixed-variant": "#3a485b",
+                    "primary-fixed-dim": "#c1c1ff",
+                    "surface-tint": "#4745e5",
+                    "inverse-surface": "#283044",
+                    "on-secondary-fixed": "#0d1c2e",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-container": "#ffffff",
+                    "on-background": "#131b2e",
+                    "on-secondary-container": "#57657a",
+                    "tertiary-fixed-dim": "#4ae176",
+                    "outline-variant": "#c7c4d8",
+                    "on-secondary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "primary": "#4744e5",
+                    "on-error-container": "#93000a",
+                    "on-surface": "#131b2e",
+                    "surface-variant": "#dae2fd",
+                    "surface-container": "#eaedff",
+                    "on-tertiary-fixed": "#002109",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-highest": "#dae2fd",
+                    "outline": "#767587",
+                    "tertiary-container": "#00893c",
+                    "primary-container": "#6161ff",
+                    "secondary-fixed": "#d5e3fc",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed-dim": "#b9c7df",
+                    "on-surface-variant": "#464555",
+                    "tertiary-fixed": "#6bff8f",
+                    "surface-bright": "#faf8ff",
+                    "on-primary-fixed-variant": "#2c24ce",
+                    "error-container": "#ffdad6",
+                    "tertiary": "#006d2e",
+                    "surface": "#faf8ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "space-8": "2rem",
+                    "sidebar-width": "260px",
+                    "space-1": "0.25rem",
+                    "space-4": "1rem",
+                    "gutter": "1.5rem",
+                    "space-2": "0.5rem",
+                    "base": "4px",
+                    "container-max": "1440px",
+                    "space-6": "1.5rem"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "title-md": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "label-bold": ["Inter"],
+                    "mono-label": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "title-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-bold": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "mono-label": ["13px", {"lineHeight": "18px", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            left: 19px;
+            top: 40px;
+            bottom: 0;
+            width: 2px;
+            background-color: #c7c4d8;
+        }
+        .timeline-item:last-child .timeline-line::before {
+            display: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-sm text-body-sm min-h-screen flex flex-col">
+<!-- TopAppBar Component -->
+<header class="flex justify-between items-center w-full px-space-4 h-16 bg-surface border-b border-outline-variant fixed top-0 z-50">
+<div class="flex items-center gap-space-4">
+<button class="text-on-surface-variant hover:bg-surface-container-high transition-colors active:scale-95 duration-100 p-space-1 rounded-lg">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex flex-col">
+<h1 class="font-title-md text-title-md text-primary tracking-tight">TaskForge</h1>
+<span class="font-label-bold text-[10px] text-on-surface-variant uppercase tracking-widest">Activity Log</span>
+</div>
+</div>
+<div class="flex items-center gap-space-2">
+<button class="text-on-surface-variant hover:bg-surface-container-high transition-colors active:scale-95 duration-100 p-space-1 rounded-lg">
+<span class="material-symbols-outlined">grid_view</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-high transition-colors active:scale-95 duration-100 p-space-1 rounded-lg">
+<span class="material-symbols-outlined">expand_more</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-20 pb-28 px-space-4 max-w-lg mx-auto w-full">
+<!-- Task Identity Section -->
+<section class="mb-space-6 bg-surface-container-low border border-outline-variant p-space-4 rounded-xl">
+<div class="flex justify-between items-start mb-space-2">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">HVAC System Calibration</h2>
+<span class="font-label-bold text-label-bold px-space-2 py-0.5 bg-tertiary-container text-on-tertiary-container rounded-full">ACTIVE</span>
+</div>
+<p class="text-on-surface-variant font-body-sm mb-space-4">Project: Industrial Cooling Refit — Site 42</p>
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-surface object-cover" data-alt="A professional headshot of a technical engineer wearing a modern industrial uniform. The lighting is bright and clean, typical of a high-end corporate setting, with soft blue and white background tones that match a minimalist industrial-modern design system." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCasdD3ikCkAbrJBgeNBtXE3ydGZivBzxYkYoLN70PNTNjSLOPTvgF3V5u_vOzrKDBrCqyK4-gDqfGwkyZmvrrxzvmadzAq93T5D4kWo5sbQn5fsIKVsgnwWLiFD-BlvHduGHzzgcQDhJvGPmZ3BVyJ6WuT6ReVjiz4nIEWQdSiMCba3EqcYCDsjQHrAtA-B_Bv7HFwgXRh0dFvHChRb4uQ8bkjqrmHvuKydKbbFhJ6Iz4SllA1K-HwR918UTdnNrAjaC2upoOKEA39"/>
+<img class="w-8 h-8 rounded-full border-2 border-surface object-cover" data-alt="A studio portrait of a project manager with a friendly but professional expression. The photo uses high-key lighting and a neutral grey background to maintain a systematic and architectural aesthetic suitable for an enterprise field service application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCD-sBlzjziZCaz8uCJqnFEWlKN3tiSqs2m7zctqb-URJxIDFuumEbMiDx_h_SAj7ozcj7cg1yDjBbRYASEuCSyO4y8rxifal4bgVt1C0IAMUjpO5G3ir-8wCn9zcegx3_2dsZVHvuN07JsLFXh8l1dC9tZ0vhO2kY5i6k29UKzkgVQNjmo3oA9mQZLoLrRKnTwv5NR0yw3OQlrhzXb139iqIUo24-y3_bi_6GEi09phKJDwtu0kaNzYriw2znc17QVT8As8jvVs2Mt"/>
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-surface-container-high flex items-center justify-center font-label-bold text-[10px] text-on-surface-variant">+3</div>
+</div>
+</section>
+<!-- Activity Timeline -->
+<div class="space-y-0 relative">
+<!-- Timeline Item 1: Uploaded Evidence -->
+<div class="timeline-item timeline-line relative pb-space-8">
+<div class="flex gap-space-4">
+<div class="relative z-10">
+<img class="w-10 h-10 rounded-full object-cover border border-outline-variant" data-alt="Close-up avatar of a male service technician in a navy blue work shirt, captured in natural daylight. The image is sharp and clear, reflecting a reliable and professional industrial brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuASFhGco3iVtZgLq34eZuIlWNHpuljF2xTnUKQDQjobSOPWEppGUgWNPYNRWpRfaTJQyp66tsDxDNYgDOJ81aAasgZC-ydUj52zCDQpfGezP24B5mOjuEi5ZE5HXy9mL5ntqxOMNFE_6HBX_rPZhB5QygY2I8qKlerA0J_EkGKF3JB086IxNcNQ44FZZoFTdOqJThd9AJki3Wsb_IsNjNcDouurRHxIv_PB3sYPoAJ8Z3iCtjD1dU0mdQYHsCPTtqtGzvmIqzBEtz7V"/>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-baseline mb-space-1">
+<span class="font-label-bold text-on-surface">Marcus Chen</span>
+<span class="text-[11px] text-on-surface-variant font-mono-label">14:22 PM</span>
+</div>
+<p class="text-on-surface-variant font-body-sm mb-space-3">Uploaded <span class="text-primary font-medium">3 inspection photos</span> and updated performance logs.</p>
+<div class="grid grid-cols-3 gap-space-2 mb-space-2">
+<div class="aspect-square rounded-lg bg-surface-container overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover grayscale-[0.3]" data-alt="A high-detail industrial photograph of complex HVAC machinery and copper piping in a clean utility room. The lighting is clinical and bright, emphasizing precision and technical clarity consistent with an architectural UI style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAu6KeuDGgVaMVyvrEBTxHQt98ZsuMRprgnosaCJFON9dX_rjcjEDG-xk2uEe64C2C8zQ3USawzIKFWOMAb7eTcViGPJUOVdwLXYtFaKp4dgQ2zvoZwslyVhgfTwZREu3gFBQi1fmziok55kojP_Pu44pFK9R1hNhCGN_V6YFWcc_eeb751W_t8ZFIeBPBPf9EkzoZV_2e5NblJGX7NuBSMoSYHbvuxW5wP5sM9gJRetv7W2RM566vlri1v3BJXGtz33vR3HDoN00sw"/>
+</div>
+<div class="aspect-square rounded-lg bg-surface-container overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover grayscale-[0.3]" data-alt="Macro shot of a digital gauge displaying pressure levels on a control panel. The visual style is focused on utility and high-functioning data clarity, using a cold-toned corporate minimalism palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGu28QQ8Tr9Ae5t3Dr-Ji-z3uN52IgUXexkMGXxyfH7K81GbvHaiCMB6B-X1wB6vlC_QA7vp31J1IyMSoj_YswptZId_CKCfzVP4-3d7NskNWoxbw9uO6u8GfQur4lIKAnn0Z-rXajvVffYNpPXCXyl0HlgfzbO7rbIgSy871Ys--HSDe2qMMdHH0IOyoYXSnzKkJqTZOXMA-F15ScGsVKzXoDceumrKr4ndoq-WycOwQTndUyD4MJ3cWtOWDThZWzTkcPOspL711Q"/>
+</div>
+<div class="aspect-square rounded-lg bg-surface-container flex items-center justify-center border border-outline-variant border-dashed">
+<span class="material-symbols-outlined text-outline">add_a_photo</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Timeline Item 2: Status Change -->
+<div class="timeline-item timeline-line relative pb-space-8">
+<div class="flex gap-space-4">
+<div class="relative z-10 bg-surface rounded-full p-1.5 border border-outline-variant h-10 w-10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-baseline mb-space-1">
+<span class="font-label-bold text-on-surface">System System</span>
+<span class="text-[11px] text-on-surface-variant font-mono-label">12:10 PM</span>
+</div>
+<div class="flex items-center gap-space-2">
+<p class="text-on-surface-variant font-body-sm">Changed status to</p>
+<span class="font-label-bold text-[10px] px-space-2 py-0.5 bg-secondary-container text-on-secondary-container rounded-lg tracking-wide uppercase">In Progress</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Timeline Item 3: User Note -->
+<div class="timeline-item timeline-line relative pb-space-8">
+<div class="flex gap-space-4">
+<div class="relative z-10">
+<img class="w-10 h-10 rounded-full object-cover border border-outline-variant" data-alt="A portrait of a female operations lead in a sleek, minimalist office environment. The lighting is soft and professional, and the overall aesthetic is corporate and modern, utilizing a clean white and slate color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDw336YVAhvIXbGu9MBA23fyaBzTtJXkhZADhfAu7k9UNjgG7iyv6Lhq1TjgbZ98UP9CdYg6kSi47cRU7lEIkhBUBRRGp-IuqNUl3iz5LMoBjJkNGOVy3NoXm35G-KfAPEtFUDv0_jzKuJEeEfER8s1v7ZPyfEUF_I-PAz-HFSiSKSEZpbOZpxe87-cMai4xHrPfmYPsr1-iBLBJiasd-z0D4ZYPcS7QpDOK98q5c8yCiXYuQ6TohK6c82O-uY9oh79-Io18Q4tmSCs"/>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-baseline mb-space-1">
+<span class="font-label-bold text-on-surface">Sarah Jenkins</span>
+<span class="text-[11px] text-on-surface-variant font-mono-label">09:45 AM</span>
+</div>
+<div class="bg-surface-container-highest/30 border border-outline-variant p-space-3 rounded-xl rounded-tl-none">
+<p class="text-on-surface font-body-sm leading-relaxed">
+                                "Please ensure the safety valves are double-checked before the afternoon shift starts. The pressure sensors were acting erratic yesterday."
+                            </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Timeline Item 4: Assigned -->
+<div class="timeline-item timeline-line relative pb-space-8">
+<div class="flex gap-space-4">
+<div class="relative z-10 bg-surface rounded-full p-1.5 border border-outline-variant h-10 w-10 flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">person_add</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-baseline mb-space-1">
+<span class="font-label-bold text-on-surface">Admin</span>
+<span class="text-[11px] text-on-surface-variant font-mono-label">Yesterday</span>
+</div>
+<p class="text-on-surface-variant font-body-sm">Assigned <span class="font-medium text-on-surface">Marcus Chen</span> to this task.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Input Bar -->
+<div class="fixed bottom-20 left-0 w-full bg-surface/90 backdrop-blur-md border-t border-outline-variant px-space-4 py-space-3 flex items-center gap-space-3 z-40">
+<button class="text-on-surface-variant hover:text-primary transition-all p-space-2 rounded-full hover:bg-surface-container-high">
+<span class="material-symbols-outlined">attach_file</span>
+</button>
+<div class="flex-grow bg-surface-container-low border border-outline rounded-full px-space-4 py-space-2 flex items-center">
+<input class="bg-transparent border-none focus:ring-0 w-full text-on-surface placeholder:text-outline p-0 text-body-sm" placeholder="Add a comment..." type="text"/>
+</div>
+<button class="bg-primary text-on-primary w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition-all">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+<!-- BottomNavBar Component -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-space-2 pb-safe pt-2 h-20 bg-surface border-t border-outline-variant/30 backdrop-blur-md">
+<div class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined">assignment</span>
+<span class="font-label-bold text-label-bold">Work</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-bold text-label-bold">Team</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-bold text-label-bold">Assets</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-bold text-label-bold">Alerts</span>
+</div>
+<div class="flex flex-col items-center justify-center text-primary bg-primary-container/20 rounded-full px-4 py-1 active:scale-90 duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-bold text-label-bold">Profile</span>
+</div>
+</nav>
+</body></html>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed": "#e1dfff",
+                    "outline-variant": "#c7c4d8",
+                    "tertiary-fixed-dim": "#4ae176",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#005321",
+                    "primary-fixed-dim": "#c1c1ff",
+                    "surface-container-high": "#e2e7ff",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed": "#09006b",
+                    "surface-bright": "#faf8ff",
+                    "inverse-surface": "#283044",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#464555",
+                    "on-secondary": "#ffffff",
+                    "surface-tint": "#4745e5",
+                    "surface-container-highest": "#dae2fd",
+                    "on-error-container": "#93000a",
+                    "surface": "#faf8ff",
+                    "surface-container-low": "#f2f3ff",
+                    "on-surface": "#131b2e",
+                    "tertiary": "#006d2e",
+                    "secondary": "#515f74",
+                    "surface-dim": "#d2d9f4",
+                    "on-primary-fixed-variant": "#2c24ce",
+                    "background": "#faf8ff",
+                    "surface-variant": "#dae2fd",
+                    "surface-container": "#eaedff",
+                    "secondary-container": "#d5e3fc",
+                    "on-primary-container": "#ffffff",
+                    "on-secondary-fixed-variant": "#3a485b",
+                    "inverse-primary": "#c1c1ff",
+                    "tertiary-fixed": "#6bff8f",
+                    "secondary-fixed-dim": "#b9c7df",
+                    "secondary-fixed": "#d5e3fc",
+                    "error": "#ba1a1a",
+                    "primary-container": "#6161ff",
+                    "on-error": "#ffffff",
+                    "on-secondary-fixed": "#0d1c2e",
+                    "on-secondary-container": "#57657a",
+                    "primary": "#4744e5",
+                    "on-tertiary-fixed": "#002109",
+                    "on-tertiary-container": "#ffffff",
+                    "outline": "#767587",
+                    "error-container": "#ffdad6",
+                    "tertiary-container": "#00893c",
+                    "on-background": "#131b2e",
+                    "inverse-on-surface": "#eef0ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "sidebar-width": "260px",
+                    "gutter": "1.5rem",
+                    "space-6": "1.5rem",
+                    "space-8": "2rem",
+                    "container-max": "1440px",
+                    "space-1": "0.25rem",
+                    "base": "4px",
+                    "space-4": "1rem",
+                    "space-2": "0.5rem"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Inter"],
+                    "mono-label": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-bold": ["Inter"],
+                    "title-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "mono-label": ["13px", {"lineHeight": "18px", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-bold": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "title-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full h-16 bg-surface z-30 flex justify-between items-center px-gutter border-b border-outline-variant md:pl-[276px]">
+<div class="flex items-center gap-space-4">
+<span class="font-display-lg text-display-lg font-bold text-primary">TaskForge</span>
+</div>
+<div class="flex items-center gap-space-4">
+<button class="p-space-2 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-full">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-space-2 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-full">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a middle-aged male executive with a confident expression, wearing a sharp charcoal suit and a clean white shirt. The background is a blurred high-end corporate office setting with soft, cool-toned lighting that emphasizes a modern and industrial-minimalist aesthetic. The lighting is crisp, highlighting refined textures and a professional, operational atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPLtdNeqnA0t4wMod2lIBHc9Fhh7eIFXUjZgBtHO47TitcZTGolajZ6vY4FG4f78C9Jmr-3L3PSxSNQeEASTTNqtPvXRQe1tQbBiQo_Pp6nACMwKFMAcd5BilPXwxzRp-8Ll7wEt_xRU5XCZzy5gj9BaM32nN935wlIJslgjeCMXFEo_nXYGnbxzSwwwWFAILORlAfg8Conj4AqPEVV7e_v0pD07DkPPk7YG5JE4qkxhcJemoMq9o3KuJ8uUak2j0hGTS9zzVgfW57"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar (Desktop Only) -->
+<aside class="fixed left-0 top-0 h-full w-sidebar-width bg-inverse-surface hidden md:flex flex-col z-40 border-r border-outline-variant">
+<div class="p-space-6 flex items-center gap-space-4">
+<div class="w-10 h-10 bg-primary-fixed-dim rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-fixed text-title-md">inventory_2</span>
+</div>
+<div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-black text-primary-fixed-dim">TaskForge</h1>
+<p class="font-label-bold text-label-bold text-primary-fixed/60 uppercase tracking-widest">Enterprise Ops</p>
+</div>
+</div>
+<nav class="flex-1 px-space-2 py-space-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/80 hover:text-on-surface hover:bg-on-secondary-fixed-variant/20 transition-colors" href="#">
+<span class="material-symbols-outlined">assignment</span>
+<span class="font-title-md text-title-md">Work</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-primary-fixed-dim border-l-4 border-primary-fixed-dim bg-secondary-container/10 active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">domain</span>
+<span class="font-title-md text-title-md">Departments</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/80 hover:text-on-surface hover:bg-on-secondary-fixed-variant/20 transition-colors" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-title-md text-title-md">Team</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/80 hover:text-on-surface hover:bg-on-secondary-fixed-variant/20 transition-colors" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="font-title-md text-title-md">Reports</span>
+</a>
+</nav>
+<div class="p-space-4 border-t border-outline/20">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/80 hover:text-on-surface" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-bold text-label-bold">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/80 hover:text-on-surface" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+<span class="font-label-bold text-label-bold">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="pt-20 px-gutter md:ml-[260px] max-w-container-max mx-auto">
+<!-- Header & Category Filter -->
+<div class="mb-space-6">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-space-2">Asset Inventory</h2>
+<div class="flex gap-space-2 overflow-x-auto pb-space-2 no-scrollbar">
+<button class="px-space-4 py-space-2 bg-primary-container text-on-primary-container rounded-full font-label-bold text-label-bold whitespace-nowrap">All Assets</button>
+<button class="px-space-4 py-space-2 bg-surface-container-high text-on-surface-variant rounded-full font-label-bold text-label-bold whitespace-nowrap hover:bg-surface-container-highest">Vehicles</button>
+<button class="px-space-4 py-space-2 bg-surface-container-high text-on-surface-variant rounded-full font-label-bold text-label-bold whitespace-nowrap hover:bg-surface-container-highest">Machinery</button>
+<button class="px-space-4 py-space-2 bg-surface-container-high text-on-surface-variant rounded-full font-label-bold text-label-bold whitespace-nowrap hover:bg-surface-container-highest">Tools</button>
+</div>
+</div>
+<!-- Asset Cards Grid/List -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-4">
+<!-- Asset Item 1 -->
+<div class="bg-surface border border-outline-variant p-space-4 rounded-xl flex flex-col gap-space-4 hover:border-primary transition-all">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-space-3">
+<div class="w-12 h-12 rounded-lg bg-surface-container-lowest flex items-center justify-center border border-outline-variant">
+<span class="material-symbols-outlined text-primary">local_shipping</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface">Heavy Duty Loader</h3>
+<p class="font-mono-label text-mono-label text-on-surface-variant">FLT-9201</p>
+</div>
+</div>
+<span class="px-space-2 py-0.5 bg-tertiary-fixed text-on-tertiary-fixed-variant rounded font-label-bold text-[10px] tracking-widest uppercase">Active</span>
+</div>
+<div class="flex flex-col gap-space-2 text-on-surface-variant">
+<div class="flex items-center gap-space-2">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+<span class="font-body-sm text-body-sm">Warehouse A - Section 4</span>
+</div>
+<div class="flex items-center gap-space-2">
+<span class="material-symbols-outlined text-[18px]">event</span>
+<span class="font-body-sm text-body-sm">Last inspected: Oct 12, 2023</span>
+</div>
+</div>
+<div class="pt-space-2 border-t border-outline-variant flex justify-between items-center">
+<span class="font-label-bold text-label-bold text-secondary">VEHICLE</span>
+<button class="text-primary font-label-bold text-label-bold flex items-center gap-1">DETAILS <span class="material-symbols-outlined text-[16px]">chevron_right</span></button>
+</div>
+</div>
+<!-- Asset Item 2 -->
+<div class="bg-surface border border-outline-variant p-space-4 rounded-xl flex flex-col gap-space-4 hover:border-primary transition-all">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-space-3">
+<div class="w-12 h-12 rounded-lg bg-surface-container-lowest flex items-center justify-center border border-outline-variant">
+<span class="material-symbols-outlined text-primary">precision_manufacturing</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface">Industrial CNC</h3>
+<p class="font-mono-label text-mono-label text-on-surface-variant">MAC-4402</p>
+</div>
+</div>
+<span class="px-space-2 py-0.5 bg-error-container text-on-error-container rounded font-label-bold text-[10px] tracking-widest uppercase">Maintenance</span>
+</div>
+<div class="flex flex-col gap-space-2 text-on-surface-variant">
+<div class="flex items-center gap-space-2">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+<span class="font-body-sm text-body-sm">Main Workshop - Floor 1</span>
+</div>
+<div class="flex items-center gap-space-2">
+<span class="material-symbols-outlined text-[18px]">event</span>
+<span class="font-body-sm text-body-sm">Scheduled: Oct 20, 2023</span>
+</div>
+</div>
+<div class="pt-space-2 border-t border-outline-variant flex justify-between items-center">
+<span class="font-label-bold text-label-bold text-secondary">MACHINERY</span>
+<button class="text-primary font-label-bold text-label-bold flex items-center gap-1">DETAILS <span class="material-symbols-outlined text-[16px]">chevron_right</span></button>
+</div>
+</div>
+<!-- Asset Item 3 -->
+<div class="bg-surface border border-outline-variant p-space-4 rounded-xl flex flex-col gap-space-4 hover:border-primary transition-all">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-space-3">
+<div class="w-12 h-12 rounded-lg bg-surface-container-lowest flex items-center justify-center border border-outline-variant">
+<span class="material-symbols-outlined text-primary">construction</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface">Laser Level Kit</h3>
+<p class="font-mono-label text-mono-label text-on-surface-variant">TOOL-118</p>
+</div>
+</div>
+<span class="px-space-2 py-0.5 bg-tertiary-fixed text-on-tertiary-fixed-variant rounded font-label-bold text-[10px] tracking-widest uppercase">Active</span>
+</div>
+<div class="flex flex-col gap-space-2 text-on-surface-variant">
+<div class="flex items-center gap-space-2">
+<span class="material-symbols-outlined text-[18px]">person</span>
+<span class="font-body-sm text-body-sm">Assigned: Marcus Chen</span>
+</div>
+<div class="flex items-center gap-space-2">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+<span class="font-body-sm text-body-sm">Field Site B</span>
+</div>
+</div>
+<div class="pt-space-2 border-t border-outline-variant flex justify-between items-center">
+<span class="font-label-bold text-label-bold text-secondary">TOOLS</span>
+<button class="text-primary font-label-bold text-label-bold flex items-center gap-1">DETAILS <span class="material-symbols-outlined text-[16px]">chevron_right</span></button>
+</div>
+</div>
+<!-- Asset Item 4 -->
+<div class="bg-surface border border-outline-variant p-space-4 rounded-xl flex flex-col gap-space-4 hover:border-primary transition-all">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-space-3">
+<div class="w-12 h-12 rounded-lg bg-surface-container-lowest flex items-center justify-center border border-outline-variant">
+<span class="material-symbols-outlined text-primary">electric_car</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface">Service Van E3</h3>
+<p class="font-mono-label text-mono-label text-on-surface-variant">VAN-8812</p>
+</div>
+</div>
+<span class="px-space-2 py-0.5 bg-tertiary-fixed text-on-tertiary-fixed-variant rounded font-label-bold text-[10px] tracking-widest uppercase">Active</span>
+</div>
+<div class="flex flex-col gap-space-2 text-on-surface-variant">
+<div class="flex items-center gap-space-2">
+<span class="material-symbols-outlined text-[18px]">near_me</span>
+<span class="font-body-sm text-body-sm">En Route to Site C</span>
+</div>
+<div class="flex items-center gap-space-2">
+<span class="material-symbols-outlined text-[18px]">battery_horiz_075</span>
+<span class="font-body-sm text-body-sm">Battery Status: 82%</span>
+</div>
+</div>
+<div class="pt-space-2 border-t border-outline-variant flex justify-between items-center">
+<span class="font-label-bold text-label-bold text-secondary">VEHICLE</span>
+<button class="text-primary font-label-bold text-label-bold flex items-center gap-1">DETAILS <span class="material-symbols-outlined text-[16px]">chevron_right</span></button>
+</div>
+</div>
+<!-- Empty Slot State -->
+<div class="border-2 border-dashed border-outline-variant p-space-4 rounded-xl flex flex-col items-center justify-center gap-space-2 opacity-60 min-h-[180px]">
+<span class="material-symbols-outlined text-display-lg text-outline">add_circle</span>
+<p class="font-label-bold text-label-bold text-on-surface-variant">Register New Asset</p>
+</div>
+</div>
+</main>
+<!-- Scan QR Floating Action Button -->
+<button class="fixed bottom-24 right-6 md:right-12 w-16 h-16 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center z-50 hover:scale-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[32px]">qr_code_scanner</span>
+<span class="sr-only">Scan QR</span>
+</button>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full h-16 bg-surface border-t border-outline-variant md:hidden flex justify-around items-center z-50 pb-safe">
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-container-highest transition-colors" href="#">
+<span class="material-symbols-outlined">assignment</span>
+<span class="font-label-bold text-label-bold">Work</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary bg-primary-container/20 rounded-xl px-3 py-1 scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">domain</span>
+<span class="font-label-bold text-label-bold">Depts</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-container-highest transition-colors" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-bold text-label-bold">Team</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-container-highest transition-colors" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="font-label-bold text-label-bold">Reports</span>
+</a>
+</nav>
+</body></html>
