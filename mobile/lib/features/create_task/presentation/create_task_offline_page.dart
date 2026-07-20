@@ -1,24 +1,25 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart' hide FormData, MultipartFile, Response, Value;
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:task_forge_app/l10n/gen/app_localizations.dart';
 
+import '../../../core/network/dio_provider.dart';
 import '../../../core/offline/offline_providers.dart';
 import '../application/offline_create_task_service.dart';
 
 const _categories = ['Maintenance', 'Repair', 'Safety', 'Audit'];
 
-class CreateTaskOfflinePage extends ConsumerStatefulWidget {
+class CreateTaskOfflinePage extends StatefulWidget {
   const CreateTaskOfflinePage({super.key});
 
   @override
-  ConsumerState<CreateTaskOfflinePage> createState() => _CreateTaskOfflinePageState();
+  State<CreateTaskOfflinePage> createState() => _CreateTaskOfflinePageState();
 }
 
-class _CreateTaskOfflinePageState extends ConsumerState<CreateTaskOfflinePage> {
+class _CreateTaskOfflinePageState extends State<CreateTaskOfflinePage> {
   final _titleCtrl = TextEditingController();
   final _assetCtrl = TextEditingController();
   String _category = _categories.first;
@@ -30,9 +31,7 @@ class _CreateTaskOfflinePageState extends ConsumerState<CreateTaskOfflinePage> {
   final List<String> _photoPaths = [];
 
   bool get _isOnline {
-    final list = ref.read(connectivityProvider).valueOrNull;
-    if (list == null) return false;
-    return connectivityLooksOnline(list);
+    return Get.find<ConnectivityService>().online.value;
   }
 
   @override
@@ -49,9 +48,34 @@ class _CreateTaskOfflinePageState extends ConsumerState<CreateTaskOfflinePage> {
   }
 
   Future<void> _loadBoard() async {
-    final local = ref.read(localDataServiceProvider);
+    final local = Get.find<LocalDataService>();
     var boardId = await local.readDefaultBoardId();
     boardId ??= await local.firstCachedBoardId();
+
+    // Si no hay board en caché, tomar el primero de /projects.
+    if (boardId == null) {
+      try {
+        final dio = Get.find<ApiClient>().dio;
+        final res = await dio.get<List<dynamic>>('/projects');
+        final projects = res.data;
+        if (projects is List) {
+          for (final p in projects) {
+            if (p is! Map) continue;
+            final boards = p['boards'];
+            if (boards is! List || boards.isEmpty) continue;
+            final first = boards.first;
+            if (first is Map && first['id'] != null) {
+              boardId = '${first['id']}';
+              await local.saveDefaultBoardId(boardId);
+              break;
+            }
+          }
+        }
+      } catch (_) {
+        /* offline o sin permisos */
+      }
+    }
+
     if (mounted) {
       setState(() {
         _boardId = boardId;
@@ -64,7 +88,10 @@ class _CreateTaskOfflinePageState extends ConsumerState<CreateTaskOfflinePage> {
   Future<void> _addPhoto() async {
     if (_photoPaths.length >= 4) return;
     final picker = ImagePicker();
-    final file = await picker.pickImage(source: ImageSource.camera, imageQuality: 82);
+    final file = await picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 82,
+    );
     if (file != null && mounted) {
       setState(() => _photoPaths.add(file.path));
     }
@@ -74,44 +101,48 @@ class _CreateTaskOfflinePageState extends ConsumerState<CreateTaskOfflinePage> {
     final l10n = AppLocalizations.of(context)!;
     final title = _titleCtrl.text.trim();
     if (title.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.createTaskTitleRequired)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.createTaskTitleRequired)));
       return;
     }
     if (_boardId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.createTaskBoardRequired)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.createTaskBoardRequired)));
       return;
     }
 
     setState(() => _saving = true);
     try {
-      final result = await ref.read(offlineCreateTaskServiceProvider).save(
-            boardId: _boardId!,
-            title: title,
-            priority: _priority,
-            location: _assetCtrl.text.trim().isEmpty ? null : _assetCtrl.text.trim(),
-            category: _category,
-            assetLabel: _assetCtrl.text.trim().isEmpty ? null : _assetCtrl.text.trim(),
-            photoPaths: List.from(_photoPaths),
-            preferOnline: _isOnline,
-          );
+      final result = await Get.find<OfflineCreateTaskService>().save(
+        boardId: _boardId!,
+        title: title,
+        priority: _priority,
+        location:
+            _assetCtrl.text.trim().isEmpty ? null : _assetCtrl.text.trim(),
+        category: _category,
+        assetLabel:
+            _assetCtrl.text.trim().isEmpty ? null : _assetCtrl.text.trim(),
+        photoPaths: List.from(_photoPaths),
+        preferOnline: _isOnline,
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            result.synced ? l10n.createTaskSavedOnline : l10n.createTaskSavedOffline,
+            result.synced
+                ? l10n.createTaskSavedOnline
+                : l10n.createTaskSavedOffline,
           ),
         ),
       );
       context.pop(true);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('$e')));
       }
     } finally {
       if (mounted) {
@@ -141,7 +172,11 @@ class _CreateTaskOfflinePageState extends ConsumerState<CreateTaskOfflinePage> {
               padding: const EdgeInsets.only(right: 12),
               child: Row(
                 children: [
-                  Icon(Icons.cloud_off, size: 20, color: scheme.onSurfaceVariant),
+                  Icon(
+                    Icons.cloud_off,
+                    size: 20,
+                    color: scheme.onSurfaceVariant,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     l10n.createTaskOfflineBadge,
@@ -202,26 +237,33 @@ class _CreateTaskOfflinePageState extends ConsumerState<CreateTaskOfflinePage> {
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
-                    children: _categories.map((c) {
-                      final selected = c == _category;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
-                          label: Text(_categoryLabel(c, l10n)),
-                          selected: selected,
-                          onSelected: (_) => setState(() => _category = c),
-                          selectedColor: scheme.primary,
-                          labelStyle: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 12,
-                            color: selected ? scheme.onPrimary : scheme.onSurfaceVariant,
-                          ),
-                          side: BorderSide(
-                            color: selected ? scheme.primary : scheme.outlineVariant,
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                    children:
+                        _categories.map((c) {
+                          final selected = c == _category;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: FilterChip(
+                              label: Text(_categoryLabel(c, l10n)),
+                              selected: selected,
+                              onSelected: (_) => setState(() => _category = c),
+                              selectedColor: scheme.primary,
+                              labelStyle: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 12,
+                                color:
+                                    selected
+                                        ? scheme.onPrimary
+                                        : scheme.onSurfaceVariant,
+                              ),
+                              side: BorderSide(
+                                color:
+                                    selected
+                                        ? scheme.primary
+                                        : scheme.outlineVariant,
+                              ),
+                            ),
+                          );
+                        }).toList(),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -231,7 +273,10 @@ class _CreateTaskOfflinePageState extends ConsumerState<CreateTaskOfflinePage> {
                   controller: _assetCtrl,
                   decoration: InputDecoration(
                     hintText: l10n.createTaskAssetHint,
-                    prefixIcon: Icon(Icons.search, color: scheme.onSurfaceVariant),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: scheme.onSurfaceVariant,
+                    ),
                     filled: true,
                     fillColor: scheme.surfaceContainerLow,
                     border: UnderlineInputBorder(
@@ -299,11 +344,17 @@ class _CreateTaskOfflinePageState extends ConsumerState<CreateTaskOfflinePage> {
                               top: 4,
                               right: 4,
                               child: GestureDetector(
-                                onTap: () => setState(() => _photoPaths.removeAt(i)),
+                                onTap:
+                                    () =>
+                                        setState(() => _photoPaths.removeAt(i)),
                                 child: CircleAvatar(
                                   radius: 12,
                                   backgroundColor: scheme.inverseSurface,
-                                  child: Icon(Icons.close, size: 14, color: scheme.onInverseSurface),
+                                  child: Icon(
+                                    Icons.close,
+                                    size: 14,
+                                    color: scheme.onInverseSurface,
+                                  ),
                                 ),
                               ),
                             ),
@@ -318,7 +369,9 @@ class _CreateTaskOfflinePageState extends ConsumerState<CreateTaskOfflinePage> {
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size.fromHeight(120),
                     side: BorderSide(color: scheme.outlineVariant, width: 2),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -330,7 +383,11 @@ class _CreateTaskOfflinePageState extends ConsumerState<CreateTaskOfflinePage> {
                           color: scheme.primary.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(Icons.add_a_photo, color: scheme.primary, size: 28),
+                        child: Icon(
+                          Icons.add_a_photo,
+                          color: scheme.primary,
+                          size: 28,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Text(
@@ -366,7 +423,11 @@ class _CreateTaskOfflinePageState extends ConsumerState<CreateTaskOfflinePage> {
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(8),
-                    child: Icon(Icons.cloud_off, color: scheme.onInverseSurface, size: 20),
+                    child: Icon(
+                      Icons.cloud_off,
+                      color: scheme.onInverseSurface,
+                      size: 20,
+                    ),
                   ),
                 ),
               ),
@@ -387,7 +448,11 @@ class _CreateTaskOfflinePageState extends ConsumerState<CreateTaskOfflinePage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.wifi_off, size: 18, color: scheme.onSurfaceVariant),
+                    Icon(
+                      Icons.wifi_off,
+                      size: 18,
+                      color: scheme.onSurfaceVariant,
+                    ),
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
@@ -406,18 +471,21 @@ class _CreateTaskOfflinePageState extends ConsumerState<CreateTaskOfflinePage> {
                 onPressed: _saving || _boardId == null ? null : _save,
                 style: FilledButton.styleFrom(
                   minimumSize: const Size.fromHeight(52),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                icon: _saving
-                    ? SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: scheme.onPrimary,
-                        ),
-                      )
-                    : const Icon(Icons.save_outlined),
+                icon:
+                    _saving
+                        ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: scheme.onPrimary,
+                          ),
+                        )
+                        : const Icon(Icons.save_outlined),
                 label: Text(l10n.createTaskSave),
               ),
             ],
@@ -453,10 +521,10 @@ class _FieldLabel extends StatelessWidget {
     return Text(
       text.toUpperCase(),
       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.6,
-            color: Theme.of(context).colorScheme.outline,
-          ),
+        fontWeight: FontWeight.w800,
+        letterSpacing: 0.6,
+        color: Theme.of(context).colorScheme.outline,
+      ),
     );
   }
 }
@@ -480,17 +548,22 @@ class _PriorityTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final active = selected;
-    final borderColor = active
-        ? (highlight ? scheme.tertiary : scheme.primary)
-        : scheme.outlineVariant;
-    final fg = active
-        ? (highlight ? scheme.tertiary : scheme.primary)
-        : scheme.onSurfaceVariant;
+    final borderColor =
+        active
+            ? (highlight ? scheme.tertiary : scheme.primary)
+            : scheme.outlineVariant;
+    final fg =
+        active
+            ? (highlight ? scheme.tertiary : scheme.primary)
+            : scheme.onSurfaceVariant;
 
     return Material(
-      color: active
-          ? (highlight ? scheme.tertiary.withValues(alpha: 0.1) : scheme.primary.withValues(alpha: 0.08))
-          : scheme.surfaceContainerLow,
+      color:
+          active
+              ? (highlight
+                  ? scheme.tertiary.withValues(alpha: 0.1)
+                  : scheme.primary.withValues(alpha: 0.08))
+              : scheme.surfaceContainerLow,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
@@ -508,7 +581,11 @@ class _PriorityTile extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 label,
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11, color: fg),
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 11,
+                  color: fg,
+                ),
               ),
             ],
           ),

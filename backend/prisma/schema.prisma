@@ -7,14 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum RoleName {
-  ADMIN
-  MANAGER
-  WORKER
-  INSPECTOR
-  VIEWER
-}
-
 enum TaskStatus {
   BACKLOG
   TODO
@@ -44,24 +36,10 @@ enum EvidenceKind {
   AFTER
 }
 
-enum AssetCategory {
-  VEHICLE
-  TOOL
-  EQUIPMENT
-  MACHINERY
-  BUILDING
-  ROOM
-  ELECTRICAL
-  HVAC
-  OTHER
-}
-
-enum AssetStatus {
-  OPERATIONAL
-  MAINTENANCE
-  OFFLINE
-  RETIRED
-  RESERVED
+enum EmploymentType {
+  PART_TIME
+  FULL_TIME
+  FULL_TIME_SEASONAL
 }
 
 /// Tenant raíz: usuarios, roles, datos y branding aislados por organización.
@@ -87,6 +65,8 @@ model Organization {
   projects    Project[]
   boards      Board[]
   assets      Asset[]
+  assetCategories AssetCategoryOption[]
+  assetStatuses   AssetStatusOption[]
   activityLogs ActivityLog[]
 }
 
@@ -94,7 +74,12 @@ model Role {
   id             String       @id @default(cuid())
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  name           RoleName
+  /// Nombre visible (puede ser custom). Los roles de sistema usan ADMIN, MANAGER, etc.
+  name           String
+  /// Claves PermissionKey persistidas (ej. users:read).
+  permissions    String[]     @default([])
+  /// Roles sembrados al crear la org; no se pueden eliminar.
+  isSystem       Boolean      @default(false)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   users          User[]
@@ -154,7 +139,8 @@ model User {
   passwordHash   String
   firstName      String
   lastName       String
-  isActive       Boolean      @default(true)
+  isActive       Boolean        @default(true)
+  employmentType EmploymentType @default(FULL_TIME)
   roleId         String
   role           Role         @relation(fields: [roleId], references: [id])
   departmentId   String?
@@ -224,30 +210,34 @@ model Board {
 }
 
 model Task {
-  id          String         @id @default(cuid())
-  title       String
-  description String?
-  boardId     String
-  board       Board          @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  status      TaskStatus     @default(BACKLOG)
-  priority    TaskPriority   @default(MEDIUM)
-  assigneeId  String?
-  assignee    User?          @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
-  createdById String
-  createdBy   User           @relation("TaskCreatedBy", fields: [createdById], references: [id])
-  location    String?
-  dueDate     DateTime?
-  sortOrder   Int            @default(0)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  comments    TaskComment[]
-  attachments Attachment[]
-  activity    ActivityLog[]
-  taskAssets  TaskAsset[]
+  id           String         @id @default(cuid())
+  title        String
+  description  String?
+  boardId      String
+  board        Board          @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  parentTaskId String?
+  parentTask   Task?          @relation("TaskSubtasks", fields: [parentTaskId], references: [id], onDelete: Cascade)
+  subtasks     Task[]         @relation("TaskSubtasks")
+  status       TaskStatus     @default(BACKLOG)
+  priority     TaskPriority   @default(MEDIUM)
+  assigneeId   String?
+  assignee     User?          @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  createdById  String
+  createdBy    User           @relation("TaskCreatedBy", fields: [createdById], references: [id])
+  location     String?
+  dueDate      DateTime?
+  sortOrder    Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  comments     TaskComment[]
+  attachments  Attachment[]
+  activity     ActivityLog[]
+  taskAssets   TaskAsset[]
 
   @@index([boardId])
   @@index([status])
   @@index([assigneeId])
+  @@index([parentTaskId])
 }
 
 model TaskComment {
@@ -319,8 +309,10 @@ model Asset {
   organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   name            String
   code            String
-  category        AssetCategory
-  status          AssetStatus    @default(OPERATIONAL)
+  /// Código del catálogo AssetCategoryOption de la organización.
+  category        String
+  /// Código del catálogo AssetStatusOption de la organización.
+  status          String         @default("OPERATIONAL")
   location        String?
   maintenanceDate DateTime?
   createdAt       DateTime       @default(now())
@@ -333,6 +325,39 @@ model Asset {
   @@index([organizationId])
   @@index([category])
   @@index([status])
+}
+
+model AssetCategoryOption {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  code           String
+  name           String
+  color          String       @default("#6750A4")
+  icon           String       @default("inventory_2")
+  isDefault      Boolean      @default(false)
+  sortOrder      Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([organizationId, code])
+  @@index([organizationId, sortOrder])
+}
+
+model AssetStatusOption {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  code           String
+  name           String
+  color          String       @default("#6750A4")
+  isDefault      Boolean      @default(false)
+  sortOrder      Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([organizationId, code])
+  @@index([organizationId, sortOrder])
 }
 
 model TaskAsset {

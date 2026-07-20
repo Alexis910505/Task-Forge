@@ -1,6 +1,8 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart' hide FormData, MultipartFile, Response, Value;
 import 'package:go_router/go_router.dart';
 import 'package:task_forge_app/l10n/gen/app_localizations.dart';
 
@@ -11,47 +13,76 @@ import '../../auth/application/auth_repository.dart';
 import '../application/notification_presentation.dart';
 import '../application/notifications_unread_provider.dart';
 
-class NotificationsPage extends ConsumerStatefulWidget {
+class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
 
   @override
-  ConsumerState<NotificationsPage> createState() => _NotificationsPageState();
+  State<NotificationsPage> createState() => _NotificationsPageState();
 }
 
-class _NotificationsPageState extends ConsumerState<NotificationsPage> {
+class _NotificationsPageState extends State<NotificationsPage>
+    with WidgetsBindingObserver {
   List<NotificationItem> _items = const [];
   String? _error;
   bool _loading = true;
   bool _markingAll = false;
+  Worker? _revisionWorker;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    final unread = Get.find<NotificationsUnreadController>();
+    _revisionWorker = ever(unread.revision, (_) {
+      if (!mounted) return;
+      unawaited(_load(silent: true));
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
-  Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _revisionWorker?.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_load(silent: true));
+      unawaited(Get.find<NotificationsUnreadController>().refreshCount());
+    }
+  }
+
+  Future<void> _load({bool silent = false}) async {
+    if (!silent) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
     try {
-      final dio = ref.read(dioProvider);
+      final dio = Get.find<ApiClient>().dio;
       final res = await dio.get<List<dynamic>>('/notifications');
       final raw = res.data ?? const [];
-      final items = raw
-          .whereType<Map>()
-          .map((m) => NotificationItem.fromJson(Map<String, dynamic>.from(m)))
-          .toList();
+      final items =
+          raw
+              .whereType<Map>()
+              .map(
+                (m) => NotificationItem.fromJson(Map<String, dynamic>.from(m)),
+              )
+              .toList();
       if (mounted) {
         setState(() {
           _items = items;
           _loading = false;
+          _error = null;
         });
       }
-      await ref.read(notificationsUnreadProvider.notifier).refresh();
+      await Get.find<NotificationsUnreadController>().refreshCount();
     } catch (e) {
-      if (mounted) {
+      if (mounted && !silent) {
         setState(() {
           _error = e is DioException ? (e.message ?? '$e') : '$e';
           _loading = false;
@@ -68,26 +99,27 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
       setState(() {
         _items = [
           for (var i = 0; i < _items.length; i++)
-            if (i == idx) NotificationItem(
-                  id: _items[i].id,
-                  type: _items[i].type,
-                  title: _items[i].title,
-                  body: _items[i].body,
-                  read: true,
-                  createdAt: _items[i].createdAt,
-                  metadata: _items[i].metadata,
-                )
+            if (i == idx)
+              NotificationItem(
+                id: _items[i].id,
+                type: _items[i].type,
+                title: _items[i].title,
+                body: _items[i].body,
+                read: true,
+                createdAt: _items[i].createdAt,
+                metadata: _items[i].metadata,
+              )
             else
               _items[i],
         ];
       });
-      final unread = ref.read(notificationsUnreadProvider);
+      final unread = Get.find<NotificationsUnreadController>().count.value;
       if (unread > 0) {
-        ref.read(notificationsUnreadProvider.notifier).setCount(unread - 1);
+        Get.find<NotificationsUnreadController>().setCount(unread - 1);
       }
     }
     try {
-      await ref.read(dioProvider).patch<void>('/notifications/$id/read');
+      await Get.find<ApiClient>().dio.patch<void>('/notifications/$id/read');
     } catch (_) {
       if (wasUnread && mounted) {
         await _load();
@@ -112,9 +144,9 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
           ),
       ];
     });
-    ref.read(notificationsUnreadProvider.notifier).setCount(0);
+    Get.find<NotificationsUnreadController>().setCount(0);
     try {
-      await ref.read(dioProvider).patch<void>('/notifications/read-all');
+      await Get.find<ApiClient>().dio.patch<void>('/notifications/read-all');
     } catch (_) {
       await _load();
     } finally {
@@ -130,8 +162,8 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).languageCode;
-    final profile = ref.watch(authRepositoryProvider).valueOrNull?.profile;
-    final unread = ref.watch(notificationsUnreadProvider);
+    final profile = Get.find<AuthController>().currentSession?.profile;
+    final unread = Get.find<NotificationsUnreadController>().count.value;
     final sections = groupNotifications(_items);
 
     return ColoredBox(
@@ -152,12 +184,16 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
                     children: [
                       Text(
                         l10n.notificationsTitle,
-                        style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         l10n.notificationsSubtitle,
-                        style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
@@ -166,7 +202,9 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
                   TextButton(
                     onPressed: _markingAll ? null : _markAllRead,
                     child: Text(
-                      _markingAll ? l10n.notificationsMarkingAll : l10n.notificationsMarkAllRead,
+                      _markingAll
+                          ? l10n.notificationsMarkingAll
+                          : l10n.notificationsMarkAllRead,
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         color: scheme.primary,
@@ -188,7 +226,10 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
                   children: [
                     Text(_error!, style: TextStyle(color: scheme.error)),
                     const SizedBox(height: 12),
-                    FilledButton(onPressed: _load, child: Text(l10n.dashboardRetry)),
+                    FilledButton(
+                      onPressed: _load,
+                      child: Text(l10n.dashboardRetry),
+                    ),
                   ],
                 ),
               )
@@ -228,14 +269,23 @@ class _EmptyNotifications extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(Icons.notifications_none_outlined, size: 48, color: scheme.onSurfaceVariant),
+          Icon(
+            Icons.notifications_none_outlined,
+            size: 48,
+            color: scheme.onSurfaceVariant,
+          ),
           const SizedBox(height: 12),
-          Text(l10n.notificationsEmpty, style: Theme.of(context).textTheme.titleSmall),
+          Text(
+            l10n.notificationsEmpty,
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
           const SizedBox(height: 4),
           Text(
             l10n.notificationsEmptyHint,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
           ),
         ],
       ),
@@ -287,18 +337,22 @@ class _NotificationSectionView extends StatelessWidget {
                     width: 8,
                     height: 8,
                     margin: const EdgeInsets.only(right: 8),
-                    decoration: BoxDecoration(color: scheme.primary, shape: BoxShape.circle),
+                    decoration: BoxDecoration(
+                      color: scheme.primary,
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ],
                 Text(
                   _sectionTitle().toUpperCase(),
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.2,
-                        color: section.key == NotificationSectionKey.newAlerts
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.2,
+                    color:
+                        section.key == NotificationSectionKey.newAlerts
                             ? scheme.primary
                             : scheme.onSurfaceVariant.withValues(alpha: 0.7),
-                      ),
+                  ),
                 ),
               ],
             ),
@@ -312,7 +366,8 @@ class _NotificationSectionView extends StatelessWidget {
                 locale: locale,
                 onMarkRead: () => onMarkRead(item.id),
                 onOpenTask: () async {
-                  final taskId = NotificationMetadata.parse(item.metadata).taskId;
+                  final taskId =
+                      NotificationMetadata.parse(item.metadata).taskId;
                   if (taskId == null) return;
                   await onMarkRead(item.id);
                   if (context.mounted) {
@@ -352,30 +407,46 @@ class _NotificationCard extends StatelessWidget {
     final typeLabel = notificationTypeLabel(item.type, l10n);
     final title = item.title.isNotEmpty ? item.title : typeLabel;
     final isUnread = !item.read;
-    final showActions = isUnread && onOpenTask != null && item.type == 'TASK_ASSIGNED';
+    final showActions =
+        isUnread && onOpenTask != null && item.type == 'TASK_ASSIGNED';
     final statusLabel = statusLabelForNotification(meta.status, l10n, scheme);
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onOpenTask != null
-            ? () => onOpenTask!()
-            : (isUnread ? onMarkRead : null),
+        onTap:
+            onOpenTask != null
+                ? () => onOpenTask!()
+                : (isUnread ? onMarkRead : null),
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isUnread
-                ? scheme.primary.withValues(alpha: 0.05)
-                : scheme.surface.withValues(alpha: item.read ? 0.5 : 1),
+            color:
+                isUnread
+                    ? scheme.primary.withValues(alpha: 0.05)
+                    : scheme.surface.withValues(alpha: item.read ? 0.5 : 1),
             borderRadius: BorderRadius.circular(12),
             border: Border(
-              left: isUnread
-                  ? BorderSide(color: scheme.primary, width: 4)
-                  : BorderSide.none,
-              top: BorderSide(color: scheme.outlineVariant.withValues(alpha: item.read ? 0.5 : 1)),
-              right: BorderSide(color: scheme.outlineVariant.withValues(alpha: item.read ? 0.5 : 1)),
-              bottom: BorderSide(color: scheme.outlineVariant.withValues(alpha: item.read ? 0.5 : 1)),
+              left:
+                  isUnread
+                      ? BorderSide(color: scheme.primary, width: 4)
+                      : BorderSide.none,
+              top: BorderSide(
+                color: scheme.outlineVariant.withValues(
+                  alpha: item.read ? 0.5 : 1,
+                ),
+              ),
+              right: BorderSide(
+                color: scheme.outlineVariant.withValues(
+                  alpha: item.read ? 0.5 : 1,
+                ),
+              ),
+              bottom: BorderSide(
+                color: scheme.outlineVariant.withValues(
+                  alpha: item.read ? 0.5 : 1,
+                ),
+              ),
             ),
           ),
           child: Row(
@@ -401,7 +472,9 @@ class _NotificationCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             title,
-                            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -448,7 +521,10 @@ class _NotificationCard extends StatelessWidget {
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: scheme.tertiaryFixed,
                               borderRadius: BorderRadius.circular(6),
@@ -469,11 +545,18 @@ class _NotificationCard extends StatelessWidget {
                       const SizedBox(height: 8),
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: scheme.surfaceContainerLow,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.35)),
+                          border: Border.all(
+                            color: scheme.outlineVariant.withValues(
+                              alpha: 0.35,
+                            ),
+                          ),
                         ),
                         child: Text(
                           meta.threadTitle != null
@@ -494,8 +577,13 @@ class _NotificationCard extends StatelessWidget {
                             onPressed: onOpenTask,
                             style: FilledButton.styleFrom(
                               minimumSize: const Size(0, 32),
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              textStyle: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
                             child: Text(l10n.notificationsViewDetails),
                           ),
@@ -503,8 +591,13 @@ class _NotificationCard extends StatelessWidget {
                             onPressed: onMarkRead,
                             style: OutlinedButton.styleFrom(
                               minimumSize: const Size(0, 32),
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              textStyle: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
                             child: Text(l10n.notificationsDismiss),
                           ),

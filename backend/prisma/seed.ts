@@ -1,13 +1,14 @@
 import {
   PrismaClient,
-  RoleName,
   TaskStatus,
   TaskPriority,
-  AssetCategory,
-  AssetStatus,
   NotificationType,
 } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import {
+  SYSTEM_ROLE_NAMES,
+  SYSTEM_ROLE_PERMISSIONS,
+} from '../src/core/security/role-permissions';
 
 const prisma = new PrismaClient();
 
@@ -25,15 +26,7 @@ async function main() {
     },
   });
 
-  const roles: RoleName[] = [
-    RoleName.ADMIN,
-    RoleName.MANAGER,
-    RoleName.WORKER,
-    RoleName.INSPECTOR,
-    RoleName.VIEWER,
-  ];
-
-  for (const name of roles) {
+  for (const name of SYSTEM_ROLE_NAMES) {
     await prisma.role.upsert({
       where: {
         organizationId_name: {
@@ -41,10 +34,15 @@ async function main() {
           name,
         },
       },
-      update: {},
+      update: {
+        isSystem: true,
+        permissions: [...SYSTEM_ROLE_PERMISSIONS[name]],
+      },
       create: {
         organizationId: org.id,
         name,
+        isSystem: true,
+        permissions: [...SYSTEM_ROLE_PERMISSIONS[name]],
       },
     });
   }
@@ -53,7 +51,7 @@ async function main() {
     where: {
       organizationId_name: {
         organizationId: org.id,
-        name: RoleName.ADMIN,
+        name: 'ADMIN',
       },
     },
   });
@@ -135,13 +133,39 @@ async function main() {
     data: { teamId: team.id, userId: admin.id },
   });
 
+  await prisma.assetCategoryOption.createMany({
+    data: [
+      { organizationId: org.id, code: 'VEHICLE', name: 'Vehículo', color: '#1565C0', icon: 'directions_car', sortOrder: 10 },
+      { organizationId: org.id, code: 'TOOL', name: 'Herramienta', color: '#6D4C41', icon: 'handyman', sortOrder: 20 },
+      { organizationId: org.id, code: 'EQUIPMENT', name: 'Equipo', color: '#6750A4', icon: 'inventory_2', isDefault: true, sortOrder: 30 },
+      { organizationId: org.id, code: 'MACHINERY', name: 'Maquinaria', color: '#EF6C00', icon: 'precision_manufacturing', sortOrder: 40 },
+      { organizationId: org.id, code: 'BUILDING', name: 'Edificio', color: '#455A64', icon: 'domain', sortOrder: 50 },
+      { organizationId: org.id, code: 'ROOM', name: 'Sala', color: '#00838F', icon: 'meeting_room', sortOrder: 60 },
+      { organizationId: org.id, code: 'ELECTRICAL', name: 'Eléctrico', color: '#F9A825', icon: 'electric_bolt', sortOrder: 70 },
+      { organizationId: org.id, code: 'HVAC', name: 'Climatización', color: '#0277BD', icon: 'ac_unit', sortOrder: 80 },
+      { organizationId: org.id, code: 'OTHER', name: 'Otro', color: '#616161', icon: 'category', sortOrder: 90 },
+    ],
+    skipDuplicates: true,
+  });
+
+  await prisma.assetStatusOption.createMany({
+    data: [
+      { organizationId: org.id, code: 'OPERATIONAL', name: 'Operativo', color: '#2E7D32', isDefault: true, sortOrder: 10 },
+      { organizationId: org.id, code: 'MAINTENANCE', name: 'Mantenimiento', color: '#ED6C02', sortOrder: 20 },
+      { organizationId: org.id, code: 'OFFLINE', name: 'Fuera de servicio', color: '#D32F2F', sortOrder: 30 },
+      { organizationId: org.id, code: 'RESERVED', name: 'Reservado', color: '#6750A4', sortOrder: 40 },
+      { organizationId: org.id, code: 'RETIRED', name: 'Retirado', color: '#616161', sortOrder: 50 },
+    ],
+    skipDuplicates: true,
+  });
+
   await prisma.asset.create({
     data: {
       organizationId: org.id,
       name: 'Generador principal',
       code: 'GEN-001',
-      category: AssetCategory.EQUIPMENT,
-      status: AssetStatus.OPERATIONAL,
+      category: 'EQUIPMENT',
+      status: 'OPERATIONAL',
       location: 'Nave A',
     },
   });

@@ -117,7 +117,7 @@ export function AssigneeSearch({ users, value, onChange }: AssigneeSearchProps) 
                     {u.firstName} {u.lastName}
                   </p>
                   <p className="truncate text-[11px] text-on-surface-variant">
-                    {u.role?.name ? roleLabel(u.role.name, t) : ''}
+                    {u.role?.name ? roleLabel(u.role, t) : ''}
                     {u.department?.name ? ` · ${u.department.name}` : ''}
                   </p>
                 </div>

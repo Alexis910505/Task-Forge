@@ -254,10 +254,16 @@ abstract class AppLocalizations {
   /// **'Could not complete the request'**
   String get genericRequestError;
 
-  /// No description provided for @navDashboard.
+  /// No description provided for @navWork.
   ///
   /// In en, this message translates to:
   /// **'Work'**
+  String get navWork;
+
+  /// No description provided for @navDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard'**
   String get navDashboard;
 
   /// No description provided for @navKanban.
@@ -271,6 +277,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'List'**
   String get navMyTasks;
+
+  /// No description provided for @navAssets.
+  ///
+  /// In en, this message translates to:
+  /// **'Assets'**
+  String get navAssets;
+
+  /// No description provided for @navAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts'**
+  String get navAlerts;
 
   /// No description provided for @navReports.
   ///
@@ -755,7 +773,7 @@ abstract class AppLocalizations {
   /// No description provided for @myTasksSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Priority, SLA and board'**
+  /// **'All projects · mine and for everyone'**
   String get myTasksSubtitle;
 
   /// No description provided for @myTasksSearchHint.
@@ -797,8 +815,14 @@ abstract class AppLocalizations {
   /// No description provided for @myTasksEmpty.
   ///
   /// In en, this message translates to:
-  /// **'You have no assigned tasks'**
+  /// **'No tasks for you or unassigned'**
   String get myTasksEmpty;
+
+  /// No description provided for @myTasksForEveryone.
+  ///
+  /// In en, this message translates to:
+  /// **'For everyone'**
+  String get myTasksForEveryone;
 
   /// No description provided for @myTasksNewTask.
   ///
@@ -835,6 +859,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Overdue by {days}d'**
   String myTasksOverdueDays(int days);
+
+  /// No description provided for @myTasksSortTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort tasks'**
+  String get myTasksSortTitle;
+
+  /// No description provided for @myTasksSortByProject.
+  ///
+  /// In en, this message translates to:
+  /// **'By project'**
+  String get myTasksSortByProject;
+
+  /// No description provided for @myTasksSortByPriority.
+  ///
+  /// In en, this message translates to:
+  /// **'By priority'**
+  String get myTasksSortByPriority;
+
+  /// No description provided for @myTasksSortByDueSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'By time (due soonest)'**
+  String get myTasksSortByDueSoon;
+
+  /// No description provided for @myTasksSortByDueLatest.
+  ///
+  /// In en, this message translates to:
+  /// **'By time (due latest)'**
+  String get myTasksSortByDueLatest;
 
   /// No description provided for @reportsTitle.
   ///
@@ -1040,6 +1094,24 @@ abstract class AppLocalizations {
   /// **'Organization'**
   String get orgTitle;
 
+  /// No description provided for @orgDiscoverabilityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'QUICK LINKS'**
+  String get orgDiscoverabilityTitle;
+
+  /// No description provided for @orgKanbanHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Open board view for your team'**
+  String get orgKanbanHint;
+
+  /// No description provided for @orgAssetsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse fleet and equipment inventory'**
+  String get orgAssetsHint;
+
   /// No description provided for @orgCurrentSection.
   ///
   /// In en, this message translates to:
@@ -1196,6 +1268,24 @@ abstract class AppLocalizations {
   /// **'Could not send comment'**
   String get taskDetailCommentFailed;
 
+  /// No description provided for @taskDetailComments.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get taskDetailComments;
+
+  /// No description provided for @taskDetailNoComments.
+  ///
+  /// In en, this message translates to:
+  /// **'No comments yet'**
+  String get taskDetailNoComments;
+
+  /// No description provided for @taskDetailCommentSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment posted'**
+  String get taskDetailCommentSent;
+
   /// No description provided for @taskDetailStatusUpdated.
   ///
   /// In en, this message translates to:
@@ -1231,6 +1321,408 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Completed'**
   String get taskDetailStatusCompleted;
+
+  /// No description provided for @taskDetailSubtasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtasks'**
+  String get taskDetailSubtasks;
+
+  /// No description provided for @taskDetailSubtasksProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{completed} of {total} completed'**
+  String taskDetailSubtasksProgress(int completed, int total);
+
+  /// No description provided for @taskDetailNoSubtasks.
+  ///
+  /// In en, this message translates to:
+  /// **'No subtasks yet'**
+  String get taskDetailNoSubtasks;
+
+  /// No description provided for @taskDetailAddSubtask.
+  ///
+  /// In en, this message translates to:
+  /// **'Add subtask'**
+  String get taskDetailAddSubtask;
+
+  /// No description provided for @taskDetailSubtaskHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtask title'**
+  String get taskDetailSubtaskHint;
+
+  /// No description provided for @taskDetailSubtaskTodo.
+  ///
+  /// In en, this message translates to:
+  /// **'To do'**
+  String get taskDetailSubtaskTodo;
+
+  /// No description provided for @taskDetailSubtaskDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get taskDetailSubtaskDone;
+
+  /// No description provided for @taskDetailCannotCompleteWithOpenSubtasks.
+  ///
+  /// In en, this message translates to:
+  /// **'You can\'t mark the task as completed while there are open subtasks'**
+  String get taskDetailCannotCompleteWithOpenSubtasks;
+
+  /// No description provided for @taskDetailParentTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent task'**
+  String get taskDetailParentTask;
+
+  /// No description provided for @taskDetailActivityLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity log'**
+  String get taskDetailActivityLog;
+
+  /// No description provided for @taskActivityLogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity Log'**
+  String get taskActivityLogTitle;
+
+  /// No description provided for @taskActivityProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Project: {name}'**
+  String taskActivityProject(String name);
+
+  /// No description provided for @taskActivityEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No activity recorded for this task yet.'**
+  String get taskActivityEmpty;
+
+  /// No description provided for @taskActivityStatusChangedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Changed status to {status}'**
+  String taskActivityStatusChangedTo(String status);
+
+  /// No description provided for @taskActivityAssignedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned {name} to this task.'**
+  String taskActivityAssignedTo(String name);
+
+  /// No description provided for @taskActivityPhotosUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded {count} inspection photos'**
+  String taskActivityPhotosUploaded(int count);
+
+  /// No description provided for @assetsHubTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Fleet & Equipment'**
+  String get assetsHubTitle;
+
+  /// No description provided for @assetsHubSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory hub for vehicles, tools and machinery.'**
+  String get assetsHubSubtitle;
+
+  /// No description provided for @assetsSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search assets by name or code…'**
+  String get assetsSearchHint;
+
+  /// No description provided for @assetsFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All Assets'**
+  String get assetsFilterAll;
+
+  /// No description provided for @assetsSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Fleet & Equipment'**
+  String get assetsSectionTitle;
+
+  /// No description provided for @assetsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No assets yet'**
+  String get assetsEmptyTitle;
+
+  /// No description provided for @assetsEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Register equipment, vehicles and tools to track maintenance and tasks.'**
+  String get assetsEmptyHint;
+
+  /// No description provided for @assetsCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New asset'**
+  String get assetsCreateTitle;
+
+  /// No description provided for @assetsCreateSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get assetsCreateSubmit;
+
+  /// No description provided for @assetsCreateSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset created'**
+  String get assetsCreateSuccess;
+
+  /// No description provided for @assetsCreateValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Name and code are required'**
+  String get assetsCreateValidation;
+
+  /// No description provided for @assetsFieldName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get assetsFieldName;
+
+  /// No description provided for @assetsFieldCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Code'**
+  String get assetsFieldCode;
+
+  /// No description provided for @assetsFieldCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get assetsFieldCategory;
+
+  /// No description provided for @assetsFieldStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get assetsFieldStatus;
+
+  /// No description provided for @assetsFieldLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get assetsFieldLocation;
+
+  /// No description provided for @assetsFieldMaintenance.
+  ///
+  /// In en, this message translates to:
+  /// **'Next maintenance'**
+  String get assetsFieldMaintenance;
+
+  /// No description provided for @assetsSaveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get assetsSaveChanges;
+
+  /// No description provided for @assetsUpdateSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset updated'**
+  String get assetsUpdateSuccess;
+
+  /// No description provided for @assetsCatalogLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load categories or statuses'**
+  String get assetsCatalogLoadFailed;
+
+  /// No description provided for @assetDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset Detail'**
+  String get assetDetailTitle;
+
+  /// No description provided for @assetDetailStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get assetDetailStatus;
+
+  /// No description provided for @assetDetailCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get assetDetailCategory;
+
+  /// No description provided for @assetDetailLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get assetDetailLocation;
+
+  /// No description provided for @assetDetailNextService.
+  ///
+  /// In en, this message translates to:
+  /// **'Next Service'**
+  String get assetDetailNextService;
+
+  /// No description provided for @assetDetailLinkedTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Associated Tasks'**
+  String get assetDetailLinkedTasks;
+
+  /// No description provided for @assetDetailOpenTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} OPEN'**
+  String assetDetailOpenTasks(int count);
+
+  /// No description provided for @assetDetailHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintenance History'**
+  String get assetDetailHistory;
+
+  /// No description provided for @assetDetailNoHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'No maintenance history recorded yet.'**
+  String get assetDetailNoHistory;
+
+  /// No description provided for @assetDetailEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit asset'**
+  String get assetDetailEdit;
+
+  /// No description provided for @assetDetailEditSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset editing coming soon'**
+  String get assetDetailEditSoon;
+
+  /// No description provided for @assetStatusActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get assetStatusActive;
+
+  /// No description provided for @assetStatusMaintenance.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintenance'**
+  String get assetStatusMaintenance;
+
+  /// No description provided for @assetStatusOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline'**
+  String get assetStatusOffline;
+
+  /// No description provided for @assetStatusRetired.
+  ///
+  /// In en, this message translates to:
+  /// **'Retired'**
+  String get assetStatusRetired;
+
+  /// No description provided for @assetStatusReserved.
+  ///
+  /// In en, this message translates to:
+  /// **'Reserved'**
+  String get assetStatusReserved;
+
+  /// No description provided for @assetCategoryVehicles.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicles'**
+  String get assetCategoryVehicles;
+
+  /// No description provided for @assetCategoryTools.
+  ///
+  /// In en, this message translates to:
+  /// **'Tools'**
+  String get assetCategoryTools;
+
+  /// No description provided for @assetCategoryMachinery.
+  ///
+  /// In en, this message translates to:
+  /// **'Machinery'**
+  String get assetCategoryMachinery;
+
+  /// No description provided for @assetCategoryEquipment.
+  ///
+  /// In en, this message translates to:
+  /// **'Equipment'**
+  String get assetCategoryEquipment;
+
+  /// No description provided for @assetCategoryHvac.
+  ///
+  /// In en, this message translates to:
+  /// **'HVAC'**
+  String get assetCategoryHvac;
+
+  /// No description provided for @assetCategoryElectrical.
+  ///
+  /// In en, this message translates to:
+  /// **'Electrical'**
+  String get assetCategoryElectrical;
+
+  /// No description provided for @assetCategoryBuilding.
+  ///
+  /// In en, this message translates to:
+  /// **'Building'**
+  String get assetCategoryBuilding;
+
+  /// No description provided for @assetCategoryRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Room'**
+  String get assetCategoryRoom;
+
+  /// No description provided for @assetCategoryOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get assetCategoryOther;
+
+  /// No description provided for @assetHistoryCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset created'**
+  String get assetHistoryCreated;
+
+  /// No description provided for @assetHistoryUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset updated'**
+  String get assetHistoryUpdated;
+
+  /// No description provided for @assetHistoryPhotoAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo added'**
+  String get assetHistoryPhotoAdded;
+
+  /// No description provided for @assetHistoryPhotoRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo removed'**
+  String get assetHistoryPhotoRemoved;
+
+  /// No description provided for @assetHistoryLinkedTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked to task'**
+  String get assetHistoryLinkedTask;
+
+  /// No description provided for @assetHistoryUnlinkedTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlinked from task'**
+  String get assetHistoryUnlinkedTask;
 
   /// No description provided for @profilePerformanceTitle.
   ///
@@ -1297,6 +1789,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Administrator'**
   String get profileRoleAdmin;
+
+  /// No description provided for @profileRoleDeptHead.
+  ///
+  /// In en, this message translates to:
+  /// **'Department head'**
+  String get profileRoleDeptHead;
+
+  /// No description provided for @profileRoleSupervisor.
+  ///
+  /// In en, this message translates to:
+  /// **'Supervisor'**
+  String get profileRoleSupervisor;
+
+  /// No description provided for @profileRoleTeamLead.
+  ///
+  /// In en, this message translates to:
+  /// **'Team lead'**
+  String get profileRoleTeamLead;
 
   /// No description provided for @profileRoleManager.
   ///

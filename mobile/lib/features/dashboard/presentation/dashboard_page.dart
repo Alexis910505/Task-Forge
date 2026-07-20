@@ -3,25 +3,25 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:task_forge_app/l10n/gen/app_localizations.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart' hide FormData, MultipartFile, Response, Value;
 import 'package:go_router/go_router.dart';
 
 import '../../../core/i18n/relative_time.dart';
 import '../../../core/network/dio_provider.dart';
 import '../../../core/offline/offline_providers.dart';
-import '../../../core/realtime/realtime_providers.dart';
+import '../../../core/realtime/realtime_service.dart';
 import '../../../core/layout/app_mobile_top_bar.dart';
 import '../../auth/application/auth_repository.dart';
 import 'activity_presentation.dart';
 
-class DashboardPage extends ConsumerStatefulWidget {
+class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
 
   @override
-  ConsumerState<DashboardPage> createState() => _DashboardPageState();
+  State<DashboardPage> createState() => _DashboardPageState();
 }
 
-class _DashboardPageState extends ConsumerState<DashboardPage> {
+class _DashboardPageState extends State<DashboardPage> {
   Map<String, dynamic>? _data;
   int _assignedToMe = 0;
   String? _error;
@@ -41,7 +41,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   @override
   void initState() {
     super.initState();
-    _realtimeSub = ref.read(realtimeServiceProvider).eventStream.listen((msg) {
+    _realtimeSub = Get.find<RealtimeService>().eventStream.listen((msg) {
       final name = msg['event'] as String?;
       if (name == null || !_realtimeTriggers.contains(name)) {
         return;
@@ -103,10 +103,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       _error = null;
     });
     try {
-      await ref.read(outboxSyncServiceProvider).processQueue();
-      final dio = ref.read(dioProvider);
-      final profile = ref.read(authRepositoryProvider).valueOrNull?.profile;
-      final userId = profile?['id']?.toString();
+      await Get.find<OutboxSyncService>().processQueue();
+      final dio = Get.find<ApiClient>().dio;
+      final userId = Get.find<AuthController>().currentUserId;
 
       final summaryRes = await dio.get<Map<String, dynamic>>(
         '/dashboard/summary',
@@ -114,12 +113,14 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       );
       final data = summaryRes.data;
       if (data != null) {
-        await ref.read(localDataServiceProvider).saveDashboard(data);
+        await Get.find<LocalDataService>().saveDashboard(data);
       }
 
       var assigned = 0;
       try {
-        final profileRes = await dio.get<Map<String, dynamic>>('/users/me/profile');
+        final profileRes = await dio.get<Map<String, dynamic>>(
+          '/users/me/profile',
+        );
         final stats = profileRes.data?['stats'];
         if (stats is Map) {
           assigned = _asNum(stats['openAssignments']).toInt();
@@ -129,15 +130,16 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
           try {
             final tasksRes = await dio.get<List<dynamic>>(
               '/tasks',
-              queryParameters: {'assigneeId': userId},
+              queryParameters: {'assigneeId': userId, 'rootOnly': false},
             );
             final raw = tasksRes.data;
             if (raw is List) {
-              assigned = raw.where((t) {
-                if (t is! Map) return false;
-                final status = '${t['status'] ?? ''}';
-                return status != 'COMPLETED';
-              }).length;
+              assigned =
+                  raw.where((t) {
+                    if (t is! Map) return false;
+                    final status = '${t['status'] ?? ''}';
+                    return status != 'COMPLETED';
+                  }).length;
             }
           } catch (_) {
             assigned = 0;
@@ -153,7 +155,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         });
       }
     } catch (e) {
-      final cached = await ref.read(localDataServiceProvider).readDashboard();
+      final cached = await Get.find<LocalDataService>().readDashboard();
       if (cached != null) {
         if (mounted) {
           setState(() {
@@ -203,7 +205,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final completed = _asNum(byStatus['COMPLETED']);
     final outputPercent = total > 0 ? ((completed / total) * 100).round() : 0;
     final trend = d?['trendPercent'];
-    final profile = ref.watch(authRepositoryProvider).valueOrNull?.profile;
+    final profile = Get.find<AuthController>().currentSession?.profile;
     String? firstName;
     final rawName = profile?['firstName'];
     if (rawName is String && rawName.trim().isNotEmpty) {
@@ -225,9 +227,15 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
               if (_fromCache) ...[
                 MaterialBanner(
                   content: Text(l10n.dashboardOfflineBanner),
-                  leading: Icon(Icons.cloud_off_outlined, color: scheme.primary),
+                  leading: Icon(
+                    Icons.cloud_off_outlined,
+                    color: scheme.primary,
+                  ),
                   actions: [
-                    TextButton(onPressed: _load, child: Text(l10n.dashboardRefresh)),
+                    TextButton(
+                      onPressed: _load,
+                      child: Text(l10n.dashboardRefresh),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -314,11 +322,18 @@ class _BentoUrgentCard extends StatelessWidget {
                     color: scheme.errorContainer,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(Icons.priority_high, color: scheme.onErrorContainer, size: 22),
+                  child: Icon(
+                    Icons.priority_high,
+                    color: scheme.onErrorContainer,
+                    size: 22,
+                  ),
                 ),
                 if (n > 0)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: scheme.error,
                       borderRadius: BorderRadius.circular(999),
@@ -338,7 +353,9 @@ class _BentoUrgentCard extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               l10n.dashboardUrgentTitle,
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
@@ -393,7 +410,11 @@ class _BentoAssignedCard extends StatelessWidget {
                 color: scheme.onPrimary.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(Icons.assignment_ind, color: scheme.onPrimary, size: 22),
+              child: Icon(
+                Icons.assignment_ind,
+                color: scheme.onPrimary,
+                size: 22,
+              ),
             ),
             const SizedBox(height: 12),
             Text(
@@ -462,12 +483,18 @@ class _BentoWeeklyOutputCard extends StatelessWidget {
                 color: scheme.tertiaryContainer,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(Icons.query_stats, color: scheme.onTertiaryContainer, size: 22),
+              child: Icon(
+                Icons.query_stats,
+                color: scheme.onTertiaryContainer,
+                size: 22,
+              ),
             ),
             const SizedBox(height: 12),
             Text(
               l10n.dashboardOutputTitle,
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 4),
             Row(
@@ -515,7 +542,11 @@ class _BentoWeeklyOutputCard extends StatelessWidget {
 }
 
 class _CardCta extends StatelessWidget {
-  const _CardCta({required this.label, required this.color, required this.onTap});
+  const _CardCta({
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
 
   final String label;
   final Color color;
@@ -533,7 +564,11 @@ class _CardCta extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12),
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                ),
               ),
             ),
             Icon(Icons.chevron_right, size: 18, color: color),
@@ -567,13 +602,7 @@ class _RecentActivitySection extends StatelessWidget {
         continue;
       }
       final entry = Map<String, dynamic>.from(raw);
-      items.add(
-        _ActivityTile(
-          entry: entry,
-          locale: locale,
-          l10n: l10n,
-        ),
-      );
+      items.add(_ActivityTile(entry: entry, locale: locale, l10n: l10n));
       if (i < activities.length - 1 && i < 7) {
         items.add(Divider(height: 1, color: scheme.outlineVariant));
       }
@@ -601,13 +630,17 @@ class _RecentActivitySection extends StatelessWidget {
               children: [
                 Text(
                   l10n.dashboardRecentActivity,
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 TextButton(
                   onPressed: () => context.go('/my-tasks'),
                   child: Text(
                     l10n.dashboardSeeAll,
-                    style: theme.textTheme.labelLarge?.copyWith(color: scheme.primary),
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: scheme.primary,
+                    ),
                   ),
                 ),
               ],
@@ -619,7 +652,9 @@ class _RecentActivitySection extends StatelessWidget {
               child: Text(
                 '—',
                 textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
               ),
             )
           else
@@ -648,9 +683,10 @@ class _ActivityTile extends StatelessWidget {
     final action = '${entry['action'] ?? ''}';
     final visual = activityVisual(action, scheme);
     final createdAt = DateTime.tryParse('${entry['createdAt'] ?? ''}');
-    final timeLabel = createdAt != null
-        ? formatRelativeTime(createdAt, locale).toUpperCase()
-        : '';
+    final timeLabel =
+        createdAt != null
+            ? formatRelativeTime(createdAt, locale).toUpperCase()
+            : '';
     final message = activityMessage(l10n, entry);
     final taskId = activityTaskId(entry);
 

@@ -91,6 +91,45 @@ class LocalDataService {
     return null;
   }
 
+  /// Tareas locales pendientes de sync (ids `local_…`).
+  Future<List<Map<String, dynamic>>> pendingLocalTasks({
+    String? assigneeId,
+    bool includeUnassigned = false,
+  }) async {
+    final rows = await _db.select(_db.cachedTasks).get();
+    final out = <Map<String, dynamic>>[];
+    for (final row in rows) {
+      if (!row.id.startsWith('local_')) continue;
+      try {
+        final payload = Map<String, dynamic>.from(jsonDecode(row.payload) as Map);
+        final assigned = payload['assigneeId']?.toString();
+        final isUnassigned = assigned == null || assigned.isEmpty;
+        if (assigneeId != null && assigneeId.isNotEmpty) {
+          final isMine = assigned == assigneeId;
+          if (!isMine && !(includeUnassigned && isUnassigned)) {
+            continue;
+          }
+        }
+        payload['id'] = row.id;
+        payload['title'] = row.title;
+        payload['status'] = row.status;
+        payload['boardId'] = row.boardId;
+        payload['pendingSync'] = true;
+        out.add(payload);
+      } catch (_) {
+        out.add({
+          'id': row.id,
+          'title': row.title,
+          'status': row.status,
+          'boardId': row.boardId,
+          'priority': 'MEDIUM',
+          'pendingSync': true,
+        });
+      }
+    }
+    return out;
+  }
+
   Future<void> upsertCachedTask({
     required String id,
     required String boardId,

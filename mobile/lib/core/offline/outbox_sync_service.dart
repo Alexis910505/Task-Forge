@@ -2,25 +2,18 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart' hide FormData, MultipartFile, Response, Value;
 
-import '../network/dio_provider.dart';
 import '../../features/auth/application/auth_repository.dart';
+import '../network/dio_provider.dart';
 import 'app_database.dart';
-import 'database_provider.dart';
 import 'local_data_service.dart';
 
 /// Procesa la cola de operaciones pendientes (PATCH, POST, etc.) cuando hay sesión y red.
-class OutboxSyncService {
-  OutboxSyncService(this._ref);
-
-  final Ref _ref;
+class OutboxSyncService extends GetxService {
   static const int maxAttempts = 10;
 
-  bool _sessionOk() {
-    final auth = _ref.read(authRepositoryProvider);
-    return auth.hasValue && auth.asData?.value != null;
-  }
+  bool _sessionOk() => Get.find<AuthController>().isLoggedIn;
 
   Future<void> enqueuePatch(String path, Map<String, dynamic>? body) async {
     await _enqueue('PATCH', path, body);
@@ -31,7 +24,7 @@ class OutboxSyncService {
   }
 
   Future<void> _enqueue(String method, String path, Map<String, dynamic>? body) async {
-    final db = _ref.read(appDatabaseProvider);
+    final db = Get.find<AppDatabase>();
     await db.into(db.outboxOperations).insert(
           OutboxOperationsCompanion.insert(
             method: method,
@@ -52,8 +45,8 @@ class OutboxSyncService {
     if (!_sessionOk()) {
       return 0;
     }
-    final db = _ref.read(appDatabaseProvider);
-    final dio = _ref.read(dioProvider);
+    final db = Get.find<AppDatabase>();
+    final dio = Get.find<ApiClient>().dio;
     final local = LocalDataService(db);
     final rows = await db.select(db.outboxOperations).get();
     var completed = 0;

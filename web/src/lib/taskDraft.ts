@@ -10,6 +10,7 @@ export type TaskFormDraft = {
   dueDate: string;
   departmentId: string;
   teamId: string;
+  subtasks?: string[];
   savedAt: string;
 };
 

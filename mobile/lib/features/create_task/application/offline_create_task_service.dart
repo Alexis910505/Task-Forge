@@ -1,20 +1,14 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart' hide FormData, MultipartFile, Response, Value;
 import 'package:uuid/uuid.dart';
 
 import '../../../core/network/dio_provider.dart';
-import '../../../core/offline/offline_providers.dart';
-import '../../auth/application/auth_repository.dart';
+import '../../../core/offline/local_data_service.dart';
+import '../../../core/offline/outbox_sync_service.dart';
 import '../../evidence/application/evidence_upload_worker.dart';
 
-final offlineCreateTaskServiceProvider = Provider<OfflineCreateTaskService>((ref) {
-  return OfflineCreateTaskService(ref);
-});
-
 class OfflineCreateTaskService {
-  OfflineCreateTaskService(this._ref);
-
-  final Ref _ref;
+  const OfflineCreateTaskService();
   static const _uuid = Uuid();
 
   Future<CreateTaskSaveResult> save({
@@ -28,14 +22,16 @@ class OfflineCreateTaskService {
     List<String> photoPaths = const [],
     bool preferOnline = true,
   }) async {
-    final assigneeId = _ref.read(authRepositoryProvider).valueOrNull?.profile?['id']?.toString();
+    // Sin assigneeId = visible para todos. Solo se asigna si el flujo lo indica.
     final body = <String, dynamic>{
       'title': title.trim(),
       'boardId': boardId,
       'priority': priority,
-      if (description != null && description.isNotEmpty) 'description': description,
+      // Por defecto las tareas raíz van a BACKLOG; en móvil las dejamos Por hacer.
+      'status': 'TODO',
+      if (description != null && description.isNotEmpty)
+        'description': description,
       if (location != null && location.isNotEmpty) 'location': location,
-      if (assigneeId != null) 'assigneeId': assigneeId,
     };
 
     final notes = <String>[];
@@ -47,47 +43,55 @@ class OfflineCreateTaskService {
     }
     if (notes.isNotEmpty) {
       final extra = notes.join('\n');
-      body['description'] = body['description'] != null
-          ? '${body['description']}\n\n$extra'
-          : extra;
+      body['description'] =
+          body['description'] != null
+              ? '${body['description']}\n\n$extra'
+              : extra;
     }
 
     if (preferOnline) {
-      final onlineResult = await _tryOnlineCreate(body, photoPaths);
-      if (onlineResult != null) {
-        return onlineResult;
+      try {
+        return await _tryOnlineCreate(body, photoPaths);
+      } on DioException catch (e) {
+        if (!_isOfflineNetworkError(e)) {
+          rethrow;
+        }
       }
     }
 
     return _queueOffline(body, boardId, photoPaths);
   }
 
-  Future<CreateTaskSaveResult?> _tryOnlineCreate(
+  bool _isOfflineNetworkError(DioException e) {
+    return e.type == DioExceptionType.connectionError ||
+        e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.receiveTimeout ||
+        e.type == DioExceptionType.sendTimeout ||
+        e.response == null;
+  }
+
+  Future<CreateTaskSaveResult> _tryOnlineCreate(
     Map<String, dynamic> body,
     List<String> photoPaths,
   ) async {
-    try {
-      final dio = _ref.read(dioProvider);
-      final res = await dio.post<Map<String, dynamic>>('/tasks', data: body);
-      final data = res.data;
-      final taskId = data?['id']?.toString();
-      if (taskId != null && photoPaths.isNotEmpty) {
-        final worker = _ref.read(evidenceUploadWorkerProvider);
-        final captured = DateTime.now().toUtc().toIso8601String();
-        for (final path in photoPaths) {
-          await worker.enqueue(
-            taskId: taskId,
-            evidenceKind: 'BEFORE',
-            localPath: path,
-            capturedAtIso: captured,
-          );
-        }
+    final dio = Get.find<ApiClient>().dio;
+    final res = await dio.post<Map<String, dynamic>>('/tasks', data: body);
+    final data = res.data;
+    final taskId = data?['id']?.toString();
+    if (taskId != null && photoPaths.isNotEmpty) {
+      final worker = Get.find<EvidenceUploadWorker>();
+      final captured = DateTime.now().toUtc().toIso8601String();
+      for (final path in photoPaths) {
+        await worker.enqueue(
+          taskId: taskId,
+          evidenceKind: 'BEFORE',
+          localPath: path,
+          capturedAtIso: captured,
+        );
       }
-      await _ref.read(outboxSyncServiceProvider).processQueue();
-      return CreateTaskSaveResult(synced: true, taskId: taskId);
-    } on DioException catch (_) {
-      return null;
     }
+    await Get.find<OutboxSyncService>().processQueue();
+    return CreateTaskSaveResult(synced: true, taskId: taskId);
   }
 
   Future<CreateTaskSaveResult> _queueOffline(
@@ -96,29 +100,31 @@ class OfflineCreateTaskService {
     List<String> photoPaths,
   ) async {
     final clientTempId = 'local_${_uuid.v4()}';
-    final queueBody = Map<String, dynamic>.from(body)..['clientTempId'] = clientTempId;
+    final queueBody = Map<String, dynamic>.from(body)
+      ..['clientTempId'] = clientTempId;
 
-    await _ref.read(outboxSyncServiceProvider).enqueuePost('/tasks', queueBody);
+    await Get.find<OutboxSyncService>().enqueuePost('/tasks', queueBody);
 
-    final local = _ref.read(localDataServiceProvider);
+    final local = Get.find<LocalDataService>();
     final payload = <String, dynamic>{
       'id': clientTempId,
       'title': body['title'],
-      'status': 'TODO',
+      'status': body['status'] ?? 'TODO',
       'priority': body['priority'],
       'boardId': boardId,
+      'assigneeId': body['assigneeId'],
       'pendingSync': true,
     };
     await local.upsertCachedTask(
       id: clientTempId,
       boardId: boardId,
       title: '${body['title']}',
-      status: 'TODO',
+      status: '${body['status'] ?? 'TODO'}',
       payload: payload,
     );
 
     if (photoPaths.isNotEmpty) {
-      final worker = _ref.read(evidenceUploadWorkerProvider);
+      final worker = Get.find<EvidenceUploadWorker>();
       final captured = DateTime.now().toUtc().toIso8601String();
       for (final path in photoPaths) {
         await worker.enqueue(

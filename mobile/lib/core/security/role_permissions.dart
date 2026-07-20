@@ -1,4 +1,4 @@
-/// Espejo de `backend/src/core/security/role-permissions.ts` y `web/src/lib/rolePermissions.ts`.
+/// Espejo de `backend/src/core/security/role-permissions.ts`.
 const _rolePermissions = <String, List<String>>{
   'ADMIN': [
     'users:read',
@@ -26,9 +26,11 @@ const _rolePermissions = <String, List<String>>{
     'organizations:read',
     'organizations:write',
   ],
-  'MANAGER': [
+  'DEPT_HEAD': [
     'users:read',
+    'users:write',
     'departments:read',
+    'departments:write',
     'teams:read',
     'teams:write',
     'projects:read',
@@ -48,7 +50,49 @@ const _rolePermissions = <String, List<String>>{
     'assets:read',
     'assets:write',
     'organizations:read',
-    'organizations:write',
+  ],
+  'SUPERVISOR': [
+    'users:read',
+    'users:write',
+    'departments:read',
+    'teams:read',
+    'teams:write',
+    'projects:read',
+    'boards:read',
+    'boards:write',
+    'tasks:read',
+    'tasks:write',
+    'tasks:assign',
+    'comments:write',
+    'attachments:write',
+    'notifications:read',
+    'dashboard:read',
+    'reports:read',
+    'activity:read',
+    'assets:read',
+    'assets:write',
+    'organizations:read',
+  ],
+  'TEAM_LEAD': [
+    'users:read',
+    'users:write',
+    'departments:read',
+    'teams:read',
+    'teams:write',
+    'projects:read',
+    'boards:read',
+    'boards:write',
+    'tasks:read',
+    'tasks:write',
+    'tasks:assign',
+    'comments:write',
+    'attachments:write',
+    'notifications:read',
+    'dashboard:read',
+    'activity:read',
+    'assets:read',
+    'assets:write',
+    'organizations:read',
   ],
   'WORKER': [
     'departments:read',
@@ -64,35 +108,6 @@ const _rolePermissions = <String, List<String>>{
     'activity:read',
     'assets:read',
     'assets:write',
-    'organizations:read',
-  ],
-  'INSPECTOR': [
-    'departments:read',
-    'projects:read',
-    'boards:read',
-    'tasks:read',
-    'tasks:write',
-    'comments:write',
-    'attachments:write',
-    'notifications:read',
-    'dashboard:read',
-    'reports:read',
-    'reports:export',
-    'activity:read',
-    'assets:read',
-    'assets:write',
-    'organizations:read',
-  ],
-  'VIEWER': [
-    'departments:read',
-    'projects:read',
-    'boards:read',
-    'tasks:read',
-    'notifications:read',
-    'dashboard:read',
-    'reports:read',
-    'activity:read',
-    'assets:read',
     'organizations:read',
   ],
 };
@@ -111,4 +126,18 @@ String? roleNameFromProfile(Map<String, dynamic>? profile) {
     return role['name']?.toString();
   }
   return null;
+}
+
+bool profileHasPermission(
+  Map<String, dynamic>? profile,
+  String permission,
+) {
+  final role = profile?['role'];
+  if (role is Map) {
+    final permissions = role['permissions'];
+    if (permissions is List) {
+      return permissions.map((value) => value.toString()).contains(permission);
+    }
+  }
+  return roleHasPermission(roleNameFromProfile(profile), permission);
 }

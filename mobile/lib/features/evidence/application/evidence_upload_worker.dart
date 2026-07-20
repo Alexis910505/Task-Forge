@@ -3,17 +3,12 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart' hide FormData, MultipartFile, Response, Value;
 import 'package:path/path.dart' as p;
 
 import '../../../core/network/dio_provider.dart';
 import '../../../core/offline/app_database.dart';
-import '../../../core/offline/database_provider.dart';
 import '../../auth/application/auth_repository.dart';
-
-final evidenceUploadWorkerProvider = Provider<EvidenceUploadWorker>((ref) {
-  return EvidenceUploadWorker(ref);
-});
 
 class EvidenceEnqueueResult {
   const EvidenceEnqueueResult({required this.uploaded, this.error});
@@ -45,9 +40,7 @@ String _formatUploadError(Object e) {
 
 /// Sube evidencias encoladas en SQLite (multipart) cuando hay sesión y red.
 class EvidenceUploadWorker {
-  EvidenceUploadWorker(this._ref);
-
-  final Ref _ref;
+  EvidenceUploadWorker();
   static const int maxAttempts = 12;
 
   Future<int>? _processChain;
@@ -61,16 +54,13 @@ class EvidenceUploadWorker {
 
   Future<int> _runProcessPending() async {
     var completed = 0;
-    final session = _ref.read(authRepositoryProvider).maybeWhen(
-          data: (v) => v,
-          orElse: () => null,
-        );
+    final session = Get.find<AuthController>().currentSession;
     if (session == null) {
       return 0;
     }
 
-    final db = _ref.read(appDatabaseProvider);
-    final dio = _ref.read(dioProvider);
+    final db = Get.find<AppDatabase>();
+    final dio = Get.find<ApiClient>().dio;
     final rows = await db.select(db.evidenceUploadQueue).get();
 
     for (final row in rows) {
@@ -78,16 +68,18 @@ class EvidenceUploadWorker {
         continue;
       }
       if (!File(row.localPath).existsSync()) {
-        await (db.delete(db.evidenceUploadQueue)..where((t) => t.id.equals(row.id))).go();
+        await (db.delete(db.evidenceUploadQueue)
+          ..where((t) => t.id.equals(row.id))).go();
         continue;
       }
       try {
         final form = FormData.fromMap({
           'file': await MultipartFile.fromFile(
             row.localPath,
-            filename: p.basename(row.localPath).endsWith('.jpg')
-                ? p.basename(row.localPath)
-                : '${p.basenameWithoutExtension(row.localPath)}.jpg',
+            filename:
+                p.basename(row.localPath).endsWith('.jpg')
+                    ? p.basename(row.localPath)
+                    : '${p.basenameWithoutExtension(row.localPath)}.jpg',
             contentType: DioMediaType.parse('image/jpeg'),
           ),
           'evidenceKind': row.evidenceKind,
@@ -106,15 +98,17 @@ class EvidenceUploadWorker {
         try {
           await File(row.localPath).delete();
         } catch (_) {}
-        await (db.delete(db.evidenceUploadQueue)..where((t) => t.id.equals(row.id))).go();
+        await (db.delete(db.evidenceUploadQueue)
+          ..where((t) => t.id.equals(row.id))).go();
         completed++;
       } catch (e) {
-        await (db.update(db.evidenceUploadQueue)..where((t) => t.id.equals(row.id))).write(
-              EvidenceUploadQueueCompanion(
-                attempts: Value(row.attempts + 1),
-                lastError: Value(_formatUploadError(e)),
-              ),
-            );
+        await (db.update(db.evidenceUploadQueue)
+          ..where((t) => t.id.equals(row.id))).write(
+          EvidenceUploadQueueCompanion(
+            attempts: Value(row.attempts + 1),
+            lastError: Value(_formatUploadError(e)),
+          ),
+        );
       }
     }
     return completed;
@@ -128,10 +122,7 @@ class EvidenceUploadWorker {
     double? latitude,
     double? longitude,
   }) async {
-    final session = _ref.read(authRepositoryProvider).maybeWhen(
-          data: (v) => v,
-          orElse: () => null,
-        );
+    final session = Get.find<AuthController>().currentSession;
     if (session == null) {
       return const EvidenceEnqueueResult(
         uploaded: false,
@@ -139,21 +130,24 @@ class EvidenceUploadWorker {
       );
     }
 
-    final db = _ref.read(appDatabaseProvider);
-    final rowId = await db.into(db.evidenceUploadQueue).insert(
+    final db = Get.find<AppDatabase>();
+    final rowId = await db
+        .into(db.evidenceUploadQueue)
+        .insert(
           EvidenceUploadQueueCompanion.insert(
             taskId: taskId,
             evidenceKind: evidenceKind,
             localPath: localPath,
             capturedAtIso: capturedAtIso,
             latitude: latitude == null ? const Value.absent() : Value(latitude),
-            longitude: longitude == null ? const Value.absent() : Value(longitude),
+            longitude:
+                longitude == null ? const Value.absent() : Value(longitude),
           ),
         );
     await processPending();
-    final remaining = await (db.select(db.evidenceUploadQueue)
-          ..where((t) => t.id.equals(rowId)))
-        .getSingleOrNull();
+    final remaining =
+        await (db.select(db.evidenceUploadQueue)
+          ..where((t) => t.id.equals(rowId))).getSingleOrNull();
     if (remaining == null) {
       return const EvidenceEnqueueResult(uploaded: true);
     }

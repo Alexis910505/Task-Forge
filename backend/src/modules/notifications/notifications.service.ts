@@ -41,6 +41,72 @@ export class NotificationsService {
       });
   }
 
+  /**
+   * Destinatarios de una tarea:
+   * - Con assignee → solo ese usuario
+   * - Sin assignee (“para todos”) → usuarios activos de la organización
+   * Siempre se excluye al actor (quien disparó el evento).
+   */
+  async resolveTaskRecipientIds(
+    organizationId: string,
+    assigneeId: string | null | undefined,
+    excludeUserId?: string | null,
+  ): Promise<string[]> {
+    let ids: string[];
+    if (assigneeId) {
+      ids = [assigneeId];
+    } else {
+      const users = await this.prisma.user.findMany({
+        where: { organizationId, isActive: true },
+        select: { id: true },
+      });
+      ids = users.map((u) => u.id);
+    }
+    if (excludeUserId) {
+      ids = ids.filter((id) => id !== excludeUserId);
+    }
+    return [...new Set(ids)];
+  }
+
+  async notifyUsers(
+    userIds: string[],
+    type: NotificationType,
+    title: string,
+    body?: string,
+    metadata?: Record<string, unknown>,
+  ) {
+    if (userIds.length === 0) {
+      return [];
+    }
+    return Promise.all(
+      userIds.map((userId) => this.createForUser(userId, type, title, body, metadata)),
+    );
+  }
+
+  /** Notifica al assignee o, si la tarea es para todos, a toda la org (excepto el actor). */
+  async notifyTaskAudience(params: {
+    organizationId: string;
+    assigneeId: string | null | undefined;
+    excludeUserId?: string | null;
+    type: NotificationType;
+    title: string;
+    body?: string;
+    metadata?: Record<string, unknown>;
+  }) {
+    const recipients = await this.resolveTaskRecipientIds(
+      params.organizationId,
+      params.assigneeId,
+      params.excludeUserId,
+    );
+    return this.notifyUsers(
+      recipients,
+      params.type,
+      params.title,
+      params.body,
+      params.metadata,
+    );
+  }
+
   listForUser(userId: string, unreadOnly?: boolean) {
     return this.prisma.notification.findMany({
       where: { userId, ...(unreadOnly ? { read: false } : {}) },

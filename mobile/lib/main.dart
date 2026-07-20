@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'app/task_forge_app.dart';
+import 'core/di/initial_binding.dart';
+import 'core/router/app_router.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: TaskForgeApp()));
+  InitialBinding().dependencies();
+  initAppRouter();
+  runApp(const TaskForgeApp());
 }

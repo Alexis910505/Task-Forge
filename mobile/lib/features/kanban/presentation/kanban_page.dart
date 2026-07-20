@@ -3,22 +3,23 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:task_forge_app/l10n/gen/app_localizations.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart' hide FormData, MultipartFile, Response, Value;
 import 'package:go_router/go_router.dart';
 
 import '../../../core/network/dio_provider.dart';
 import '../../../core/offline/board_map_mutations.dart';
 import '../../../core/offline/offline_providers.dart';
-import '../../../core/realtime/realtime_providers.dart';
+import '../../../core/realtime/realtime_service.dart';
+import '../../my_tasks/application/my_tasks_controller.dart';
 
-class KanbanPage extends ConsumerStatefulWidget {
+class KanbanPage extends StatefulWidget {
   const KanbanPage({super.key});
 
   @override
-  ConsumerState<KanbanPage> createState() => _KanbanPageState();
+  State<KanbanPage> createState() => _KanbanPageState();
 }
 
-class _KanbanPageState extends ConsumerState<KanbanPage> {
+class _KanbanPageState extends State<KanbanPage> {
   final _boardId = TextEditingController();
   Map<String, dynamic>? _board;
   String? _error;
@@ -27,6 +28,7 @@ class _KanbanPageState extends ConsumerState<KanbanPage> {
   String? _joinedBoardSocketId;
   StreamSubscription<Map<String, Object?>>? _realtimeSub;
   bool _realtimeHooked = false;
+  Timer? _remoteReloadDebounce;
 
   static const _kanbanRealtimeEvents = {
     'task.created',
@@ -46,21 +48,53 @@ class _KanbanPageState extends ConsumerState<KanbanPage> {
     if (boardId.isEmpty) {
       return;
     }
-    final payload = msg['payload'] as Map<String, Object?>?;
-    final bid = payload?['boardId']?.toString();
+    final payload = msg['payload'];
+    final map = payload is Map
+        ? Map<String, Object?>.from(
+            payload.map((k, v) => MapEntry('$k', v as Object?)),
+          )
+        : null;
+    final bid = map?['boardId']?.toString();
     if (bid != null && bid != boardId) {
       return;
     }
-    if (mounted) {
-      _load();
+
+    // Parche local igual que el detalle: todos ven el cambio sin flicker.
+    if (name == 'task.status_changed' || name == 'kanban.card_moved') {
+      final taskId = map?['taskId']?.toString();
+      final toStatus =
+          map?['toStatus']?.toString() ?? map?['status']?.toString();
+      final parentTaskId = map?['parentTaskId']?.toString();
+      if (taskId != null &&
+          toStatus != null &&
+          (parentTaskId == null || parentTaskId.isEmpty) &&
+          _board != null) {
+        final next = applyOfflineTaskStatusMove(
+          board: _board!,
+          taskId: taskId,
+          newStatus: toStatus,
+        );
+        if (mounted) {
+          setState(() => _board = next);
+        }
+        MyTasksController.patchStatusIfRegistered(taskId, toStatus);
+        unawaited(Get.find<LocalDataService>().saveBoard(boardId, next));
+        return;
+      }
     }
+
+    _remoteReloadDebounce?.cancel();
+    _remoteReloadDebounce = Timer(const Duration(milliseconds: 250), () {
+      if (mounted) unawaited(_load());
+    });
   }
 
   @override
   void dispose() {
+    _remoteReloadDebounce?.cancel();
     _realtimeSub?.cancel();
     if (_joinedBoardSocketId != null) {
-      ref.read(realtimeServiceProvider).leaveBoard(_joinedBoardSocketId!);
+      Get.find<RealtimeService>().leaveBoard(_joinedBoardSocketId!);
     }
     _boardId.dispose();
     super.dispose();
@@ -71,12 +105,14 @@ class _KanbanPageState extends ConsumerState<KanbanPage> {
     super.didChangeDependencies();
     if (!_realtimeHooked) {
       _realtimeHooked = true;
-      _realtimeSub = ref.read(realtimeServiceProvider).eventStream.listen(_onRealtimeEvent);
+      _realtimeSub = Get.find<RealtimeService>().eventStream.listen(
+        _onRealtimeEvent,
+      );
     }
   }
 
   void _syncSocketBoard(String id) {
-    final rt = ref.read(realtimeServiceProvider);
+    final rt = Get.find<RealtimeService>();
     if (_joinedBoardSocketId != null && _joinedBoardSocketId != id) {
       rt.leaveBoard(_joinedBoardSocketId!);
     }
@@ -85,10 +121,7 @@ class _KanbanPageState extends ConsumerState<KanbanPage> {
   }
 
   bool _isLikelyOnline() {
-    return ref.read(connectivityProvider).maybeWhen(
-          data: connectivityLooksOnline,
-          orElse: () => true,
-        );
+    return Get.find<ConnectivityService>().online.value;
   }
 
   bool _isOfflineNetworkError(Object e) {
@@ -120,12 +153,12 @@ class _KanbanPageState extends ConsumerState<KanbanPage> {
       _error = null;
     });
     try {
-      await ref.read(outboxSyncServiceProvider).processQueue();
-      final dio = ref.read(dioProvider);
+      await Get.find<OutboxSyncService>().processQueue();
+      final dio = Get.find<ApiClient>().dio;
       final res = await dio.get<Map<String, dynamic>>('/boards/$id');
       final data = res.data;
       if (data != null) {
-        final local = ref.read(localDataServiceProvider);
+        final local = Get.find<LocalDataService>();
         await local.saveBoard(id, data);
         await local.saveDefaultBoardId(id);
         if (mounted) {
@@ -137,7 +170,7 @@ class _KanbanPageState extends ConsumerState<KanbanPage> {
         }
       }
     } catch (e) {
-      final cached = await ref.read(localDataServiceProvider).readBoard(id);
+      final cached = await Get.find<LocalDataService>().readBoard(id);
       if (cached != null) {
         if (mounted) {
           setState(() {
@@ -172,18 +205,15 @@ class _KanbanPageState extends ConsumerState<KanbanPage> {
       newStatus: newStatus,
     );
     setState(() => _board = next);
-    await ref.read(localDataServiceProvider).saveBoard(boardId, next);
-    await ref.read(outboxSyncServiceProvider).enqueuePatch(
-          '/tasks/$taskId',
-          {'status': newStatus},
-        );
+    await Get.find<LocalDataService>().saveBoard(boardId, next);
+    await Get.find<OutboxSyncService>().enqueuePatch('/tasks/$taskId', {
+      'status': newStatus,
+    });
     if (mounted) {
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.kanbanOfflineSaved),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.kanbanOfflineSaved)));
     }
   }
 
@@ -204,10 +234,20 @@ class _KanbanPageState extends ConsumerState<KanbanPage> {
     }
 
     try {
-      final dio = ref.read(dioProvider);
+      final dio = Get.find<ApiClient>().dio;
+      final board = _board;
+      if (board != null) {
+        setState(() {
+          _board = applyOfflineTaskStatusMove(
+            board: board,
+            taskId: taskId,
+            newStatus: newStatus,
+          );
+        });
+      }
+      MyTasksController.patchStatusIfRegistered(taskId, newStatus);
       await dio.patch<dynamic>('/tasks/$taskId', data: {'status': newStatus});
-      await ref.read(outboxSyncServiceProvider).processQueue();
-      await _load();
+      await Get.find<OutboxSyncService>().processQueue();
     } catch (e) {
       if (_isOfflineNetworkError(e)) {
         await _applyOptimisticMoveAndQueue(
@@ -248,13 +288,14 @@ class _KanbanPageState extends ConsumerState<KanbanPage> {
               const SizedBox(width: 12),
               FilledButton(
                 onPressed: _loading ? null : _load,
-                child: _loading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(l10n.kanbanLoad),
+                child:
+                    _loading
+                        ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                        : Text(l10n.kanbanLoad),
               ),
             ],
           ),
@@ -262,7 +303,10 @@ class _KanbanPageState extends ConsumerState<KanbanPage> {
             const SizedBox(height: 8),
             ListTile(
               dense: true,
-              leading: Icon(Icons.cloud_off_outlined, color: theme.colorScheme.primary),
+              leading: Icon(
+                Icons.cloud_off_outlined,
+                color: theme.colorScheme.primary,
+              ),
               title: Text(l10n.kanbanCachedTitle),
               subtitle: Text(l10n.kanbanCachedSubtitle),
             ),
@@ -273,20 +317,18 @@ class _KanbanPageState extends ConsumerState<KanbanPage> {
           ],
           const SizedBox(height: 12),
           Expanded(
-            child: _board == null
-                ? Center(
-                    child: Text(
-                      l10n.kanbanEmptyState,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+            child:
+                _board == null
+                    ? Center(
+                      child: Text(
+                        l10n.kanbanEmptyState,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                  )
-                : KanbanBoardView(
-                    board: _board!,
-                    onDropTask: _moveTask,
-                  ),
+                    )
+                    : KanbanBoardView(board: _board!, onDropTask: _moveTask),
           ),
         ],
       ),
@@ -312,87 +354,116 @@ class KanbanBoardView extends StatelessWidget {
         return Scrollbar(
           child: ListView(
             scrollDirection: Axis.horizontal,
-            children: columns.map((col) {
-              final m = col as Map<String, dynamic>;
-              final status = '${m['status']}';
-              final tasks = (m['tasks'] as List?) ?? [];
-              return SizedBox(
-                width: c.maxWidth > 520 ? 320 : c.maxWidth * 0.86,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: DragTarget<String>(
-                    onAcceptWithDetails: (details) => onDropTask(details.data, status),
-                    builder: (context, candidate, _) {
-                      final active = candidate.isNotEmpty;
-                      return AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: active
-                                ? Theme.of(context).colorScheme.primary
-                                : Theme.of(context).dividerColor,
-                          ),
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest
-                              .withValues(alpha: 0.35),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      status,
-                                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            children:
+                columns.map((col) {
+                  final m = col as Map<String, dynamic>;
+                  final status = '${m['status']}';
+                  final tasks = (m['tasks'] as List?) ?? [];
+                  return SizedBox(
+                    width: c.maxWidth > 520 ? 320 : c.maxWidth * 0.86,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: DragTarget<String>(
+                        onAcceptWithDetails:
+                            (details) => onDropTask(details.data, status),
+                        builder: (context, candidate, _) {
+                          final active = candidate.isNotEmpty;
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 150),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color:
+                                    active
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(context).dividerColor,
+                              ),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest
+                                  .withValues(alpha: 0.35),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    12,
+                                    12,
+                                    12,
+                                    8,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          status,
+                                          style: Theme.of(
+                                            context,
+                                          ).textTheme.titleSmall?.copyWith(
                                             fontWeight: FontWeight.w600,
                                           ),
-                                    ),
-                                  ),
-                                  Chip(label: Text('${tasks.length}')),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              child: ListView.builder(
-                                padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-                                itemCount: tasks.length,
-                                itemBuilder: (context, i) {
-                                  final t = tasks[i] as Map<String, dynamic>;
-                                  final id = '${t['id']}';
-                                  final title = '${t['title']}';
-                                  return LongPressDraggable<String>(
-                                    data: id,
-                                    feedback: Material(
-                                      elevation: 4,
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: SizedBox(
-                                        width: 260,
-                                        child: ListTile(
-                                          title: Text(title),
-                                          tileColor: Theme.of(context).colorScheme.surface,
                                         ),
                                       ),
+                                      Chip(label: Text('${tasks.length}')),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  child: ListView.builder(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      8,
+                                      0,
+                                      8,
+                                      8,
                                     ),
-                                    childWhenDragging:
-                                        Opacity(opacity: 0.4, child: _TaskTile(title: title, taskId: id)),
-                                    child: _TaskTile(title: title, taskId: id),
-                                  );
-                                },
-                              ),
+                                    itemCount: tasks.length,
+                                    itemBuilder: (context, i) {
+                                      final t =
+                                          tasks[i] as Map<String, dynamic>;
+                                      final id = '${t['id']}';
+                                      final title = '${t['title']}';
+                                      return LongPressDraggable<String>(
+                                        data: id,
+                                        feedback: Material(
+                                          elevation: 4,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          child: SizedBox(
+                                            width: 260,
+                                            child: ListTile(
+                                              title: Text(title),
+                                              tileColor:
+                                                  Theme.of(
+                                                    context,
+                                                  ).colorScheme.surface,
+                                            ),
+                                          ),
+                                        ),
+                                        childWhenDragging: Opacity(
+                                          opacity: 0.4,
+                                          child: _TaskTile(
+                                            title: title,
+                                            taskId: id,
+                                          ),
+                                        ),
+                                        child: _TaskTile(
+                                          title: title,
+                                          taskId: id,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              );
-            }).toList(),
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                }).toList(),
           ),
         );
       },

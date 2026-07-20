@@ -1,8 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { NotificationType, Prisma, TaskStatus } from '@prisma/client';
 import { TaskTimelineAction, timelineSnippet } from '../../core/activity/task-timeline.constants';
 import { SocketEvents } from '../../core/websocket/socket-events.constants';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { resolveAccessScope, taskScopeWhere } from '../../core/security/access-scope';
+import type { RequestUser } from '../../core/strategies/jwt.strategy';
 import { ActivityService } from '../activity/activity.service';
 import { AssetsService } from '../assets/assets.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -28,6 +30,10 @@ const taskAssetInclude = {
   },
 } as const;
 
+const subtaskInclude = {
+  assignee: { select: { id: true, firstName: true, lastName: true, email: true } },
+} as const;
+
 @Injectable()
 export class TasksService {
   constructor(
@@ -38,41 +44,105 @@ export class TasksService {
     private readonly assets: AssetsService,
   ) {}
 
-  list(organizationId: string, query: ListTasksQueryDto) {
+  async list(user: RequestUser, query: ListTasksQueryDto) {
+    const organizationId = user.organizationId;
+    const scope = await resolveAccessScope(this.prisma, user.userId, organizationId, user.role);
+    const scopeWhere = taskScopeWhere(scope);
+    const worklistUserId = query.worklistFor?.trim() || null;
+
+    const listInclude = {
+      assignee: { select: { id: true, firstName: true, lastName: true, email: true } },
+      board: {
+        select: {
+          id: true,
+          name: true,
+          project: { select: { id: true, name: true } },
+        },
+      },
+      parentTask: { select: { id: true, title: true } },
+      _count: { select: { subtasks: true } },
+      subtasks: { select: { status: true } },
+      ...taskAssetInclude,
+    } as const;
+
+    // Cola móvil/usuario: todas las boards/proyectos de la org (solo tareas padre por defecto).
+    if (worklistUserId) {
+      const includeSubtasks = query.rootOnly === false;
+      return this.prisma.task.findMany({
+        where: {
+          board: { organizationId },
+          OR: [{ assigneeId: worklistUserId }, { assigneeId: null }],
+          ...(query.status ? { status: query.status } : {}),
+          ...(query.parentId ? { parentTaskId: query.parentId } : {}),
+          ...(!includeSubtasks && !query.parentId ? { parentTaskId: null } : {}),
+          ...(query.q
+            ? {
+                title: { contains: query.q, mode: Prisma.QueryMode.insensitive },
+              }
+            : {}),
+          ...(scopeWhere ?? {}),
+        },
+        orderBy: [{ updatedAt: 'desc' }, { status: 'asc' }, { sortOrder: 'asc' }],
+        include: listInclude,
+      }).then((tasks) => tasks.map((t) => this.withSubtaskProgress(t)));
+    }
+
+    // Kanban/board: solo raíces. Mis tareas (assigneeId): incluir también subtareas.
+    const rootOnly = query.parentId
+      ? false
+      : query.rootOnly !== undefined
+        ? query.rootOnly
+        : !query.assigneeId;
+    const assigneeWhere: Prisma.TaskWhereInput | undefined = query.assigneeId
+      ? query.includeUnassigned
+        ? { OR: [{ assigneeId: query.assigneeId }, { assigneeId: null }] }
+        : { assigneeId: query.assigneeId }
+      : undefined;
+
     const where: Prisma.TaskWhereInput = {
       ...(query.boardId ? { boardId: query.boardId } : {}),
       board: { organizationId },
       ...(query.status ? { status: query.status } : {}),
-      ...(query.assigneeId ? { assigneeId: query.assigneeId } : {}),
+      ...assigneeWhere,
+      ...(query.parentId ? { parentTaskId: query.parentId } : {}),
+      ...(rootOnly && !query.parentId ? { parentTaskId: null } : {}),
       ...(query.q
         ? {
             title: { contains: query.q, mode: Prisma.QueryMode.insensitive },
           }
         : {}),
+      ...(scopeWhere ?? {}),
     };
     return this.prisma.task.findMany({
       where,
       orderBy: [{ status: 'asc' }, { sortOrder: 'asc' }, { updatedAt: 'desc' }],
-      include: {
-        assignee: { select: { id: true, firstName: true, lastName: true, email: true } },
-        board: { select: { id: true, name: true } },
-        ...taskAssetInclude,
-      },
-    });
+      include: listInclude,
+    }).then((tasks) => tasks.map((t) => this.withSubtaskProgress(t)));
+  }
+
+  private withSubtaskProgress<T extends { subtasks?: { status: TaskStatus }[]; _count?: { subtasks: number } }>(
+    task: T,
+  ) {
+    const { subtasks, ...rest } = task as T & { subtasks?: { status: TaskStatus }[] };
+    const statuses = subtasks ?? [];
+    return {
+      ...rest,
+      subtaskProgress: this.computeSubtaskProgress(statuses),
+    };
   }
 
   async create(organizationId: string, actorId: string, dto: CreateTaskDto) {
-    const board = await this.prisma.board.findFirst({
-      where: { id: dto.boardId, organizationId },
-    });
-    if (!board) {
-      throw new NotFoundException('Tablero no encontrado');
-    }
+    const placement = await this.resolveTaskPlacement(organizationId, dto);
     const task = await this.prisma.task.create({
       data: {
         title: dto.title,
         description: dto.description,
-        boardId: dto.boardId,
+        boardId: placement.boardId,
+        parentTaskId: placement.parentTaskId,
+        sortOrder: placement.sortOrder,
+        status: placement.parentTaskId
+          ? TaskStatus.TODO
+          : (dto.status ?? TaskStatus.TODO),
         priority: dto.priority,
         assigneeId: dto.assigneeId,
         location: dto.location,
@@ -82,6 +152,7 @@ export class TasksService {
       include: {
         assignee: { select: { id: true, firstName: true, lastName: true } },
         board: true,
+        parentTask: { select: { id: true, title: true } },
       },
     });
     await this.activity.log(
@@ -94,9 +165,23 @@ export class TasksService {
         status: task.status,
         priority: task.priority,
         assigneeId: task.assigneeId ?? null,
+        parentTaskId: task.parentTaskId ?? null,
       },
       organizationId,
     );
+    if (placement.parentTaskId) {
+      await this.activity.log(
+        actorId,
+        placement.parentTaskId,
+        TaskTimelineAction.TASK_SUBTASK_CREATED,
+        { subtaskId: task.id, subtaskTitle: task.title },
+        organizationId,
+      );
+      this.events.emitTaskUpdated(task.boardId, {
+        type: 'task.subtasks_updated',
+        taskId: placement.parentTaskId,
+      });
+    }
     if (task.assigneeId) {
       await this.activity.log(
         actorId,
@@ -130,14 +215,24 @@ export class TasksService {
         );
       }
     }
+
+    const assignedToSomeone = Boolean(task.assigneeId);
+    await this.notifications.notifyTaskAudience({
+      organizationId,
+      assigneeId: task.assigneeId,
+      excludeUserId: actorId,
+      type: NotificationType.TASK_ASSIGNED,
+      title: assignedToSomeone ? 'Nueva asignación' : 'Nueva tarea para todos',
+      body: assignedToSomeone
+        ? `Te asignaron: ${task.title}`
+        : `Nueva tarea disponible: ${task.title}`,
+      metadata: {
+        taskId: task.id,
+        taskTitle: task.title,
+        forEveryone: !assignedToSomeone,
+      },
+    });
     if (task.assigneeId) {
-      await this.notifications.createForUser(
-        task.assigneeId,
-        NotificationType.TASK_ASSIGNED,
-        'Nueva asignación',
-        `Te asignaron: ${task.title}`,
-        { taskId: task.id, taskTitle: task.title },
-      );
       const assignPayload = {
         taskId: task.id,
         boardId: task.boardId,
@@ -163,6 +258,11 @@ export class TasksService {
         assignee: { select: { id: true, email: true, firstName: true, lastName: true } },
         createdBy: { select: { id: true, email: true, firstName: true, lastName: true } },
         board: true,
+        parentTask: { select: { id: true, title: true, status: true } },
+        subtasks: {
+          orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+          include: subtaskInclude,
+        },
         comments: { orderBy: { createdAt: 'desc' }, include: { user: true } },
         attachments: { orderBy: { createdAt: 'desc' } },
         ...taskAssetInclude,
@@ -171,7 +271,12 @@ export class TasksService {
     if (!task) {
       throw new NotFoundException();
     }
-    return task;
+    const { subtasks, ...rest } = task;
+    return {
+      ...rest,
+      subtasks,
+      subtaskProgress: this.computeSubtaskProgress(subtasks),
+    };
   }
 
   async listTaskAssets(organizationId: string, taskId: string) {
@@ -245,6 +350,13 @@ export class TasksService {
       data.description = dto.description;
     }
     if (dto.status !== undefined) {
+      if (existing.parentTaskId) {
+        if (dto.status !== TaskStatus.TODO && dto.status !== TaskStatus.COMPLETED) {
+          throw new BadRequestException(
+            'Las subtareas solo pueden estar en estado por hacer o hecho',
+          );
+        }
+      }
       data.status = dto.status;
     }
     if (dto.priority !== undefined) {
@@ -321,6 +433,9 @@ export class TasksService {
       }
     }
     if (dto.status !== undefined && dto.status !== existing.status) {
+      if (dto.status === TaskStatus.COMPLETED && !existing.parentTaskId) {
+        await this.assertParentCanComplete(id);
+      }
       if (dto.status === TaskStatus.COMPLETED && existing.status !== TaskStatus.COMPLETED) {
         timelineEntries.push({
           action: TaskTimelineAction.TASK_COMPLETED,
@@ -378,21 +493,52 @@ export class TasksService {
     for (const entry of timelineEntries) {
       await this.activity.log(actorId, id, entry.action, entry.metadata, organizationId);
     }
-    if (dto.assigneeId && dto.assigneeId !== existing.assigneeId) {
-      await this.notifications.createForUser(
-        dto.assigneeId,
-        NotificationType.TASK_ASSIGNED,
-        'Nueva asignación',
-        `Te asignaron: ${task.title}`,
-        { taskId: task.id, taskTitle: task.title },
-      );
-    }
+
     const boardId = task.boardId;
     const orgId = organizationId;
     const statusChanged = dto.status !== undefined && dto.status !== existing.status;
     const sortChanged = dto.sortOrder !== undefined && dto.sortOrder !== existing.sortOrder;
     const assigneeChanged =
       dto.assigneeId !== undefined && (dto.assigneeId || null) !== (existing.assigneeId ?? null);
+
+    if (assigneeChanged) {
+      const nextAssignee = task.assigneeId ?? null;
+      const assignedToSomeone = Boolean(nextAssignee);
+      await this.notifications.notifyTaskAudience({
+        organizationId,
+        assigneeId: nextAssignee,
+        excludeUserId: actorId,
+        type: NotificationType.TASK_ASSIGNED,
+        title: assignedToSomeone ? 'Nueva asignación' : 'Tarea disponible para todos',
+        body: assignedToSomeone
+          ? `Te asignaron: ${task.title}`
+          : `La tarea quedó sin asignar: ${task.title}`,
+        metadata: {
+          taskId: task.id,
+          taskTitle: task.title,
+          forEveryone: !assignedToSomeone,
+        },
+      });
+    }
+
+    if (statusChanged) {
+      await this.notifications.notifyTaskAudience({
+        organizationId,
+        assigneeId: task.assigneeId,
+        excludeUserId: actorId,
+        type: NotificationType.TASK_UPDATED,
+        title: 'Actualización de tarea',
+        body: `Estado de “${task.title}”: ${existing.status} → ${task.status}`,
+        metadata: {
+          taskId: task.id,
+          taskTitle: task.title,
+          fromStatus: existing.status,
+          toStatus: task.status,
+          forEveryone: !task.assigneeId,
+        },
+      });
+    }
+
     if (statusChanged) {
       const p = {
         taskId: id,
@@ -400,6 +546,7 @@ export class TasksService {
         organizationId: orgId,
         fromStatus: existing.status,
         toStatus: task.status,
+        parentTaskId: existing.parentTaskId ?? null,
       };
       this.events.emitToBoard(boardId, SocketEvents.TASK_STATUS_CHANGED, p);
       this.events.emitToOrganization(orgId, SocketEvents.TASK_STATUS_CHANGED, p);
@@ -426,11 +573,97 @@ export class TasksService {
     }
     this.events.emitToOrganization(orgId, SocketEvents.DASHBOARD_REFRESH, { reason: 'task.updated' });
     this.events.emitTaskUpdated(boardId, { type: 'task.updated', taskId: task.id });
+    // También a la org: clientes en Mis tareas (sin board:join) reciben el cambio.
+    this.events.emitToOrganization(orgId, SocketEvents.TASK_UPDATED_LEGACY, {
+      type: 'task.updated',
+      taskId: task.id,
+      boardId,
+      parentTaskId: existing.parentTaskId ?? null,
+      status: task.status,
+    });
+    if (existing.parentTaskId && statusChanged) {
+      this.events.emitTaskUpdated(boardId, {
+        type: 'task.subtasks_updated',
+        taskId: existing.parentTaskId,
+      });
+      this.events.emitToOrganization(orgId, SocketEvents.TASK_UPDATED_LEGACY, {
+        type: 'task.subtasks_updated',
+        taskId: existing.parentTaskId,
+        boardId,
+      });
+    }
     return task;
   }
 
   async move(organizationId: string, actorId: string, id: string, dto: MoveTaskDto) {
+    const existing = await this.prisma.task.findFirst({
+      where: { id, board: { organizationId } },
+      select: { parentTaskId: true },
+    });
+    if (!existing) {
+      throw new NotFoundException();
+    }
+    if (existing.parentTaskId) {
+      throw new BadRequestException('Las subtareas no se mueven en el tablero kanban');
+    }
     return this.update(organizationId, actorId, id, { status: dto.status, sortOrder: dto.sortOrder });
+  }
+
+  private computeSubtaskProgress(subtasks: { status: TaskStatus }[]) {
+    const total = subtasks.length;
+    const completed = subtasks.filter((s) => s.status === TaskStatus.COMPLETED).length;
+    return { total, completed, percent: total > 0 ? Math.round((completed / total) * 100) : 0 };
+  }
+
+  private async resolveTaskPlacement(organizationId: string, dto: CreateTaskDto) {
+    if (dto.parentTaskId) {
+      const parent = await this.prisma.task.findFirst({
+        where: { id: dto.parentTaskId, board: { organizationId } },
+        select: { id: true, boardId: true, parentTaskId: true },
+      });
+      if (!parent) {
+        throw new NotFoundException('Tarea padre no encontrada');
+      }
+      if (parent.parentTaskId) {
+        throw new BadRequestException('Solo se permiten subtareas de un nivel');
+      }
+      if (dto.boardId && dto.boardId !== parent.boardId) {
+        throw new BadRequestException('La subtarea debe pertenecer al mismo tablero que su padre');
+      }
+      const agg = await this.prisma.task.aggregate({
+        where: { parentTaskId: parent.id },
+        _max: { sortOrder: true },
+      });
+      return {
+        boardId: parent.boardId,
+        parentTaskId: parent.id,
+        sortOrder: (agg._max.sortOrder ?? -1) + 1,
+      };
+    }
+    if (!dto.boardId) {
+      throw new BadRequestException('boardId es obligatorio para tareas raíz');
+    }
+    const board = await this.prisma.board.findFirst({
+      where: { id: dto.boardId, organizationId },
+    });
+    if (!board) {
+      throw new NotFoundException('Tablero no encontrado');
+    }
+    return { boardId: dto.boardId, parentTaskId: null as string | null, sortOrder: 0 };
+  }
+
+  private async assertParentCanComplete(parentTaskId: string) {
+    const open = await this.prisma.task.count({
+      where: {
+        parentTaskId,
+        status: { not: TaskStatus.COMPLETED },
+      },
+    });
+    if (open > 0) {
+      throw new BadRequestException(
+        'No puedes completar la tarea mientras haya subtareas pendientes',
+      );
+    }
   }
 
   private async ensureTaskExists(organizationId: string, taskId: string) {

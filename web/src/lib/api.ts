@@ -82,12 +82,18 @@ async function performRefresh(): Promise<boolean> {
   const lockId = crypto.randomUUID();
   localStorage.setItem(REFRESH_LOCK, lockId);
   try {
+    // Puede lanzar (sin red): el llamador NO debe cerrar sesión en ese caso.
     const res = await fetch(apiPath('/auth/refresh'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken: refresh }),
     });
+    if (res.status === 502 || res.status === 503 || res.status === 504) {
+      // API caída detrás del proxy: tratar como fallo de red, no como sesión inválida.
+      throw new TypeError('API unavailable during token refresh');
+    }
     if (!res.ok) {
+      // 401/403/400: el refresh token ya no sirve → sesión realmente expirada.
       return false;
     }
     const data = (await res.json()) as { accessToken?: string; refreshToken?: string };
@@ -113,6 +119,24 @@ async function tryRefresh(): Promise<boolean> {
   return refreshInFlight;
 }
 
+export const AUTH_EXPIRED_EVENT = 'tf:auth-expired';
+export const API_UNREACHABLE_EVENT = 'tf:api-unreachable';
+
+/** Sesión realmente inválida (refresh rechazado): borrar tokens y volver a login. */
+function notifyAuthExpired(): void {
+  clearStoredTokens();
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
+  }
+}
+
+/** API caída / sin red: mostrar login pero CONSERVAR tokens para restaurar la sesión. */
+function notifyApiUnreachable(): void {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(API_UNREACHABLE_EVENT));
+  }
+}
+
 /** Petición autenticada con reintento tras refresh. */
 export async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const headers = new Headers(init.headers);
@@ -124,9 +148,23 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
     headers.set('Content-Type', 'application/json');
   }
 
-  let res = await fetch(apiPath(path), { ...init, headers });
+  let res: Response;
+  try {
+    res = await fetch(apiPath(path), { ...init, headers });
+  } catch (e) {
+    // Sin API (servidor caído / sin red): mostrar login pero conservar la sesión.
+    notifyApiUnreachable();
+    throw e;
+  }
+
   if (res.status === 401 && path !== '/auth/refresh') {
-    const refreshed = await tryRefresh();
+    let refreshed = false;
+    try {
+      refreshed = await tryRefresh();
+    } catch {
+      notifyApiUnreachable();
+      throw new TypeError('Network error during token refresh');
+    }
     if (refreshed) {
       const h2 = new Headers(init.headers);
       const a = getStoredTokens().access;
@@ -136,8 +174,21 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
       if (!h2.has('Content-Type') && init.body != null && typeof init.body === 'string') {
         h2.set('Content-Type', 'application/json');
       }
-      res = await fetch(apiPath(path), { ...init, headers: h2 });
+      try {
+        res = await fetch(apiPath(path), { ...init, headers: h2 });
+      } catch (e) {
+        notifyApiUnreachable();
+        throw e;
+      }
     }
+    if (res.status === 401) {
+      // El refresh fue rechazado o el reintento siguió en 401: sesión expirada de verdad.
+      notifyAuthExpired();
+    }
+  }
+  // Proxy/API caído (Vite 502, etc.): sin backend usable → login sin borrar tokens.
+  if (res.status === 502 || res.status === 503 || res.status === 504) {
+    notifyApiUnreachable();
   }
   return res;
 }

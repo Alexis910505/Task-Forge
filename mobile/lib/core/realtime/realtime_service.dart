@@ -57,13 +57,26 @@ class RealtimeService {
   }
 
   void _emit(String name, dynamic data) {
-    if (data is Map) {
-      final m = Map<String, Object?>.from(
-        data.map((k, v) => MapEntry(k.toString(), v as Object?)),
-      );
-      _events.add({'event': name, 'payload': m});
-    } else {
-      _events.add({'event': name, 'payload': null});
+    try {
+      // socket_io_client a veces entrega el payload suelto o como [payload].
+      var raw = data;
+      if (raw is List && raw.isNotEmpty) {
+        raw = raw.first;
+      }
+      if (raw is Map) {
+        final m = <String, Object?>{};
+        raw.forEach((k, v) {
+          m['$k'] = v;
+        });
+        if (kDebugMode) {
+          debugPrint('[realtime] $name $m');
+        }
+        _events.add({'event': name, 'payload': m});
+      } else {
+        _events.add({'event': name, 'payload': null});
+      }
+    } catch (e) {
+      debugPrint('[realtime] emit $name falló: $e');
     }
   }
 

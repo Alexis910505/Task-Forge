@@ -5,6 +5,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RequirePermissions } from '../../core/decorators/permissions.decorator';
+import { Roles } from '../../core/decorators/roles.decorator';
 import type { Request } from 'express';
 import { RequestUser } from '../../core/strategies/jwt.strategy';
 
@@ -54,27 +55,34 @@ export class UsersController {
   }
 
   @Post()
+  @Roles('ADMIN')
   @RequirePermissions('users:write')
-  @ApiOperation({ summary: 'Crear usuario' })
+  @ApiOperation({ summary: 'Crear usuario (solo administrador)' })
   create(@Req() req: Request & { user: RequestUser }, @Body() dto: CreateUserDto) {
     return this.users.create(req.user.organizationId, dto);
   }
 
   @Patch(':id')
   @RequirePermissions('users:write')
-  @ApiOperation({ summary: 'Actualizar usuario' })
+  @ApiOperation({ summary: 'Actualizar usuario (correo/contraseña solo administrador)' })
   update(
     @Req() req: Request & { user: RequestUser },
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
   ) {
-    return this.users.update(req.user.organizationId, id, dto);
+    return this.users.update(req.user.organizationId, id, dto, {
+      userId: req.user.userId,
+      role: req.user.role,
+    });
   }
 
   @Delete(':id')
   @RequirePermissions('users:write')
   @ApiOperation({ summary: 'Eliminar usuario' })
   remove(@Req() req: Request & { user: RequestUser }, @Param('id') id: string) {
-    return this.users.remove(req.user.organizationId, id);
+    return this.users.remove(req.user.organizationId, id, {
+      userId: req.user.userId,
+      role: req.user.role,
+    });
   }
 }

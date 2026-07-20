@@ -2,28 +2,46 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart';
 
 import '../../features/auth/application/auth_repository.dart';
 import '../../features/evidence/application/evidence_upload_worker.dart';
-import 'offline_providers.dart';
+import 'connectivity_service.dart';
+import 'outbox_sync_service.dart';
 
 /// Escucha la red y vacía la cola de sincronización cuando vuelve la conexión.
-class OfflineSyncListener extends ConsumerStatefulWidget {
+class OfflineSyncListener extends StatefulWidget {
   const OfflineSyncListener({super.key, required this.child});
 
   final Widget child;
 
   @override
-  ConsumerState<OfflineSyncListener> createState() => _OfflineSyncListenerState();
+  State<OfflineSyncListener> createState() => _OfflineSyncListenerState();
 }
 
-class _OfflineSyncListenerState extends ConsumerState<OfflineSyncListener> {
+class _OfflineSyncListenerState extends State<OfflineSyncListener> {
+  Worker? _authWorker;
+  Worker? _onlineWorker;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(_bootstrap());
+    });
+    final auth = Get.find<AuthController>();
+    final connectivity = Get.find<ConnectivityService>();
+    _authWorker = ever<AuthSession?>(auth.session, (session) async {
+      if (session == null) return;
+      if (!connectivity.online.value) return;
+      await Get.find<OutboxSyncService>().processQueue();
+      await Get.find<EvidenceUploadWorker>().processPending();
+    });
+    _onlineWorker = ever<bool>(connectivity.online, (isOnline) async {
+      if (!isOnline) return;
+      if (!auth.isLoggedIn) return;
+      await Get.find<OutboxSyncService>().processQueue();
+      await Get.find<EvidenceUploadWorker>().processPending();
     });
   }
 
@@ -32,42 +50,20 @@ class _OfflineSyncListenerState extends ConsumerState<OfflineSyncListener> {
     if (!mounted || !connectivityLooksOnline(list)) {
       return;
     }
-    final auth = ref.read(authRepositoryProvider);
-    if (!auth.hasValue || auth.asData?.value == null) {
+    if (!Get.find<AuthController>().isLoggedIn) {
       return;
     }
-    await ref.read(outboxSyncServiceProvider).bootstrapFlush();
-    await ref.read(evidenceUploadWorkerProvider).processPending();
+    await Get.find<OutboxSyncService>().bootstrapFlush();
+    await Get.find<EvidenceUploadWorker>().processPending();
   }
 
   @override
-  Widget build(BuildContext context) {
-    ref.listen(authRepositoryProvider, (prev, next) {
-      next.whenData((session) async {
-        if (session == null) {
-          return;
-        }
-        final list = await Connectivity().checkConnectivity();
-        if (!mounted || !connectivityLooksOnline(list)) {
-          return;
-        }
-        await ref.read(outboxSyncServiceProvider).processQueue();
-        await ref.read(evidenceUploadWorkerProvider).processPending();
-      });
-    });
-    ref.listen(connectivityProvider, (prev, next) {
-      next.whenData((list) async {
-        if (!connectivityLooksOnline(list)) {
-          return;
-        }
-        final auth = ref.read(authRepositoryProvider);
-        if (!auth.hasValue || auth.asData?.value == null) {
-          return;
-        }
-        await ref.read(outboxSyncServiceProvider).processQueue();
-        await ref.read(evidenceUploadWorkerProvider).processPending();
-      });
-    });
-    return widget.child;
+  void dispose() {
+    _authWorker?.dispose();
+    _onlineWorker?.dispose();
+    super.dispose();
   }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

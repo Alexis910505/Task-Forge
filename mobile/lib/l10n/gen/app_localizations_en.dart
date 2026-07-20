@@ -94,13 +94,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get genericRequestError => 'Could not complete the request';
 
   @override
-  String get navDashboard => 'Work';
+  String get navWork => 'Work';
+
+  @override
+  String get navDashboard => 'Dashboard';
 
   @override
   String get navKanban => 'Kanban';
 
   @override
   String get navMyTasks => 'List';
+
+  @override
+  String get navAssets => 'Assets';
+
+  @override
+  String get navAlerts => 'Alerts';
 
   @override
   String get navReports => 'Reports';
@@ -366,7 +375,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myTasksTitle => 'My tasks';
 
   @override
-  String get myTasksSubtitle => 'Priority, SLA and board';
+  String get myTasksSubtitle => 'All projects · mine and for everyone';
 
   @override
   String get myTasksSearchHint => 'Search tasks, IDs, or assets…';
@@ -389,7 +398,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get myTasksEmpty => 'You have no assigned tasks';
+  String get myTasksEmpty => 'No tasks for you or unassigned';
+
+  @override
+  String get myTasksForEveryone => 'For everyone';
 
   @override
   String get myTasksNewTask => 'New task';
@@ -414,6 +426,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String myTasksOverdueDays(int days) {
     return 'Overdue by ${days}d';
   }
+
+  @override
+  String get myTasksSortTitle => 'Sort tasks';
+
+  @override
+  String get myTasksSortByProject => 'By project';
+
+  @override
+  String get myTasksSortByPriority => 'By priority';
+
+  @override
+  String get myTasksSortByDueSoon => 'By time (due soonest)';
+
+  @override
+  String get myTasksSortByDueLatest => 'By time (due latest)';
 
   @override
   String get reportsTitle => 'Reports';
@@ -533,6 +560,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orgTitle => 'Organization';
 
   @override
+  String get orgDiscoverabilityTitle => 'QUICK LINKS';
+
+  @override
+  String get orgKanbanHint => 'Open board view for your team';
+
+  @override
+  String get orgAssetsHint => 'Browse fleet and equipment inventory';
+
+  @override
   String get orgCurrentSection => 'CURRENT ORGANIZATION';
 
   @override
@@ -620,6 +656,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get taskDetailCommentFailed => 'Could not send comment';
 
   @override
+  String get taskDetailComments => 'Comments';
+
+  @override
+  String get taskDetailNoComments => 'No comments yet';
+
+  @override
+  String get taskDetailCommentSent => 'Comment posted';
+
+  @override
   String get taskDetailStatusUpdated => 'Status updated';
 
   @override
@@ -636,6 +681,223 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get taskDetailStatusCompleted => 'Completed';
+
+  @override
+  String get taskDetailSubtasks => 'Subtasks';
+
+  @override
+  String taskDetailSubtasksProgress(int completed, int total) {
+    return '$completed of $total completed';
+  }
+
+  @override
+  String get taskDetailNoSubtasks => 'No subtasks yet';
+
+  @override
+  String get taskDetailAddSubtask => 'Add subtask';
+
+  @override
+  String get taskDetailSubtaskHint => 'Subtask title';
+
+  @override
+  String get taskDetailSubtaskTodo => 'To do';
+
+  @override
+  String get taskDetailSubtaskDone => 'Done';
+
+  @override
+  String get taskDetailCannotCompleteWithOpenSubtasks =>
+      'You can\'t mark the task as completed while there are open subtasks';
+
+  @override
+  String get taskDetailParentTask => 'Parent task';
+
+  @override
+  String get taskDetailActivityLog => 'Activity log';
+
+  @override
+  String get taskActivityLogTitle => 'Activity Log';
+
+  @override
+  String taskActivityProject(String name) {
+    return 'Project: $name';
+  }
+
+  @override
+  String get taskActivityEmpty => 'No activity recorded for this task yet.';
+
+  @override
+  String taskActivityStatusChangedTo(String status) {
+    return 'Changed status to $status';
+  }
+
+  @override
+  String taskActivityAssignedTo(String name) {
+    return 'Assigned $name to this task.';
+  }
+
+  @override
+  String taskActivityPhotosUploaded(int count) {
+    return 'Uploaded $count inspection photos';
+  }
+
+  @override
+  String get assetsHubTitle => 'Fleet & Equipment';
+
+  @override
+  String get assetsHubSubtitle =>
+      'Inventory hub for vehicles, tools and machinery.';
+
+  @override
+  String get assetsSearchHint => 'Search assets by name or code…';
+
+  @override
+  String get assetsFilterAll => 'All Assets';
+
+  @override
+  String get assetsSectionTitle => 'Fleet & Equipment';
+
+  @override
+  String get assetsEmptyTitle => 'No assets yet';
+
+  @override
+  String get assetsEmptyHint =>
+      'Register equipment, vehicles and tools to track maintenance and tasks.';
+
+  @override
+  String get assetsCreateTitle => 'New asset';
+
+  @override
+  String get assetsCreateSubmit => 'Create';
+
+  @override
+  String get assetsCreateSuccess => 'Asset created';
+
+  @override
+  String get assetsCreateValidation => 'Name and code are required';
+
+  @override
+  String get assetsFieldName => 'Name';
+
+  @override
+  String get assetsFieldCode => 'Code';
+
+  @override
+  String get assetsFieldCategory => 'Category';
+
+  @override
+  String get assetsFieldStatus => 'Status';
+
+  @override
+  String get assetsFieldLocation => 'Location';
+
+  @override
+  String get assetsFieldMaintenance => 'Next maintenance';
+
+  @override
+  String get assetsSaveChanges => 'Save changes';
+
+  @override
+  String get assetsUpdateSuccess => 'Asset updated';
+
+  @override
+  String get assetsCatalogLoadFailed =>
+      'Could not load categories or statuses';
+
+  @override
+  String get assetDetailTitle => 'Asset Detail';
+
+  @override
+  String get assetDetailStatus => 'Status';
+
+  @override
+  String get assetDetailCategory => 'Category';
+
+  @override
+  String get assetDetailLocation => 'Location';
+
+  @override
+  String get assetDetailNextService => 'Next Service';
+
+  @override
+  String get assetDetailLinkedTasks => 'Associated Tasks';
+
+  @override
+  String assetDetailOpenTasks(int count) {
+    return '$count OPEN';
+  }
+
+  @override
+  String get assetDetailHistory => 'Maintenance History';
+
+  @override
+  String get assetDetailNoHistory => 'No maintenance history recorded yet.';
+
+  @override
+  String get assetDetailEdit => 'Edit asset';
+
+  @override
+  String get assetDetailEditSoon => 'Asset editing coming soon';
+
+  @override
+  String get assetStatusActive => 'Active';
+
+  @override
+  String get assetStatusMaintenance => 'Maintenance';
+
+  @override
+  String get assetStatusOffline => 'Offline';
+
+  @override
+  String get assetStatusRetired => 'Retired';
+
+  @override
+  String get assetStatusReserved => 'Reserved';
+
+  @override
+  String get assetCategoryVehicles => 'Vehicles';
+
+  @override
+  String get assetCategoryTools => 'Tools';
+
+  @override
+  String get assetCategoryMachinery => 'Machinery';
+
+  @override
+  String get assetCategoryEquipment => 'Equipment';
+
+  @override
+  String get assetCategoryHvac => 'HVAC';
+
+  @override
+  String get assetCategoryElectrical => 'Electrical';
+
+  @override
+  String get assetCategoryBuilding => 'Building';
+
+  @override
+  String get assetCategoryRoom => 'Room';
+
+  @override
+  String get assetCategoryOther => 'Other';
+
+  @override
+  String get assetHistoryCreated => 'Asset created';
+
+  @override
+  String get assetHistoryUpdated => 'Asset updated';
+
+  @override
+  String get assetHistoryPhotoAdded => 'Photo added';
+
+  @override
+  String get assetHistoryPhotoRemoved => 'Photo removed';
+
+  @override
+  String get assetHistoryLinkedTask => 'Linked to task';
+
+  @override
+  String get assetHistoryUnlinkedTask => 'Unlinked from task';
 
   @override
   String get profilePerformanceTitle => 'Performance summary';
@@ -671,6 +933,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileRoleAdmin => 'Administrator';
+
+  @override
+  String get profileRoleDeptHead => 'Department head';
+
+  @override
+  String get profileRoleSupervisor => 'Supervisor';
+
+  @override
+  String get profileRoleTeamLead => 'Team lead';
 
   @override
   String get profileRoleManager => 'Team lead';

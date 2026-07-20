@@ -18,6 +18,7 @@ import {
   todayLocalDateString,
 } from '@/lib/dueDates';
 import { uploadTaskAttachment } from '@/lib/taskAttachments';
+import { DraftSubtasksEditor, type DraftSubtask } from '@/components/tasks/DraftSubtasksEditor';
 
 type ProjectRow = {
   id: string;
@@ -45,10 +46,12 @@ type TaskRow = {
   assigneeId?: string | null;
   assignee?: { id: string } | null;
   board?: { name: string; project?: { name: string; departmentId?: string | null } };
+  parentTask?: { id: string; title: string } | null;
 };
 
 const PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const;
 const STATUSES = ['BACKLOG', 'TODO', 'IN_PROGRESS', 'REVIEW', 'COMPLETED'] as const;
+const SUBTASK_STATUSES = ['TODO', 'COMPLETED'] as const;
 
 export function CreateTaskPage() {
   const { t } = useTranslation();
@@ -82,6 +85,8 @@ export function CreateTaskPage() {
   const [loadingMeta, setLoadingMeta] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [uploadingAttachments, setUploadingAttachments] = useState(false);
+  const [pendingSubtasks, setPendingSubtasks] = useState<DraftSubtask[]>([]);
+  const [isSubtaskEdit, setIsSubtaskEdit] = useState(false);
 
   const loadMeta = useCallback(async () => {
     setLoadingMeta(true);
@@ -122,7 +127,13 @@ export function CreateTaskPage() {
       setBoardId(task.boardId);
       setTitle(task.title);
       setDescription(task.description ?? '');
-      setStatus(task.status);
+      setStatus(
+        task.parentTask
+          ? task.status === 'COMPLETED'
+            ? 'COMPLETED'
+            : 'TODO'
+          : task.status,
+      );
       setPriority(task.priority);
       setAssigneeId(task.assigneeId ?? task.assignee?.id ?? '');
       setLocation(task.location ?? '');
@@ -131,8 +142,11 @@ export function CreateTaskPage() {
       setInitialDueDate(due);
       const projDept = task.board?.project?.departmentId;
       if (projDept) setDepartmentId(projDept);
+      setIsSubtaskEdit(Boolean(task.parentTask));
       return;
     }
+
+    setIsSubtaskEdit(false);
 
     const draft = loadTaskDraft();
     const opts = list.flatMap((p) =>
@@ -150,6 +164,9 @@ export function CreateTaskPage() {
       setDepartmentId(draft.departmentId);
       setTeamId(draft.teamId);
       setBoardId(draft.boardId);
+      setPendingSubtasks(
+        (draft.subtasks ?? []).map((title) => ({ id: crypto.randomUUID(), title })),
+      );
       setDraftNotice(t('createTask.draftRestored'));
     } else if (preferred) {
       setBoardId(preferred.boardId);
@@ -229,6 +246,27 @@ export function CreateTaskPage() {
     return null;
   }
 
+  async function createPendingSubtasks(parentTaskId: string, boardIdForSubtasks: string): Promise<string | null> {
+    for (const sub of pendingSubtasks) {
+      const title = sub.title.trim();
+      if (!title) continue;
+      const res = await apiFetch('/tasks', {
+        method: 'POST',
+        body: JSON.stringify({
+          title,
+          parentTaskId,
+          boardId: boardIdForSubtasks,
+        }),
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { message?: string | string[] };
+        const msg = Array.isArray(body.message) ? body.message.join(', ') : body.message;
+        return msg || t('createTask.subtaskCreateFailed', { name: title });
+      }
+    }
+    return null;
+  }
+
   function handleSaveDraft() {
     if (isEdit) return;
     saveTaskDraft({
@@ -241,6 +279,7 @@ export function CreateTaskPage() {
       dueDate,
       departmentId,
       teamId,
+      subtasks: pendingSubtasks.map((s) => s.title).filter(Boolean),
     });
     setDraftNotice(t('createTask.draftSaved'));
   }
@@ -287,9 +326,16 @@ export function CreateTaskPage() {
         return;
       }
       const uploadErr = await uploadPendingFiles(editTaskId);
+      const subtaskErr =
+        pendingSubtasks.length > 0
+          ? await createPendingSubtasks(editTaskId, boardId)
+          : null;
       setSubmitting(false);
-      if (uploadErr) {
-        setError(`${t('createTask.uploadPartialFailed')} ${uploadErr}`);
+      if (uploadErr || subtaskErr) {
+        setError(
+          [uploadErr, subtaskErr].filter(Boolean).join(' ') ||
+            t('createTask.uploadPartialFailed'),
+        );
         navigate(`/tasks/${editTaskId}`, { replace: true });
         return;
       }
@@ -318,10 +364,16 @@ export function CreateTaskPage() {
     }
     const created = (await res.json()) as { id: string };
     clearTaskDraft();
+    const subtaskErr =
+      pendingSubtasks.length > 0
+        ? await createPendingSubtasks(created.id, boardId)
+        : null;
     const uploadErr = await uploadPendingFiles(created.id);
     setSubmitting(false);
-    if (uploadErr) {
-      setError(`${t('createTask.uploadPartialFailed')} ${uploadErr}`);
+    if (uploadErr || subtaskErr) {
+      setError(
+        [uploadErr, subtaskErr].filter(Boolean).join(' ') || t('createTask.uploadPartialFailed'),
+      );
       navigate(`/tasks/${created.id}`, { replace: true });
       return;
     }
@@ -454,9 +506,13 @@ export function CreateTaskPage() {
                   onChange={(ev) => setStatus(ev.target.value)}
                   className="w-full rounded-lg border border-outline-variant bg-surface p-3 text-sm outline-none ring-primary focus:ring-2"
                 >
-                  {STATUSES.map((s) => (
+                  {(isSubtaskEdit ? SUBTASK_STATUSES : STATUSES).map((s) => (
                     <option key={s} value={s}>
-                      {t(`dashboard.status.${s}`)}
+                      {isSubtaskEdit
+                        ? s === 'COMPLETED'
+                          ? t('taskDetail.subtaskDone')
+                          : t('taskDetail.subtaskTodo')
+                        : t(`dashboard.status.${s}`)}
                     </option>
                   ))}
                 </select>
@@ -501,6 +557,14 @@ export function CreateTaskPage() {
             </div>
 
             <DescriptionEditor value={description} onChange={setDescription} />
+
+            {!isSubtaskEdit ? (
+              <DraftSubtasksEditor
+                items={pendingSubtasks}
+                onChange={setPendingSubtasks}
+                disabled={submitting || uploadingAttachments}
+              />
+            ) : null}
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
@@ -650,7 +714,7 @@ export function CreateTaskPage() {
                         {u.firstName} {u.lastName}
                       </p>
                       <p className="text-[11px] text-on-surface-variant">
-                        {u.role?.name ? roleLabel(u.role.name, t) : t('createTask.assigneeNone')}
+                        {u.role?.name ? roleLabel(u.role, t) : t('createTask.assigneeNone')}
                         {u.department?.name ? ` · ${u.department.name}` : ''}
                       </p>
                     </div>

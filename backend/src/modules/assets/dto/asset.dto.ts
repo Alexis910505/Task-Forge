@@ -1,6 +1,14 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsInt, IsOptional, IsString, Min, MinLength } from 'class-validator';
-import { AssetCategory, AssetStatus } from '@prisma/client';
+import {
+  IsBoolean,
+  IsInt,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 export class CreateAssetDto {
   @ApiPropertyOptional()
@@ -13,14 +21,15 @@ export class CreateAssetDto {
   @MinLength(1)
   code!: string;
 
-  @ApiPropertyOptional({ enum: AssetCategory })
-  @IsEnum(AssetCategory)
-  category!: AssetCategory;
+  @ApiPropertyOptional({ description: 'Código de categoría del catálogo' })
+  @IsString()
+  @MinLength(1)
+  category!: string;
 
-  @ApiPropertyOptional({ enum: AssetStatus })
+  @ApiPropertyOptional({ description: 'Código de estado del catálogo' })
   @IsOptional()
-  @IsEnum(AssetStatus)
-  status?: AssetStatus;
+  @IsString()
+  status?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -46,15 +55,15 @@ export class UpdateAssetDto {
   @MinLength(1)
   code?: string;
 
-  @ApiPropertyOptional({ enum: AssetCategory })
+  @ApiPropertyOptional({ description: 'Código de categoría del catálogo' })
   @IsOptional()
-  @IsEnum(AssetCategory)
-  category?: AssetCategory;
+  @IsString()
+  category?: string;
 
-  @ApiPropertyOptional({ enum: AssetStatus })
+  @ApiPropertyOptional({ description: 'Código de estado del catálogo' })
   @IsOptional()
-  @IsEnum(AssetStatus)
-  status?: AssetStatus;
+  @IsString()
+  status?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -68,15 +77,15 @@ export class UpdateAssetDto {
 }
 
 export class ListAssetsQueryDto {
-  @ApiPropertyOptional({ enum: AssetCategory })
+  @ApiPropertyOptional({ description: 'Código de categoría del catálogo' })
   @IsOptional()
-  @IsEnum(AssetCategory)
-  category?: AssetCategory;
+  @IsString()
+  category?: string;
 
-  @ApiPropertyOptional({ enum: AssetStatus })
+  @ApiPropertyOptional({ description: 'Código de estado del catálogo' })
   @IsOptional()
-  @IsEnum(AssetStatus)
-  status?: AssetStatus;
+  @IsString()
+  status?: string;
 
   @ApiPropertyOptional({ description: 'Buscar en nombre o código' })
   @IsOptional()
@@ -101,4 +110,112 @@ export class AddAssetPhotoDto {
   @IsInt()
   @Min(0)
   size!: number;
+}
+
+export class CreateAssetCategoryDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(40)
+  @Matches(/^[A-Z0-9_]+$/)
+  code!: string;
+
+  @IsString()
+  @MinLength(1)
+  @MaxLength(80)
+  name!: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^#[0-9A-Fa-f]{6}$/)
+  color?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  icon?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isDefault?: boolean;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  sortOrder?: number;
+}
+
+export class UpdateAssetCategoryDto {
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(80)
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^#[0-9A-Fa-f]{6}$/)
+  color?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  icon?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isDefault?: boolean;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  sortOrder?: number;
+}
+
+export class CreateAssetStatusDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(40)
+  @Matches(/^[A-Z0-9_]+$/)
+  code!: string;
+
+  @IsString()
+  @MinLength(1)
+  @MaxLength(80)
+  name!: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^#[0-9A-Fa-f]{6}$/)
+  color?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isDefault?: boolean;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  sortOrder?: number;
+}
+
+export class UpdateAssetStatusDto {
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(80)
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^#[0-9A-Fa-f]{6}$/)
+  color?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isDefault?: boolean;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  sortOrder?: number;
 }

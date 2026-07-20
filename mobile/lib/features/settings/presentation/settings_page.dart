@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart' hide FormData, MultipartFile, Response, Value;
 import 'package:image_picker/image_picker.dart';
 import 'package:task_forge_app/l10n/gen/app_localizations.dart';
 
@@ -16,14 +16,14 @@ import '../../auth/application/auth_repository.dart';
 enum _SettingsTab { workspace, notifications, security, api }
 
 /// Ajustes (`assets/taskforge_settings`, alineado con web `SettingsPage`).
-class SettingsPage extends ConsumerStatefulWidget {
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
   @override
-  ConsumerState<SettingsPage> createState() => _SettingsPageState();
+  State<SettingsPage> createState() => _SettingsPageState();
 }
 
-class _SettingsPageState extends ConsumerState<SettingsPage> {
+class _SettingsPageState extends State<SettingsPage> {
   _SettingsTab _tab = _SettingsTab.workspace;
   bool _loading = true;
   bool _saving = false;
@@ -71,7 +71,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   Future<void> _load() async {
-    if (!ref.read(canReadOrganizationProvider)) {
+    if (!canReadOrganization()) {
       setState(() {
         _loading = false;
         _error = AppLocalizations.of(context)!.settingsNoOrgAccess;
@@ -83,7 +83,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       _error = null;
     });
     try {
-      final res = await ref.read(dioProvider).get<Map<String, dynamic>>('/organizations/current');
+      final res = await Get.find<ApiClient>().dio.get<Map<String, dynamic>>(
+        '/organizations/current',
+      );
       if (mounted && res.data != null) {
         setState(() {
           _applyOrg(res.data!);
@@ -101,7 +103,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   Future<bool> _persist({String? name, OrganizationSettings? settings}) async {
-    if (!ref.read(canWriteOrganizationProvider)) {
+    if (!canWriteOrganization()) {
       return false;
     }
     setState(() {
@@ -118,10 +120,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           'emailPreferences': next.emailPreferences.toJson(),
         },
       };
-      final res = await ref.read(dioProvider).patch<Map<String, dynamic>>(
-            '/organizations/current',
-            data: body,
-          );
+      final res = await Get.find<ApiClient>().dio.patch<Map<String, dynamic>>(
+        '/organizations/current',
+        data: body,
+      );
       if (res.data != null) {
         _applyOrg(res.data!);
       }
@@ -141,7 +143,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Future<void> _saveGeneral() async {
     final ok = await _persist(
       name: _nameCtrl.text,
-      settings: parseOrgSettings(_org?['settings']).copyWith(timezone: _timezone),
+      settings: parseOrgSettings(
+        _org?['settings'],
+      ).copyWith(timezone: _timezone),
     );
     if (ok && mounted) {
       setState(() => _editingGeneral = false);
@@ -155,7 +159,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       _ => _emailPrefs.copyWith(deploymentAlerts: value),
     };
     setState(() => _emailPrefs = next);
-    if (!ref.read(canWriteOrganizationProvider)) {
+    if (!canWriteOrganization()) {
       return;
     }
     final parsed = parseOrgSettings(_org?['settings']);
@@ -168,28 +172,38 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   Future<void> _uploadBranding(String kind) async {
-    if (!ref.read(canWriteOrganizationProvider)) {
+    if (!canWriteOrganization()) {
       return;
     }
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 90);
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 90,
+    );
     if (picked == null) {
       return;
     }
     setState(() => _uploading = true);
     try {
       final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(picked.path, filename: picked.name),
+        'file': await MultipartFile.fromFile(
+          picked.path,
+          filename: picked.name,
+        ),
       });
-      await ref.read(dioProvider).post<void>(
-            '/organizations/current/branding/$kind',
-            data: formData,
-          );
+      await Get.find<ApiClient>().dio.post<void>(
+        '/organizations/current/branding/$kind',
+        data: formData,
+      );
       await _load();
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.settingsBrandingUploadFailed)),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.settingsBrandingUploadFailed,
+            ),
+          ),
         );
       }
     } finally {
@@ -204,9 +218,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    final profile = ref.watch(authRepositoryProvider).valueOrNull?.profile;
-    final canWrite = ref.watch(canWriteOrganizationProvider);
-    final locale = ref.watch(localeControllerProvider);
+    final profile = Get.find<AuthController>().currentSession?.profile;
+    final canWrite = canWriteOrganization();
+    final locale = Get.find<LocaleController>().locale.value;
     final tzOptions = timezoneOptionsIncluding(_timezone);
 
     return ColoredBox(
@@ -220,12 +234,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             AppMobileTopBar(profile: profile),
             Text(
               l10n.settingsWorkspaceTitle,
-              style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
               l10n.settingsWorkspaceSubtitle,
-              style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 16),
             if (_saveError != null)
@@ -234,7 +252,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 child: MaterialBanner(
                   content: Text(_saveError!),
                   actions: [
-                    TextButton(onPressed: () => setState(() => _saveError = null), child: const Text('OK')),
+                    TextButton(
+                      onPressed: () => setState(() => _saveError = null),
+                      child: const Text('OK'),
+                    ),
                   ],
                 ),
               ),
@@ -247,7 +268,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               MaterialBanner(
                 content: Text(_error!),
                 actions: [
-                  TextButton(onPressed: _load, child: Text(l10n.dashboardRetry)),
+                  TextButton(
+                    onPressed: _load,
+                    child: Text(l10n.dashboardRetry),
+                  ),
                 ],
               )
             else ...[
@@ -260,14 +284,17 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       label: l10n.settingsTabWorkspace,
                       icon: Icons.business_outlined,
                       selected: _tab == _SettingsTab.workspace,
-                      onTap: () => setState(() => _tab = _SettingsTab.workspace),
+                      onTap:
+                          () => setState(() => _tab = _SettingsTab.workspace),
                     ),
                     const SizedBox(width: 8),
                     _TabChip(
                       label: l10n.settingsTabNotifications,
                       icon: Icons.notifications_active_outlined,
                       selected: _tab == _SettingsTab.notifications,
-                      onTap: () => setState(() => _tab = _SettingsTab.notifications),
+                      onTap:
+                          () =>
+                              setState(() => _tab = _SettingsTab.notifications),
                     ),
                     const SizedBox(width: 8),
                     _TabChip(
@@ -289,47 +316,51 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               const SizedBox(height: 20),
               switch (_tab) {
                 _SettingsTab.workspace => _WorkspaceTab(
-                    l10n: l10n,
-                    canWrite: canWrite,
-                    editing: _editingGeneral,
-                    saving: _saving,
-                    uploading: _uploading,
-                    nameCtrl: _nameCtrl,
-                    timezone: _timezone,
-                    tzOptions: tzOptions,
-                    slug: '${_org?['slug'] ?? ''}',
-                    logoUrl: _org?['logoUrl']?.toString(),
-                    faviconUrl: _org?['faviconUrl']?.toString(),
-                    emailPrefs: _emailPrefs,
-                    onTimezone: (v) => setState(() => _timezone = v),
-                    onStartEdit: () => setState(() => _editingGeneral = true),
-                    onCancelEdit: () {
-                      setState(() {
-                        _editingGeneral = false;
-                        _nameCtrl.text = '${_org?['name'] ?? ''}';
-                        _timezone = parseOrgSettings(_org?['settings']).timezone ?? 'UTC';
-                      });
-                    },
-                    onSave: _saveGeneral,
-                    onEmailToggle: _updateEmailPref,
-                    onUploadLogo: () => _uploadBranding('logo'),
-                    onUploadIcon: () => _uploadBranding('favicon'),
-                    security: _SecurityCard(l10n: l10n, canWrite: canWrite),
-                  ),
+                  l10n: l10n,
+                  canWrite: canWrite,
+                  editing: _editingGeneral,
+                  saving: _saving,
+                  uploading: _uploading,
+                  nameCtrl: _nameCtrl,
+                  timezone: _timezone,
+                  tzOptions: tzOptions,
+                  slug: '${_org?['slug'] ?? ''}',
+                  logoUrl: _org?['logoUrl']?.toString(),
+                  faviconUrl: _org?['faviconUrl']?.toString(),
+                  emailPrefs: _emailPrefs,
+                  onTimezone: (v) => setState(() => _timezone = v),
+                  onStartEdit: () => setState(() => _editingGeneral = true),
+                  onCancelEdit: () {
+                    setState(() {
+                      _editingGeneral = false;
+                      _nameCtrl.text = '${_org?['name'] ?? ''}';
+                      _timezone =
+                          parseOrgSettings(_org?['settings']).timezone ?? 'UTC';
+                    });
+                  },
+                  onSave: _saveGeneral,
+                  onEmailToggle: _updateEmailPref,
+                  onUploadLogo: () => _uploadBranding('logo'),
+                  onUploadIcon: () => _uploadBranding('favicon'),
+                  security: _SecurityCard(l10n: l10n, canWrite: canWrite),
+                ),
                 _SettingsTab.notifications => Column(
-                    children: [
-                      _EmailPrefsCard(
-                        l10n: l10n,
-                        canWrite: canWrite,
-                        saving: _saving,
-                        prefs: _emailPrefs,
-                        onToggle: _updateEmailPref,
-                      ),
-                      const SizedBox(height: 16),
-                      _LanguageCard(l10n: l10n, locale: locale),
-                    ],
-                  ),
-                _SettingsTab.security => _SecurityCard(l10n: l10n, canWrite: canWrite),
+                  children: [
+                    _EmailPrefsCard(
+                      l10n: l10n,
+                      canWrite: canWrite,
+                      saving: _saving,
+                      prefs: _emailPrefs,
+                      onToggle: _updateEmailPref,
+                    ),
+                    const SizedBox(height: 16),
+                    _LanguageCard(l10n: l10n, locale: locale),
+                  ],
+                ),
+                _SettingsTab.security => _SecurityCard(
+                  l10n: l10n,
+                  canWrite: canWrite,
+                ),
                 _SettingsTab.api => _ApiCard(l10n: l10n),
               },
             ],
@@ -364,7 +395,10 @@ class _TabChip extends StatelessWidget {
           children: [
             Icon(icon, size: 18),
             const SizedBox(width: 6),
-            Text(label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 11)),
+            Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 11),
+            ),
           ],
         ),
         selected: selected,
@@ -492,7 +526,9 @@ class _SettingsCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       title!,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   if (trailing != null) trailing!,
@@ -541,9 +577,13 @@ class _GeneralInfoCard extends StatelessWidget {
     final readOnly = !editing || !canWrite;
     return _SettingsCard(
       title: l10n.settingsGeneralInfo,
-      trailing: canWrite && !editing
-          ? TextButton(onPressed: onStartEdit, child: Text(l10n.settingsEditInfo))
-          : null,
+      trailing:
+          canWrite && !editing
+              ? TextButton(
+                onPressed: onStartEdit,
+                child: Text(l10n.settingsEditInfo),
+              )
+              : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -556,29 +596,48 @@ class _GeneralInfoCard extends StatelessWidget {
           const SizedBox(height: 16),
           _FieldLabel(l10n.settingsTimezone),
           DropdownButtonFormField<String>(
-            initialValue: tzOptions.contains(timezone) ? timezone : tzOptions.first,
-            items: tzOptions.map((tz) => DropdownMenuItem(value: tz, child: Text(tz))).toList(),
-            onChanged: readOnly ? null : (v) => v != null ? onTimezone(v) : null,
+            initialValue:
+                tzOptions.contains(timezone) ? timezone : tzOptions.first,
+            items:
+                tzOptions
+                    .map((tz) => DropdownMenuItem(value: tz, child: Text(tz)))
+                    .toList(),
+            onChanged:
+                readOnly ? null : (v) => v != null ? onTimezone(v) : null,
           ),
           const SizedBox(height: 16),
           _FieldLabel(l10n.settingsWorkspaceUrl),
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 14,
+                ),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surfaceContainer,
-                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
-                  border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+                  borderRadius: const BorderRadius.horizontal(
+                    left: Radius.circular(8),
+                  ),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                  ),
                 ),
-                child: Text('taskforge.io/', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                child: Text(
+                  'taskforge.io/',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ),
               Expanded(
                 child: InputDecorator(
                   decoration: const InputDecoration(
                     isDense: true,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.horizontal(right: Radius.circular(8)),
+                      borderRadius: BorderRadius.horizontal(
+                        right: Radius.circular(8),
+                      ),
                     ),
                   ),
                   child: Text(slug),
@@ -591,13 +650,21 @@ class _GeneralInfoCard extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(onPressed: onCancelEdit, child: Text(l10n.settingsCancel)),
+                  child: OutlinedButton(
+                    onPressed: onCancelEdit,
+                    child: Text(l10n.settingsCancel),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: FilledButton(
-                    onPressed: saving || nameCtrl.text.trim().length < 2 ? null : onSave,
-                    child: Text(saving ? l10n.settingsSaving : l10n.settingsSave),
+                    onPressed:
+                        saving || nameCtrl.text.trim().length < 2
+                            ? null
+                            : onSave,
+                    child: Text(
+                      saving ? l10n.settingsSaving : l10n.settingsSave,
+                    ),
                   ),
                 ),
               ],
@@ -629,7 +696,10 @@ class _LogoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final logoSrc = logoUrl != null && logoUrl!.isNotEmpty ? resolveUploadUrl(logoUrl!) : null;
+    final logoSrc =
+        logoUrl != null && logoUrl!.isNotEmpty
+            ? resolveUploadUrl(logoUrl!)
+            : null;
     return _SettingsCard(
       title: l10n.settingsLogoSection,
       child: Column(
@@ -643,17 +713,28 @@ class _LogoCard extends StatelessWidget {
               color: scheme.surfaceContainerHigh,
             ),
             clipBehavior: Clip.antiAlias,
-            child: logoSrc != null
-                ? Image.network(logoSrc, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const AppLogo(size: 56))
-                : const AppLogo(size: 56),
+            child:
+                logoSrc != null
+                    ? Image.network(
+                      logoSrc,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const AppLogo(size: 56),
+                    )
+                    : const AppLogo(size: 56),
           ),
           const SizedBox(height: 12),
-          Text(l10n.settingsLogoHint, textAlign: TextAlign.center, style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 13)),
+          Text(
+            l10n.settingsLogoHint,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 13),
+          ),
           if (canWrite) ...[
             const SizedBox(height: 16),
             OutlinedButton(
               onPressed: uploading ? null : onUploadLogo,
-              child: Text(uploading ? l10n.settingsUploading : l10n.settingsUploadLogo),
+              child: Text(
+                uploading ? l10n.settingsUploading : l10n.settingsUploadLogo,
+              ),
             ),
             const SizedBox(height: 8),
             OutlinedButton(
@@ -663,7 +744,10 @@ class _LogoCard extends StatelessWidget {
           ] else
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text(l10n.settingsReadOnlyHint, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+              child: Text(
+                l10n.settingsReadOnlyHint,
+                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+              ),
             ),
         ],
       ),
@@ -696,26 +780,38 @@ class _EmailPrefsCard extends StatelessWidget {
             label: l10n.settingsTaskEscalations,
             description: l10n.settingsTaskEscalationsDesc,
             value: prefs.taskEscalations,
-            onChanged: canWrite && !saving ? (v) => onToggle('taskEscalations', v) : null,
+            onChanged:
+                canWrite && !saving
+                    ? (v) => onToggle('taskEscalations', v)
+                    : null,
           ),
           _ToggleRow(
             label: l10n.settingsWeeklyAnalytics,
             description: l10n.settingsWeeklyAnalyticsDesc,
             value: prefs.weeklyAnalytics,
-            onChanged: canWrite && !saving ? (v) => onToggle('weeklyAnalytics', v) : null,
+            onChanged:
+                canWrite && !saving
+                    ? (v) => onToggle('weeklyAnalytics', v)
+                    : null,
           ),
           _ToggleRow(
             label: l10n.settingsDeploymentAlerts,
             description: l10n.settingsDeploymentAlertsDesc,
             value: prefs.deploymentAlerts,
-            onChanged: canWrite && !saving ? (v) => onToggle('deploymentAlerts', v) : null,
+            onChanged:
+                canWrite && !saving
+                    ? (v) => onToggle('deploymentAlerts', v)
+                    : null,
           ),
           if (!canWrite)
             Padding(
               padding: const EdgeInsets.only(top: 12),
               child: Text(
                 l10n.settingsReadOnlyHint,
-                style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
         ],
@@ -724,30 +820,41 @@ class _EmailPrefsCard extends StatelessWidget {
   }
 }
 
-class _LanguageCard extends ConsumerWidget {
+class _LanguageCard extends StatelessWidget {
   const _LanguageCard({required this.l10n, required this.locale});
 
   final AppLocalizations l10n;
   final Locale locale;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return _SettingsCard(
       title: l10n.settingsLanguage,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(l10n.settingsLanguageSectionDesc, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          Text(
+            l10n.settingsLanguageSectionDesc,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(height: 12),
           SegmentedButton<String>(
             segments: [
-              ButtonSegment(value: 'es', label: Text(l10n.settingsLanguageSpanish)),
-              ButtonSegment(value: 'en', label: Text(l10n.settingsLanguageEnglish)),
+              ButtonSegment(
+                value: 'es',
+                label: Text(l10n.settingsLanguageSpanish),
+              ),
+              ButtonSegment(
+                value: 'en',
+                label: Text(l10n.settingsLanguageEnglish),
+              ),
             ],
             selected: {locale.languageCode},
             onSelectionChanged: (set) {
               final code = set.first;
-              ref.read(localeControllerProvider.notifier).setLocale(Locale(code));
+              Get.find<LocaleController>().setLocale(Locale(code));
             },
           ),
         ],
@@ -777,15 +884,29 @@ class _SecurityCard extends StatelessWidget {
                   color: scheme.errorContainer,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(Icons.lock_person_outlined, color: scheme.onErrorContainer),
+                child: Icon(
+                  Icons.lock_person_outlined,
+                  color: scheme.onErrorContainer,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(l10n.settingsSsoTitle, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-                    Text(l10n.settingsSsoDesc, style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 13)),
+                    Text(
+                      l10n.settingsSsoTitle,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      l10n.settingsSsoDesc,
+                      style: TextStyle(
+                        color: scheme.onSurfaceVariant,
+                        fontSize: 13,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -801,13 +922,26 @@ class _SecurityCard extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
-              _FeatureChip(icon: Icons.shield_outlined, label: l10n.settingsFeature2fa),
-              _FeatureChip(icon: Icons.history, label: l10n.settingsFeatureRotation),
-              _FeatureChip(icon: Icons.vpn_key_outlined, label: l10n.settingsFeatureIp, muted: true),
+              _FeatureChip(
+                icon: Icons.shield_outlined,
+                label: l10n.settingsFeature2fa,
+              ),
+              _FeatureChip(
+                icon: Icons.history,
+                label: l10n.settingsFeatureRotation,
+              ),
+              _FeatureChip(
+                icon: Icons.vpn_key_outlined,
+                label: l10n.settingsFeatureIp,
+                muted: true,
+              ),
             ],
           ),
           const SizedBox(height: 12),
-          Text(l10n.settingsSecuritySoon, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+          Text(
+            l10n.settingsSecuritySoon,
+            style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+          ),
         ],
       ),
     );
@@ -826,11 +960,25 @@ class _ApiCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(l10n.settingsApiDesc, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          Text(
+            l10n.settingsApiDesc,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(height: 16),
-          OutlinedButton(onPressed: null, child: Text(l10n.settingsGenerateKey)),
+          OutlinedButton(
+            onPressed: null,
+            child: Text(l10n.settingsGenerateKey),
+          ),
           const SizedBox(height: 8),
-          Text(l10n.settingsApiSoon, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          Text(
+            l10n.settingsApiSoon,
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
         ],
       ),
     );
@@ -848,10 +996,10 @@ class _FieldLabel extends StatelessWidget {
       child: Text(
         text.toUpperCase(),
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.5,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
       ),
     );
   }
@@ -880,12 +1028,24 @@ class _ToggleRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-                Text(description, style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                Text(
+                  label,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ),
-          Switch(value: value, onChanged: onChanged == null ? null : (v) => onChanged!(v)),
+          Switch(
+            value: value,
+            onChanged: onChanged == null ? null : (v) => onChanged!(v),
+          ),
         ],
       ),
     );
@@ -893,7 +1053,11 @@ class _ToggleRow extends StatelessWidget {
 }
 
 class _FeatureChip extends StatelessWidget {
-  const _FeatureChip({required this.icon, required this.label, this.muted = false});
+  const _FeatureChip({
+    required this.icon,
+    required this.label,
+    this.muted = false,
+  });
 
   final IconData icon;
   final String label;
@@ -916,7 +1080,10 @@ class _FeatureChip extends StatelessWidget {
           children: [
             Icon(icon, size: 20, color: scheme.primary),
             const SizedBox(width: 8),
-            Text(label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 11)),
+            Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 11),
+            ),
           ],
         ),
       ),

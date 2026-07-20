@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/auth/AuthContext';
 import { BrandLogo } from '@/components/branding/BrandLogo';
-import { roleHasPermission } from '@/lib/rolePermissions';
+import { userHasPermission } from '@/lib/rolePermissions';
 
 const navRoutes = [
   { to: '/dashboard', key: 'nav.work', icon: 'assignment', permission: 'dashboard:read' as const },
@@ -17,8 +17,7 @@ const navRoutes = [
 export function Sidebar() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const role = user?.role?.name;
-  const visibleNav = navRoutes.filter((item) => roleHasPermission(role, item.permission));
+  const visibleNav = navRoutes.filter((item) => userHasPermission(user, item.permission));
   return (
     <aside className="fixed left-0 top-0 z-40 hidden h-full w-sidebar-width flex-col border-r border-outline-variant bg-inverse-surface text-inverse-on-surface md:flex">
       <div className="flex items-center gap-3 p-6">

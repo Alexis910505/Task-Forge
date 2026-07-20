@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get/get.dart' hide FormData, MultipartFile, Response;
+
+import '../../../core/auth/jwt_utils.dart';
 import '../../../core/config/env.dart';
-import '../../../core/network/plain_dio_provider.dart';
+import '../../../core/network/dio_provider.dart';
 import '../../../core/storage/client_session.dart';
-import '../../../core/storage/secure_storage_provider.dart';
 
 const _kAccess = 'tf_access';
 const _kRefresh = 'tf_refresh';
@@ -32,19 +36,39 @@ class AuthSession {
   }
 }
 
-class AuthRepository extends StateNotifier<AsyncValue<AuthSession?>> {
-  AuthRepository(this._ref) : super(const AsyncValue.loading()) {
-    _restore();
+class AuthController extends GetxController {
+  final isBootstrapping = true.obs;
+  final session = Rxn<AuthSession>();
+  final authError = Rxn<Object>();
+
+  bool _persistSessionOnDisk = true;
+  Future<(String access, String refresh)?>? _refreshInFlight;
+  Future<bool?>? _tryRefreshInFlight;
+
+  FlutterSecureStorage get _storage => Get.find<FlutterSecureStorage>();
+  Dio get _plainDio => Get.find<ApiClient>().plainDio;
+  ClientSessionHelper get _clientSession => Get.find<ClientSessionHelper>();
+
+  AuthSession? get currentSession => session.value;
+  bool get isLoggedIn => session.value != null;
+
+  String? get currentUserId {
+    final fromProfile = session.value?.profile?['id']?.toString();
+    if (fromProfile != null && fromProfile.isNotEmpty) {
+      return fromProfile;
+    }
+    final token = session.value?.accessToken;
+    if (token == null || token.isEmpty) {
+      return null;
+    }
+    return JwtUtils.userId(token);
   }
 
-  final Ref _ref;
-
-  /// When true, tokens are persisted to secure storage across app restarts.
-  bool _persistSessionOnDisk = true;
-
-  Future<(String access, String refresh)?>? _refreshInFlight;
-
-  AuthSession? get session => state.maybeWhen(data: (v) => v, orElse: () => null);
+  @override
+  void onInit() {
+    super.onInit();
+    unawaited(_restore());
+  }
 
   bool _isTransientError(DioException e) {
     return e.type == DioExceptionType.connectionTimeout ||
@@ -58,9 +82,8 @@ class AuthRepository extends StateNotifier<AsyncValue<AuthSession?>> {
     if (!_persistSessionOnDisk) {
       return;
     }
-    final storage = _ref.read(secureStorageProvider);
-    await storage.write(key: _kAccess, value: access);
-    await storage.write(key: _kRefresh, value: refresh);
+    await _storage.write(key: _kAccess, value: access);
+    await _storage.write(key: _kRefresh, value: refresh);
   }
 
   Future<(String access, String refresh)?> _refreshTokens(String refreshToken) async {
@@ -78,8 +101,7 @@ class AuthRepository extends StateNotifier<AsyncValue<AuthSession?>> {
 
   Future<(String access, String refresh)?> _doRefresh(String refreshToken) async {
     try {
-      final dio = _ref.read(plainDioProvider);
-      final res = await dio.post<Map<String, dynamic>>(
+      final res = await _plainDio.post<Map<String, dynamic>>(
         '/auth/refresh',
         data: {'refreshToken': refreshToken},
       );
@@ -99,8 +121,7 @@ class AuthRepository extends StateNotifier<AsyncValue<AuthSession?>> {
   }
 
   Future<Map<String, dynamic>?> _fetchProfile(String accessToken) async {
-    final dio = _ref.read(plainDioProvider);
-    final me = await dio.get<Map<String, dynamic>>(
+    final me = await _plainDio.get<Map<String, dynamic>>(
       '/users/me',
       options: Options(
         headers: {'Authorization': 'Bearer $accessToken'},
@@ -110,14 +131,14 @@ class AuthRepository extends StateNotifier<AsyncValue<AuthSession?>> {
   }
 
   Future<void> _restore() async {
-    state = const AsyncValue.loading();
+    isBootstrapping.value = true;
+    authError.value = null;
     try {
-      final storage = _ref.read(secureStorageProvider);
-      final access = await storage.read(key: _kAccess);
-      final refresh = await storage.read(key: _kRefresh);
+      final access = await _storage.read(key: _kAccess);
+      final refresh = await _storage.read(key: _kRefresh);
       if (access == null || refresh == null) {
         _persistSessionOnDisk = false;
-        state = const AsyncValue.data(null);
+        session.value = null;
         return;
       }
       _persistSessionOnDisk = true;
@@ -130,14 +151,9 @@ class AuthRepository extends StateNotifier<AsyncValue<AuthSession?>> {
         profile = await _fetchProfile(accessToken);
       } on DioException catch (e) {
         if (e.response?.statusCode != 401) {
-          if (_isTransientError(e)) {
-            state = AsyncValue.data(
-              AuthSession(accessToken: accessToken, refreshToken: refreshToken),
-            );
-            return;
-          }
-          state = AsyncValue.data(
-            AuthSession(accessToken: accessToken, refreshToken: refreshToken),
+          session.value = AuthSession(
+            accessToken: accessToken,
+            refreshToken: refreshToken,
           );
           return;
         }
@@ -152,45 +168,44 @@ class AuthRepository extends StateNotifier<AsyncValue<AuthSession?>> {
         try {
           profile = await _fetchProfile(accessToken);
         } on DioException catch (e2) {
-          if (_isTransientError(e2)) {
-            state = AsyncValue.data(
-              AuthSession(
-                accessToken: accessToken,
-                refreshToken: refreshToken,
-              ),
+          if (_isTransientError(e2) || e2.response?.statusCode != 401) {
+            session.value = AuthSession(
+              accessToken: accessToken,
+              refreshToken: refreshToken,
             );
             return;
           }
-          if (e2.response?.statusCode == 401) {
-            await clearLocalSession();
-            return;
-          }
-          state = AsyncValue.data(
-            AuthSession(
-              accessToken: accessToken,
-              refreshToken: refreshToken,
-            ),
-          );
+          await clearLocalSession();
           return;
         }
       }
 
-      state = AsyncValue.data(
-        AuthSession(
-          accessToken: accessToken,
-          refreshToken: refreshToken,
-          profile: profile,
-        ),
+      session.value = AuthSession(
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+        profile: profile,
       );
     } catch (_) {
-      state = const AsyncValue.data(null);
+      session.value = null;
+    } finally {
+      isBootstrapping.value = false;
     }
   }
 
-  /// Refresca tokens del usuario actual.
-  /// `true` = éxito, `false` = sesión inválida, `null` = error de red (no borrar sesión).
   Future<bool?> tryRefreshSession() async {
-    final current = session;
+    if (_tryRefreshInFlight != null) {
+      return _tryRefreshInFlight;
+    }
+    _tryRefreshInFlight = _tryRefreshSessionImpl();
+    try {
+      return await _tryRefreshInFlight;
+    } finally {
+      _tryRefreshInFlight = null;
+    }
+  }
+
+  Future<bool?> _tryRefreshSessionImpl() async {
+    final current = session.value;
     if (current == null) {
       return false;
     }
@@ -218,17 +233,17 @@ class AuthRepository extends StateNotifier<AsyncValue<AuthSession?>> {
     required String password,
     bool persistSessionOnDisk = true,
   }) async {
-    state = const AsyncValue.loading();
+    isBootstrapping.value = true;
+    authError.value = null;
     try {
-      final dio = _ref.read(plainDioProvider);
-      final session = await _ref.read(clientSessionProvider).apiPayload();
-      final res = await dio.post<Map<String, dynamic>>(
+      final clientPayload = await _clientSession.apiPayload();
+      final res = await _plainDio.post<Map<String, dynamic>>(
         '/auth/login',
         data: {
           'organizationSlug': organizationSlug.trim().toLowerCase(),
           'email': email,
           'password': password,
-          ...session,
+          ...clientPayload,
         },
       );
       final data = res.data;
@@ -243,9 +258,8 @@ class AuthRepository extends StateNotifier<AsyncValue<AuthSession?>> {
       if (persistSessionOnDisk) {
         await _persistTokens(access, refresh);
       } else {
-        final storage = _ref.read(secureStorageProvider);
-        await storage.delete(key: _kAccess);
-        await storage.delete(key: _kRefresh);
+        await _storage.delete(key: _kAccess);
+        await _storage.delete(key: _kRefresh);
       }
 
       final authed = Dio(
@@ -260,12 +274,17 @@ class AuthRepository extends StateNotifier<AsyncValue<AuthSession?>> {
       final me = await authed.get<Map<String, dynamic>>('/users/me');
       authed.close();
 
-      state = AsyncValue.data(
-        AuthSession(accessToken: access, refreshToken: refresh, profile: me.data),
+      session.value = AuthSession(
+        accessToken: access,
+        refreshToken: refresh,
+        profile: me.data,
       );
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
+    } catch (e) {
+      authError.value = e;
+      session.value = null;
       rethrow;
+    } finally {
+      isBootstrapping.value = false;
     }
   }
 
@@ -277,11 +296,11 @@ class AuthRepository extends StateNotifier<AsyncValue<AuthSession?>> {
     required String lastName,
     bool persistSessionOnDisk = true,
   }) async {
-    state = const AsyncValue.loading();
+    isBootstrapping.value = true;
+    authError.value = null;
     try {
-      final dio = _ref.read(plainDioProvider);
-      final session = await _ref.read(clientSessionProvider).apiPayload();
-      final res = await dio.post<Map<String, dynamic>>(
+      final clientPayload = await _clientSession.apiPayload();
+      final res = await _plainDio.post<Map<String, dynamic>>(
         '/auth/register',
         data: {
           'organizationSlug': organizationSlug.trim().toLowerCase(),
@@ -289,7 +308,7 @@ class AuthRepository extends StateNotifier<AsyncValue<AuthSession?>> {
           'password': password,
           'firstName': firstName,
           'lastName': lastName,
-          ...session,
+          ...clientPayload,
         },
       );
       final data = res.data;
@@ -304,9 +323,8 @@ class AuthRepository extends StateNotifier<AsyncValue<AuthSession?>> {
       if (persistSessionOnDisk) {
         await _persistTokens(access, refresh);
       } else {
-        final storage = _ref.read(secureStorageProvider);
-        await storage.delete(key: _kAccess);
-        await storage.delete(key: _kRefresh);
+        await _storage.delete(key: _kAccess);
+        await _storage.delete(key: _kRefresh);
       }
 
       final authed = Dio(
@@ -321,12 +339,17 @@ class AuthRepository extends StateNotifier<AsyncValue<AuthSession?>> {
       final me = await authed.get<Map<String, dynamic>>('/users/me');
       authed.close();
 
-      state = AsyncValue.data(
-        AuthSession(accessToken: access, refreshToken: refresh, profile: me.data),
+      session.value = AuthSession(
+        accessToken: access,
+        refreshToken: refresh,
+        profile: me.data,
       );
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
+    } catch (e) {
+      authError.value = e;
+      session.value = null;
       rethrow;
+    } finally {
+      isBootstrapping.value = false;
     }
   }
 
@@ -335,28 +358,25 @@ class AuthRepository extends StateNotifier<AsyncValue<AuthSession?>> {
     required String refreshToken,
   }) async {
     await _persistTokens(accessToken, refreshToken);
-    final current = state.maybeWhen(data: (v) => v, orElse: () => null);
-    state = AsyncValue.data(
-      (current ?? AuthSession(accessToken: accessToken, refreshToken: refreshToken))
-          .copyWith(accessToken: accessToken, refreshToken: refreshToken),
-    );
+    final current = session.value;
+    session.value = (current ??
+            AuthSession(accessToken: accessToken, refreshToken: refreshToken))
+        .copyWith(accessToken: accessToken, refreshToken: refreshToken);
   }
 
-  /// Borra tokens locales sin llamar al API (p. ej. refresh inválido).
   Future<void> clearLocalSession() async {
-    final storage = _ref.read(secureStorageProvider);
-    await storage.delete(key: _kAccess);
-    await storage.delete(key: _kRefresh);
+    await _storage.delete(key: _kAccess);
+    await _storage.delete(key: _kRefresh);
     _persistSessionOnDisk = false;
-    state = const AsyncValue.data(null);
+    session.value = null;
+    isBootstrapping.value = false;
   }
 
   Future<void> logout() async {
-    final current = state.maybeWhen(data: (v) => v, orElse: () => null);
+    final current = session.value;
     if (current != null) {
       try {
-        final dio = _ref.read(plainDioProvider);
-        await dio.post<void>(
+        await _plainDio.post<void>(
           '/auth/logout',
           data: {'refreshToken': current.refreshToken},
           options: Options(
@@ -370,8 +390,3 @@ class AuthRepository extends StateNotifier<AsyncValue<AuthSession?>> {
     await clearLocalSession();
   }
 }
-
-final authRepositoryProvider =
-    StateNotifierProvider<AuthRepository, AsyncValue<AuthSession?>>((ref) {
-  return AuthRepository(ref);
-});

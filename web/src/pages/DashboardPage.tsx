@@ -66,15 +66,23 @@ export function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await apiFetch(`/dashboard/summary?period=${period}`);
-    setLoading(false);
-    if (!res.ok) {
-      setLoadErrorStatus(res.status);
+    try {
+      const res = await apiFetch(`/dashboard/summary?period=${period}`);
+      if (!res.ok) {
+        // 401 ya dispara logout → redirect a /login vía AuthContext.
+        setLoadErrorStatus(res.status);
+        setSummary(null);
+        return;
+      }
+      setLoadErrorStatus(null);
+      setSummary((await res.json()) as DashboardSummary);
+    } catch {
+      // Red caída: apiFetch limpia sesión y redirige a login.
+      setLoadErrorStatus(null);
       setSummary(null);
-      return;
+    } finally {
+      setLoading(false);
     }
-    setLoadErrorStatus(null);
-    setSummary((await res.json()) as DashboardSummary);
   }, [period]);
 
   useEffect(() => {

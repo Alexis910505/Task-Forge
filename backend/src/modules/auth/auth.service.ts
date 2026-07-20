@@ -8,7 +8,6 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
-import { RoleName } from '@prisma/client';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -50,7 +49,7 @@ export class AuthService {
       where: {
         organizationId_name: {
           organizationId: org.id,
-          name: RoleName.WORKER,
+          name: 'WORKER',
         },
       },
     });
@@ -71,7 +70,7 @@ export class AuthService {
     return this.issueTokens(
       user.id,
       user.email,
-      RoleName.WORKER,
+      'WORKER',
       org.id,
       org.slug,
       this.clientSessionFromDto(dto),
@@ -170,7 +169,7 @@ export class AuthService {
   private async issueTokens(
     userId: string,
     email: string,
-    role: RoleName,
+    role: string,
     organizationId: string,
     organizationSlug: string,
     session?: ClientSession,

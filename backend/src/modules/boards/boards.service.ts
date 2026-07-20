@@ -36,6 +36,7 @@ export class BoardsService {
       include: {
         project: true,
         tasks: {
+          where: { parentTaskId: null },
           orderBy: [{ status: 'asc' }, { sortOrder: 'asc' }],
           include: {
             assignee: { select: { id: true, firstName: true, lastName: true, email: true } },
@@ -53,6 +54,7 @@ export class BoardsService {
                 },
               },
             },
+            _count: { select: { subtasks: true } },
           },
         },
       },

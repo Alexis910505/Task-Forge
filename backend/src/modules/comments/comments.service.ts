@@ -48,22 +48,24 @@ export class CommentsService {
       },
       organizationId,
     );
-    const notifyIds = new Set<string>();
-    if (task.assigneeId && task.assigneeId !== userId) {
-      notifyIds.add(task.assigneeId);
+    const notifyIds = await this.notifications.resolveTaskRecipientIds(
+      organizationId,
+      task.assigneeId,
+      userId,
+    );
+    // Si hay assignee, el creador también debe enterarse (salvo que sea el mismo).
+    if (task.assigneeId && task.createdById && task.createdById !== userId) {
+      if (!notifyIds.includes(task.createdById)) {
+        notifyIds.push(task.createdById);
+      }
     }
-    if (task.createdById !== userId) {
-      notifyIds.add(task.createdById);
-    }
-    for (const uid of notifyIds) {
-      await this.notifications.createForUser(
-        uid,
-        NotificationType.COMMENT,
-        'Nuevo comentario',
-        dto.content.slice(0, 120),
-        { taskId, commentId: comment.id, taskTitle: task.title, threadTitle: task.title },
-      );
-    }
+    await this.notifications.notifyUsers(
+      notifyIds,
+      NotificationType.COMMENT,
+      'Nuevo comentario',
+      dto.content.slice(0, 120),
+      { taskId, commentId: comment.id, taskTitle: task.title, threadTitle: task.title },
+    );
     const commentPayload = {
       taskId,
       boardId: task.boardId,

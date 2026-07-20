@@ -1,29 +1,22 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
-
-import 'secure_storage_provider.dart';
 
 const _kClientId = 'tf_client_id';
 
-final clientSessionProvider = Provider<ClientSessionHelper>((ref) {
-  return ClientSessionHelper(ref);
-});
-
-class ClientSessionHelper {
-  ClientSessionHelper(this._ref);
-
-  final Ref _ref;
+class ClientSessionHelper extends GetxService {
   String? _cachedId;
+
+  FlutterSecureStorage get _storage => Get.find<FlutterSecureStorage>();
 
   Future<String> clientId() async {
     if (_cachedId != null) {
       return _cachedId!;
     }
-    final storage = _ref.read(secureStorageProvider);
-    var id = await storage.read(key: _kClientId);
+    var id = await _storage.read(key: _kClientId);
     if (id == null || id.length < 8) {
       id = const Uuid().v4();
-      await storage.write(key: _kClientId, value: id);
+      await _storage.write(key: _kClientId, value: id);
     }
     _cachedId = id;
     return id;

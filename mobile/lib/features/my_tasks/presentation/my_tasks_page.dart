@@ -1,35 +1,35 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart' hide FormData, MultipartFile, Response, Value;
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:task_forge_app/l10n/gen/app_localizations.dart';
 
 import '../../../core/layout/app_mobile_top_bar.dart';
-import '../../../core/network/dio_provider.dart';
 import '../../auth/application/auth_repository.dart';
+import '../application/my_tasks_controller.dart';
 
-enum _MyTasksTab { all, todo, inProgress, completed }
-
-class MyTasksPage extends ConsumerStatefulWidget {
+class MyTasksPage extends StatefulWidget {
   const MyTasksPage({super.key});
 
   @override
-  ConsumerState<MyTasksPage> createState() => _MyTasksPageState();
+  State<MyTasksPage> createState() => _MyTasksPageState();
 }
 
-class _MyTasksPageState extends ConsumerState<MyTasksPage> {
+class _MyTasksPageState extends State<MyTasksPage> {
+  late final MyTasksController _controller;
   final _searchCtrl = TextEditingController();
-  _MyTasksTab _tab = _MyTasksTab.all;
-  List<_TaskItem> _tasks = [];
-  String? _error;
-  bool _loading = true;
+
+  MyTasksTab get _tab => _controller.tab.value;
+  List<MyTaskItem> get _tasks => _controller.tasks;
 
   @override
   void initState() {
     super.initState();
+    _controller = Get.find<MyTasksController>();
     _searchCtrl.addListener(() => setState(() {}));
-    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _controller.load(quiet: _controller.tasks.isNotEmpty);
+    });
   }
 
   @override
@@ -38,84 +38,47 @@ class _MyTasksPageState extends ConsumerState<MyTasksPage> {
     super.dispose();
   }
 
-  Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    try {
-      final dio = ref.read(dioProvider);
-      final profile = ref.read(authRepositoryProvider).valueOrNull?.profile;
-      final userId = profile?['id']?.toString();
+  List<_ListEntry> get _listEntries {
+    final filtered = _filtered;
+    final sort = _controller.sort.value;
+    final entries = <_ListEntry>[];
 
-      List<_TaskItem> items = [];
-      if (userId != null) {
-        final tasksRes = await dio.get<List<dynamic>>(
-          '/tasks',
-          queryParameters: {'assigneeId': userId},
-        );
-        final raw = tasksRes.data;
-        if (raw is List) {
-          items = raw
-              .whereType<Map>()
-              .map((m) => _TaskItem.fromJson(Map<String, dynamic>.from(m)))
-              .toList();
+    // Criticidad / tiempo: lista plana. Proyecto: agrupa como antes.
+    if (sort == MyTasksSort.byProject) {
+      String? lastProject;
+      for (final task in filtered) {
+        final project =
+            (task.projectName ?? '').trim().isEmpty
+                ? '—'
+                : task.projectName!.trim();
+        if (project != lastProject) {
+          entries.add(_ListEntry.header(project));
+          lastProject = project;
         }
+        entries.add(_ListEntry.task(task));
       }
-
-      if (items.isEmpty) {
-        final profileRes = await dio.get<Map<String, dynamic>>('/users/me/profile');
-        final active = profileRes.data?['activeTasks'];
-        if (active is List) {
-          for (final raw in active) {
-            if (raw is Map) {
-              items.add(_TaskItem.fromJson(Map<String, dynamic>.from(raw)));
-            }
-          }
-        }
-      }
-
-      if (mounted) {
-        setState(() => _tasks = items);
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _error = _formatError(e));
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _loading = false);
+    } else {
+      for (final task in filtered) {
+        entries.add(_ListEntry.task(task));
       }
     }
+    return entries;
   }
 
-  String _formatError(Object e) {
-    if (e is DioException) {
-      final data = e.response?.data;
-      if (data is Map) {
-        final m = data['message'];
-        if (m is String && m.isNotEmpty) return m;
-        if (m is List) return m.map((x) => '$x').join(', ');
-      }
-      return e.message ?? '$e';
-    }
-    return '$e';
-  }
-
-  List<_TaskItem> get _filtered {
+  List<MyTaskItem> get _filtered {
     final q = _searchCtrl.text.trim().toLowerCase();
-    return _tasks.where((t) {
+    final list = _tasks.where((t) {
       switch (_tab) {
-        case _MyTasksTab.all:
+        case MyTasksTab.all:
           if (t.status == 'COMPLETED') return false;
           break;
-        case _MyTasksTab.todo:
+        case MyTasksTab.todo:
           if (t.status != 'TODO' && t.status != 'BACKLOG') return false;
           break;
-        case _MyTasksTab.inProgress:
+        case MyTasksTab.inProgress:
           if (t.status != 'IN_PROGRESS' && t.status != 'REVIEW') return false;
           break;
-        case _MyTasksTab.completed:
+        case MyTasksTab.completed:
           if (t.status != 'COMPLETED') return false;
           break;
       }
@@ -125,6 +88,132 @@ class _MyTasksPageState extends ConsumerState<MyTasksPage> {
           (t.location?.toLowerCase().contains(q) ?? false) ||
           (t.projectName?.toLowerCase().contains(q) ?? false);
     }).toList();
+
+    switch (_controller.sort.value) {
+      case MyTasksSort.byProject:
+        list.sort((a, b) {
+          final pa = (a.projectName ?? '').toLowerCase();
+          final pb = (b.projectName ?? '').toLowerCase();
+          final byProject = pa.compareTo(pb);
+          if (byProject != 0) return byProject;
+          final da = a.updatedAt ?? a.dueDate;
+          final db = b.updatedAt ?? b.dueDate;
+          if (da == null && db == null) return a.title.compareTo(b.title);
+          if (da == null) return 1;
+          if (db == null) return -1;
+          return db.compareTo(da);
+        });
+      case MyTasksSort.byPriority:
+        list.sort((a, b) {
+          final byP = MyTasksController.priorityRank(a.priority)
+              .compareTo(MyTasksController.priorityRank(b.priority));
+          if (byP != 0) return byP;
+          final da = a.dueDate;
+          final db = b.dueDate;
+          if (da == null && db == null) return a.title.compareTo(b.title);
+          if (da == null) return 1;
+          if (db == null) return -1;
+          return da.compareTo(db);
+        });
+      case MyTasksSort.byDueSoon:
+        list.sort((a, b) {
+          final da = a.dueDate;
+          final db = b.dueDate;
+          if (da == null && db == null) {
+            return MyTasksController.priorityRank(a.priority)
+                .compareTo(MyTasksController.priorityRank(b.priority));
+          }
+          if (da == null) return 1;
+          if (db == null) return -1;
+          final byDue = da.compareTo(db);
+          if (byDue != 0) return byDue;
+          return MyTasksController.priorityRank(a.priority)
+              .compareTo(MyTasksController.priorityRank(b.priority));
+        });
+      case MyTasksSort.byDueLatest:
+        list.sort((a, b) {
+          final da = a.dueDate;
+          final db = b.dueDate;
+          if (da == null && db == null) {
+            return MyTasksController.priorityRank(a.priority)
+                .compareTo(MyTasksController.priorityRank(b.priority));
+          }
+          if (da == null) return 1;
+          if (db == null) return -1;
+          final byDue = db.compareTo(da);
+          if (byDue != 0) return byDue;
+          return MyTasksController.priorityRank(a.priority)
+              .compareTo(MyTasksController.priorityRank(b.priority));
+        });
+    }
+    return list;
+  }
+
+  Future<void> _openSortSheet() async {
+    final l10n = AppLocalizations.of(context)!;
+    final current = _controller.sort.value;
+    final chosen = await showModalBottomSheet<MyTasksSort>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                child: Text(
+                  l10n.myTasksSortTitle,
+                  style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+              ),
+              for (final option in MyTasksSort.values)
+                ListTile(
+                  leading: Icon(_sortIcon(option)),
+                  title: Text(_sortLabel(l10n, option)),
+                  trailing: current == option
+                      ? Icon(Icons.check, color: Theme.of(ctx).colorScheme.primary)
+                      : null,
+                  onTap: () => Navigator.pop(ctx, option),
+                ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+    if (chosen != null) {
+      _controller.setSort(chosen);
+    }
+  }
+
+  IconData _sortIcon(MyTasksSort sort) {
+    switch (sort) {
+      case MyTasksSort.byProject:
+        return Icons.folder_outlined;
+      case MyTasksSort.byPriority:
+        return Icons.priority_high;
+      case MyTasksSort.byDueSoon:
+        return Icons.schedule;
+      case MyTasksSort.byDueLatest:
+        return Icons.event;
+    }
+  }
+
+  String _sortLabel(AppLocalizations l10n, MyTasksSort sort) {
+    switch (sort) {
+      case MyTasksSort.byProject:
+        return l10n.myTasksSortByProject;
+      case MyTasksSort.byPriority:
+        return l10n.myTasksSortByPriority;
+      case MyTasksSort.byDueSoon:
+        return l10n.myTasksSortByDueSoon;
+      case MyTasksSort.byDueLatest:
+        return l10n.myTasksSortByDueLatest;
+    }
   }
 
   @override
@@ -133,15 +222,30 @@ class _MyTasksPageState extends ConsumerState<MyTasksPage> {
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).languageCode;
-    final profile = ref.watch(authRepositoryProvider).valueOrNull?.profile;
-    final filtered = _filtered;
+    final profile = Get.find<AuthController>().currentSession?.profile;
 
-    return Stack(
+    return GetBuilder<MyTasksController>(
+      builder: (c) {
+      final loading = c.loading.value;
+      final error = c.error.value;
+      final entries = _listEntries;
+      final showEmpty = _filtered.isEmpty;
+
+      return Stack(
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             AppMobileTopBar(profile: profile),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Text(
+                l10n.myTasksSubtitle,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
               child: Row(
@@ -164,89 +268,138 @@ class _MyTasksPageState extends ConsumerState<MyTasksPage> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: scheme.primary, width: 2),
+                          borderSide: BorderSide(
+                            color: scheme.primary,
+                            width: 2,
+                          ),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Material(
-                    color: scheme.surfaceContainerHigh,
+                    color: c.hasActiveSort
+                        ? scheme.primaryContainer
+                        : scheme.surfaceContainerHigh,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: scheme.outlineVariant),
+                      side: BorderSide(
+                        color: c.hasActiveSort
+                            ? scheme.primary
+                            : scheme.outlineVariant,
+                      ),
                     ),
                     child: InkWell(
-                      onTap: () {},
+                      onTap: _openSortSheet,
                       borderRadius: BorderRadius.circular(12),
                       child: SizedBox(
                         width: 48,
                         height: 48,
-                        child: Icon(Icons.filter_list, color: scheme.primary),
+                        child: Icon(
+                          Icons.filter_list,
+                          color: c.hasActiveSort
+                              ? scheme.onPrimaryContainer
+                              : scheme.primary,
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
+            if (c.hasActiveSort)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: InputChip(
+                    avatar: Icon(_sortIcon(c.sort.value), size: 18),
+                    label: Text(_sortLabel(l10n, c.sort.value)),
+                    onDeleted: () => _controller.setSort(MyTasksSort.byProject),
+                    deleteIconColor: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
             _StatusTabs(
               tab: _tab,
-              onChanged: (t) => setState(() => _tab = t),
+              onChanged: (t) => _controller.setTab(t),
               l10n: l10n,
             ),
             Expanded(
-              child: _loading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _error != null
+              child:
+                  loading
+                      ? const Center(child: CircularProgressIndicator())
+                      : error != null
                       ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(24),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(_error!, textAlign: TextAlign.center),
-                                const SizedBox(height: 12),
-                                FilledButton(
-                                  onPressed: _load,
-                                  child: Text(l10n.dashboardRetry),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      : filtered.isEmpty
-                          ? Center(
-                              child: Text(
-                                l10n.myTasksEmpty,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: scheme.onSurfaceVariant,
-                                ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(error, textAlign: TextAlign.center),
+                              const SizedBox(height: 12),
+                              FilledButton(
+                                onPressed: () => _controller.load(),
+                                child: Text(l10n.dashboardRetry),
                               ),
-                            )
-                          : RefreshIndicator(
-                              onRefresh: _load,
-                              child: ListView.separated(
-                                padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
-                                itemCount: filtered.length,
-                                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                                itemBuilder: (context, i) {
-                                  return _TaskCard(
-                                    task: filtered[i],
-                                    locale: locale,
-                                    l10n: l10n,
-                                    onTap: () async {
-                                      final changed = await context.push<bool>(
-                                        '/tasks/${filtered[i].id}',
-                                      );
-                                      if (changed == true && mounted) {
-                                        await _load();
-                                      }
-                                    },
+                            ],
+                          ),
+                        ),
+                      )
+                      : showEmpty
+                      ? Center(
+                        child: Text(
+                          l10n.myTasksEmpty,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      )
+                      : RefreshIndicator(
+                        onRefresh: () => _controller.load(),
+                        child: ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
+                          itemCount: entries.length,
+                          itemBuilder: (context, i) {
+                            final entry = entries[i];
+                            if (entry.isHeader) {
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  top: i == 0 ? 4 : 18,
+                                  bottom: 8,
+                                ),
+                                child: Text(
+                                  entry.header!,
+                                  style: theme.textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    color: scheme.primary,
+                                  ),
+                                ),
+                              );
+                            }
+                            final task = entry.task!;
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: _TaskCard(
+                                task: task,
+                                locale: locale,
+                                l10n: l10n,
+                                onTap: () async {
+                                  await context.push<bool>(
+                                    '/tasks/${task.id}',
                                   );
+                                  // Siempre refrescar: el back del sistema no
+                                  // devuelve `true` aunque se haya cambiado el estado.
+                                  if (mounted) await _controller.load(quiet: true);
                                 },
                               ),
-                            ),
+                            );
+                          },
+                        ),
+                      ),
             ),
           ],
         ),
@@ -258,7 +411,7 @@ class _MyTasksPageState extends ConsumerState<MyTasksPage> {
             onPressed: () async {
               final created = await context.push<bool>('/tasks/new');
               if (created == true && mounted) {
-                await _load();
+                await _controller.load();
               }
             },
             child: const Icon(Icons.add, size: 28),
@@ -266,63 +419,19 @@ class _MyTasksPageState extends ConsumerState<MyTasksPage> {
         ),
       ],
     );
+      },
+    );
   }
 }
 
-class _TaskItem {
-  _TaskItem({
-    required this.id,
-    required this.title,
-    required this.status,
-    required this.priority,
-    this.dueDate,
-    this.location,
-    this.projectName,
-    this.updatedAt,
-  });
+class _ListEntry {
+  const _ListEntry.header(this.header) : task = null;
+  const _ListEntry.task(this.task) : header = null;
 
-  final String id;
-  final String title;
-  final String status;
-  final String priority;
-  final DateTime? dueDate;
-  final String? location;
-  final String? projectName;
-  final DateTime? updatedAt;
+  final String? header;
+  final MyTaskItem? task;
 
-  String get displayId {
-    if (id.length <= 8) return '#$id';
-    return '#TF-${id.substring(id.length - 4).toUpperCase()}';
-  }
-
-  factory _TaskItem.fromJson(Map<String, dynamic> json) {
-    DateTime? parseDate(dynamic v) {
-      if (v == null) return null;
-      return DateTime.tryParse('$v');
-    }
-
-    final board = json['board'];
-    String? project;
-    if (board is Map) {
-      project = board['name']?.toString();
-      final projectObj = board['project'];
-      if (projectObj is Map && projectObj['name'] != null) {
-        project = '${projectObj['name']}';
-      }
-    }
-    project ??= json['projectName']?.toString();
-
-    return _TaskItem(
-      id: '${json['id'] ?? ''}',
-      title: '${json['title'] ?? ''}',
-      status: '${json['status'] ?? 'TODO'}',
-      priority: '${json['priority'] ?? 'MEDIUM'}',
-      dueDate: parseDate(json['dueDate']),
-      location: json['location']?.toString(),
-      projectName: project,
-      updatedAt: parseDate(json['updatedAt']),
-    );
-  }
+  bool get isHeader => header != null;
 }
 
 class _StatusTabs extends StatelessWidget {
@@ -332,18 +441,18 @@ class _StatusTabs extends StatelessWidget {
     required this.l10n,
   });
 
-  final _MyTasksTab tab;
-  final ValueChanged<_MyTasksTab> onChanged;
+  final MyTasksTab tab;
+  final ValueChanged<MyTasksTab> onChanged;
   final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final tabs = [
-      (l10n.myTasksTabAll, _MyTasksTab.all),
-      (l10n.myTasksTabTodo, _MyTasksTab.todo),
-      (l10n.myTasksTabInProgress, _MyTasksTab.inProgress),
-      (l10n.myTasksTabCompleted, _MyTasksTab.completed),
+      (l10n.myTasksTabAll, MyTasksTab.all),
+      (l10n.myTasksTabTodo, MyTasksTab.todo),
+      (l10n.myTasksTabInProgress, MyTasksTab.inProgress),
+      (l10n.myTasksTabCompleted, MyTasksTab.completed),
     ];
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -362,7 +471,7 @@ class _StatusTabs extends StatelessWidget {
   Widget _tabButton(
     BuildContext context,
     String label,
-    _MyTasksTab value,
+    MyTasksTab value,
     ColorScheme scheme,
   ) {
     final selected = tab == value;
@@ -401,7 +510,7 @@ class _TaskCard extends StatelessWidget {
     required this.onTap,
   });
 
-  final _TaskItem task;
+  final MyTaskItem task;
   final String locale;
   final AppLocalizations l10n;
   final VoidCallback onTap;
@@ -413,7 +522,8 @@ class _TaskCard extends StatelessWidget {
     final priority = _PriorityStyle.from(task.priority, scheme);
     final statusIcon = _statusIcon(task, scheme);
     final dueLabel = _dueLabel(task, locale, l10n);
-    final isOverdue = task.dueDate != null &&
+    final isOverdue =
+        task.dueDate != null &&
         task.dueDate!.isBefore(DateTime.now()) &&
         task.status != 'COMPLETED';
 
@@ -444,7 +554,10 @@ class _TaskCard extends StatelessWidget {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: priority.background,
                             borderRadius: BorderRadius.circular(4),
@@ -485,9 +598,37 @@ class _TaskCard extends StatelessWidget {
                       children: [
                         if (dueLabel != null)
                           _MetaRow(
-                            icon: isOverdue ? Icons.warning_amber_outlined : Icons.calendar_today_outlined,
+                            icon:
+                                isOverdue
+                                    ? Icons.warning_amber_outlined
+                                    : Icons.calendar_today_outlined,
                             label: dueLabel,
-                            color: isOverdue ? scheme.error : scheme.onSurfaceVariant.withValues(alpha: 0.7),
+                            color:
+                                isOverdue
+                                    ? scheme.error
+                                    : scheme.onSurfaceVariant.withValues(
+                                      alpha: 0.7,
+                                    ),
+                          ),
+                        if (task.hasSubtasks)
+                          _MetaRow(
+                            icon: Icons.checklist_outlined,
+                            label: l10n.taskDetailSubtasksProgress(
+                              task.subtaskCompleted,
+                              task.subtaskTotal,
+                            ),
+                            color:
+                                task.subtaskCompleted >= task.subtaskTotal
+                                    ? scheme.tertiary
+                                    : scheme.onSurfaceVariant.withValues(
+                                      alpha: 0.8,
+                                    ),
+                          ),
+                        if (task.isUnassigned)
+                          _MetaRow(
+                            icon: Icons.groups_outlined,
+                            label: l10n.myTasksForEveryone,
+                            color: scheme.primary,
                           ),
                         if (task.location != null && task.location!.isNotEmpty)
                           _MetaRow(
@@ -495,7 +636,8 @@ class _TaskCard extends StatelessWidget {
                             label: task.location!,
                             color: scheme.tertiary,
                           )
-                        else if (task.projectName != null && task.projectName!.isNotEmpty)
+                        else if (task.projectName != null &&
+                            task.projectName!.isNotEmpty)
                           _MetaRow(
                             icon: Icons.location_on_outlined,
                             label: task.projectName!,
@@ -506,7 +648,10 @@ class _TaskCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right, color: scheme.onSurfaceVariant.withValues(alpha: 0.4)),
+              Icon(
+                Icons.chevron_right,
+                color: scheme.onSurfaceVariant.withValues(alpha: 0.4),
+              ),
             ],
           ),
         ),
@@ -514,11 +659,12 @@ class _TaskCard extends StatelessWidget {
     );
   }
 
-  Widget _statusIcon(_TaskItem task, ColorScheme scheme) {
+  Widget _statusIcon(MyTaskItem task, ColorScheme scheme) {
     if (task.status == 'COMPLETED') {
       return Icon(Icons.check_circle, color: scheme.tertiary, size: 26);
     }
-    final overdue = task.dueDate != null &&
+    final overdue =
+        task.dueDate != null &&
         task.dueDate!.isBefore(DateTime.now()) &&
         task.status != 'COMPLETED';
     if (overdue || task.priority == 'CRITICAL') {
@@ -527,10 +673,14 @@ class _TaskCard extends StatelessWidget {
     if (task.status == 'IN_PROGRESS' || task.status == 'REVIEW') {
       return Icon(Icons.pending, color: scheme.tertiary, size: 26);
     }
-    return Icon(Icons.radio_button_unchecked, color: scheme.primaryContainer, size: 26);
+    return Icon(
+      Icons.radio_button_unchecked,
+      color: scheme.primaryContainer,
+      size: 26,
+    );
   }
 
-  String? _dueLabel(_TaskItem task, String locale, AppLocalizations l10n) {
+  String? _dueLabel(MyTaskItem task, String locale, AppLocalizations l10n) {
     if (task.status == 'COMPLETED') {
       final at = task.updatedAt ?? task.dueDate;
       if (at == null) return l10n.myTasksTabCompleted;
@@ -559,7 +709,11 @@ class _TaskCard extends StatelessWidget {
 }
 
 class _MetaRow extends StatelessWidget {
-  const _MetaRow({required this.icon, required this.label, required this.color});
+  const _MetaRow({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
 
   final IconData icon;
   final String label;
@@ -574,7 +728,11 @@ class _MetaRow extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           label,
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color),
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: color,
+          ),
         ),
       ],
     );

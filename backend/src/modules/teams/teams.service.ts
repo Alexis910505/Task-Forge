@@ -1,15 +1,29 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { RoleName, TaskStatus } from '@prisma/client';
+import { TaskStatus } from '@prisma/client';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import {
+  assertCanAccessTeam,
+  assertCanCreateTeam,
+  assertCanDeleteTeam,
+  isTeamScopedRole,
+  resolveAccessScope,
+  teamListWhere,
+} from '../../core/security/access-scope';
+import type { RequestUser } from '../../core/strategies/jwt.strategy';
 import { CreateTeamDto } from './dto/create-team.dto';
 
 @Injectable()
 export class TeamsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(organizationId: string) {
+  private scope(user: RequestUser) {
+    return resolveAccessScope(this.prisma, user.userId, user.organizationId, user.role);
+  }
+
+  async findAll(user: RequestUser) {
+    const scope = await this.scope(user);
     const teams = await this.prisma.team.findMany({
-      where: { organizationId },
+      where: teamListWhere(scope),
       orderBy: { name: 'asc' },
       include: {
         department: { select: { id: true, name: true } },
@@ -38,14 +52,16 @@ export class TeamsService {
                 where: {
                   status: { not: TaskStatus.COMPLETED },
                   assigneeId: { in: memberIds },
-                  board: { organizationId },
+                  board: { organizationId: user.organizationId },
                 },
               })
             : 0;
 
         const leadUser =
-          team.members.find((m) => m.user.role.name === RoleName.MANAGER)?.user ??
-          team.members.find((m) => m.user.role.name === RoleName.ADMIN)?.user ??
+          team.members.find((m) => m.user.role.name === 'TEAM_LEAD')?.user ??
+          team.members.find((m) => m.user.role.name === 'SUPERVISOR')?.user ??
+          team.members.find((m) => m.user.role.name === 'DEPT_HEAD')?.user ??
+          team.members.find((m) => m.user.role.name === 'ADMIN')?.user ??
           team.members[0]?.user ??
           null;
 
@@ -78,12 +94,14 @@ export class TeamsService {
     );
   }
 
-  async create(organizationId: string, dto: CreateTeamDto) {
-    const departmentId = await this.resolveDepartmentId(organizationId, dto.departmentId);
+  async create(user: RequestUser, dto: CreateTeamDto) {
+    const scope = await this.scope(user);
+    const departmentId = await this.resolveDepartmentId(user.organizationId, dto.departmentId);
+    assertCanCreateTeam(scope, departmentId);
     const team = await this.prisma.team.create({
       data: {
         name: dto.name.trim(),
-        organizationId,
+        organizationId: user.organizationId,
         departmentId,
       },
       include: {
@@ -102,12 +120,25 @@ export class TeamsService {
     };
   }
 
-  async update(organizationId: string, id: string, dto: Partial<CreateTeamDto>) {
-    await this.ensureTeam(organizationId, id);
+  async update(user: RequestUser, id: string, dto: Partial<CreateTeamDto>) {
+    const scope = await this.scope(user);
+    const team = await this.ensureTeam(user.organizationId, id);
+    assertCanAccessTeam(scope, team);
+
+    // Solo ADMIN / DEPT_HEAD pueden cambiar el departamento del equipo.
+    if (dto.departmentId !== undefined && isTeamScopedRole(scope.role)) {
+      throw new ConflictException('Un rol acotado por equipos no puede reasignar el departamento');
+    }
+
     const departmentId =
       dto.departmentId !== undefined
-        ? await this.resolveDepartmentId(organizationId, dto.departmentId || null)
+        ? await this.resolveDepartmentId(user.organizationId, dto.departmentId || null)
         : undefined;
+
+    if (departmentId !== undefined && scope.role === 'DEPT_HEAD' && departmentId !== scope.departmentId) {
+      throw new ConflictException('Solo puedes asignar equipos a tu departamento');
+    }
+
     await this.prisma.team.update({
       where: { id },
       data: {
@@ -115,20 +146,24 @@ export class TeamsService {
         ...(departmentId !== undefined ? { departmentId } : {}),
       },
     });
-    const rows = await this.findAll(organizationId);
+    const rows = await this.findAll(user);
     return rows.find((t) => t.id === id);
   }
 
-  async remove(organizationId: string, id: string) {
-    await this.ensureTeam(organizationId, id);
+  async remove(user: RequestUser, id: string) {
+    const scope = await this.scope(user);
+    const team = await this.ensureTeam(user.organizationId, id);
+    assertCanDeleteTeam(scope, team);
     await this.prisma.team.delete({ where: { id } });
     return { deleted: true };
   }
 
-  async addMember(organizationId: string, teamId: string, userId: string) {
-    await this.ensureTeam(organizationId, teamId);
+  async addMember(user: RequestUser, teamId: string, userId: string) {
+    const scope = await this.scope(user);
+    const team = await this.ensureTeam(user.organizationId, teamId);
+    assertCanAccessTeam(scope, team);
     const member = await this.prisma.user.findFirst({
-      where: { id: userId, organizationId },
+      where: { id: userId, organizationId: user.organizationId },
     });
     if (!member) {
       throw new NotFoundException('Usuario no encontrado en la organización');
@@ -153,8 +188,10 @@ export class TeamsService {
     }
   }
 
-  async removeMember(organizationId: string, teamId: string, userId: string) {
-    await this.ensureTeam(organizationId, teamId);
+  async removeMember(user: RequestUser, teamId: string, userId: string) {
+    const scope = await this.scope(user);
+    const team = await this.ensureTeam(user.organizationId, teamId);
+    assertCanAccessTeam(scope, team);
     await this.prisma.teamMember.deleteMany({ where: { teamId, userId } });
     return { deleted: true };
   }
@@ -180,5 +217,6 @@ export class TeamsService {
     if (!t) {
       throw new NotFoundException();
     }
+    return t;
   }
 }

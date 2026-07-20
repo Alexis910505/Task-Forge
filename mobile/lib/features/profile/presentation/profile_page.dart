@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart' hide FormData, MultipartFile, Response, Value;
 import 'package:go_router/go_router.dart';
 import 'package:task_forge_app/l10n/gen/app_localizations.dart';
 
@@ -10,14 +10,14 @@ import '../../../core/offline/offline_providers.dart';
 import '../../auth/application/auth_repository.dart';
 
 /// Perfil del usuario (`assets/taskforge_my_profile`).
-class ProfilePage extends ConsumerStatefulWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
   @override
-  ConsumerState<ProfilePage> createState() => _ProfilePageState();
+  State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends ConsumerState<ProfilePage> {
+class _ProfilePageState extends State<ProfilePage> {
   Map<String, dynamic>? _payload;
   String? _error;
   bool _loading = true;
@@ -34,7 +34,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       _error = null;
     });
     try {
-      final dio = ref.read(dioProvider);
+      final dio = Get.find<ApiClient>().dio;
       final res = await dio.get<Map<String, dynamic>>('/users/me/profile');
       if (mounted) {
         setState(() {
@@ -53,8 +53,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   }
 
   Future<void> _signOut() async {
-    await ref.read(localDataServiceProvider).clearAllUserData();
-    await ref.read(authRepositoryProvider.notifier).logout();
+    await Get.find<LocalDataService>().clearAllUserData();
+    await Get.find<AuthController>().logout();
     if (mounted) {
       context.go('/login');
     }
@@ -64,10 +64,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     switch (role) {
       case 'ADMIN':
         return l10n.profileRoleAdmin;
-      case 'MANAGER':
-        return l10n.profileRoleManager;
+      case 'DEPT_HEAD':
+        return l10n.profileRoleDeptHead;
+      case 'SUPERVISOR':
+        return l10n.profileRoleSupervisor;
+      case 'TEAM_LEAD':
+        return l10n.profileRoleTeamLead;
       case 'WORKER':
         return l10n.profileRoleWorker;
+      case 'MANAGER':
+        return l10n.profileRoleManager;
       case 'INSPECTOR':
         return l10n.profileRoleInspector;
       case 'VIEWER':
@@ -82,7 +88,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    final sessionProfile = ref.watch(authRepositoryProvider).valueOrNull?.profile;
+    final sessionProfile = Get.find<AuthController>().currentSession?.profile;
 
     if (_loading && _payload == null) {
       return ColoredBox(
@@ -98,15 +104,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       );
     }
 
-    final user = (_payload?['user'] as Map?)?.cast<String, dynamic>() ??
-        sessionProfile;
+    final user =
+        (_payload?['user'] as Map?)?.cast<String, dynamic>() ?? sessionProfile;
     final stats = (_payload?['stats'] as Map?)?.cast<String, dynamic>();
 
     final first = '${user?['firstName'] ?? ''}'.trim();
     final last = '${user?['lastName'] ?? ''}'.trim();
     final fullName = [first, last].where((s) => s.isNotEmpty).join(' ');
     final initials =
-        '${first.isNotEmpty ? first[0] : ''}${last.isNotEmpty ? last[0] : ''}'.toUpperCase();
+        '${first.isNotEmpty ? first[0] : ''}${last.isNotEmpty ? last[0] : ''}'
+            .toUpperCase();
 
     final dept = user?['department'];
     final deptName = dept is Map ? '${dept['name'] ?? ''}'.trim() : '';
@@ -131,7 +138,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               MaterialBanner(
                 content: Text(_error!),
                 actions: [
-                  TextButton(onPressed: _load, child: Text(l10n.dashboardRetry)),
+                  TextButton(
+                    onPressed: _load,
+                    child: Text(l10n.dashboardRetry),
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -140,7 +150,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             _ProfileHero(
               initials: initials.isNotEmpty ? initials : '?',
               fullName: fullName.isNotEmpty ? fullName : l10n.navProfile,
-              department: deptName.isNotEmpty ? deptName : l10n.profileNoDepartment,
+              department:
+                  deptName.isNotEmpty ? deptName : l10n.profileNoDepartment,
               roleLabel: roleName.isNotEmpty ? _roleLabel(roleName, l10n) : '—',
               onEditTap: () => context.go('/settings'),
             ),
@@ -151,7 +162,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               children: [
                 Text(
                   l10n.profilePerformanceTitle,
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 Text(
                   l10n.profileLast30Days,
@@ -199,12 +212,18 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 backgroundColor: scheme.errorContainer.withValues(alpha: 0.25),
                 side: BorderSide(color: scheme.error.withValues(alpha: 0.2)),
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               icon: const Icon(Icons.logout),
               label: Text(
                 l10n.signOut.toUpperCase(),
-                style: const TextStyle(fontWeight: FontWeight.w800, letterSpacing: 0.5, fontSize: 12),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
+                  fontSize: 12,
+                ),
               ),
             ),
           ],
@@ -214,7 +233,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   }
 
   void _showComingSoon(BuildContext context, AppLocalizations l10n) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.profileComingSoon)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.profileComingSoon)));
   }
 
   static double? _num(dynamic v) {
@@ -254,7 +275,10 @@ class _ProfileHero extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: scheme.surface,
-                border: Border.all(color: scheme.surfaceContainerHigh, width: 4),
+                border: Border.all(
+                  color: scheme.surfaceContainerHigh,
+                  width: 4,
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: scheme.shadow.withValues(alpha: 0.06),
@@ -269,7 +293,9 @@ class _ProfileHero extends StatelessWidget {
                 foregroundColor: scheme.primary,
                 child: Text(
                   initials,
-                  style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),
@@ -295,7 +321,9 @@ class _ProfileHero extends StatelessWidget {
         Text(
           fullName,
           textAlign: TextAlign.center,
-          style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
         const SizedBox(height: 6),
         Text(
@@ -359,9 +387,12 @@ class _PerformanceBento extends StatelessWidget {
       border: Border.all(color: scheme.outlineVariant),
     );
 
-    final trendText = trend != null && trend! > 0
-        ? l10n.profileTrendUp(trend!.toStringAsFixed(trend! % 1 == 0 ? 0 : 1))
-        : null;
+    final trendText =
+        trend != null && trend! > 0
+            ? l10n.profileTrendUp(
+              trend!.toStringAsFixed(trend! % 1 == 0 ? 0 : 1),
+            )
+            : null;
 
     return Column(
       children: [
@@ -416,7 +447,9 @@ class _PerformanceBento extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: (efficiency / 100).clamp(0.0, 1.0),
                   minHeight: 6,
-                  backgroundColor: scheme.outlineVariant.withValues(alpha: 0.35),
+                  backgroundColor: scheme.outlineVariant.withValues(
+                    alpha: 0.35,
+                  ),
                   color: scheme.tertiary,
                 ),
               ),
@@ -444,7 +477,9 @@ class _PerformanceBento extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       '$tasksDone',
-                      style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ],
                 ),
@@ -471,7 +506,9 @@ class _PerformanceBento extends StatelessWidget {
                       avgHours != null
                           ? l10n.profileHoursUnit(avgHours!.toStringAsFixed(1))
                           : '—',
-                      style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ],
                 ),
@@ -514,7 +551,13 @@ class _ProfileActionGroup extends StatelessWidget {
       child: Column(
         children: [
           for (var i = 0; i < items.length; i++) ...[
-            if (i > 0) Divider(height: 1, indent: 68, endIndent: 16, color: scheme.outlineVariant.withValues(alpha: 0.35)),
+            if (i > 0)
+              Divider(
+                height: 1,
+                indent: 68,
+                endIndent: 16,
+                color: scheme.outlineVariant.withValues(alpha: 0.35),
+              ),
             _ProfileActionTile(item: items[i]),
           ],
         ],
@@ -555,7 +598,9 @@ class _ProfileActionTile extends StatelessWidget {
               Expanded(
                 child: Text(
                   item.label,
-                  style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
               Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),

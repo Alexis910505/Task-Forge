@@ -15,16 +15,16 @@ export class TeamsController {
 
   @Get()
   @RequirePermissions('teams:read')
-  @ApiOperation({ summary: 'Listar equipos' })
+  @ApiOperation({ summary: 'Listar equipos (con alcance por rol)' })
   findAll(@Req() req: Request & { user: RequestUser }) {
-    return this.teams.findAll(req.user.organizationId);
+    return this.teams.findAll(req.user);
   }
 
   @Post()
   @RequirePermissions('teams:write')
-  @ApiOperation({ summary: 'Crear equipo' })
+  @ApiOperation({ summary: 'Crear equipo (admin o jefe de depto)' })
   create(@Req() req: Request & { user: RequestUser }, @Body() dto: CreateTeamDto) {
-    return this.teams.create(req.user.organizationId, dto);
+    return this.teams.create(req.user, dto);
   }
 
   @Patch(':id')
@@ -35,14 +35,14 @@ export class TeamsController {
     @Param('id') id: string,
     @Body() dto: Partial<CreateTeamDto>,
   ) {
-    return this.teams.update(req.user.organizationId, id, dto);
+    return this.teams.update(req.user, id, dto);
   }
 
   @Delete(':id')
   @RequirePermissions('teams:write')
-  @ApiOperation({ summary: 'Eliminar equipo' })
+  @ApiOperation({ summary: 'Eliminar equipo (admin o jefe de depto)' })
   remove(@Req() req: Request & { user: RequestUser }, @Param('id') id: string) {
-    return this.teams.remove(req.user.organizationId, id);
+    return this.teams.remove(req.user, id);
   }
 
   @Post(':id/members')
@@ -53,7 +53,7 @@ export class TeamsController {
     @Param('id') id: string,
     @Body() dto: AddTeamMemberDto,
   ) {
-    return this.teams.addMember(req.user.organizationId, id, dto.userId);
+    return this.teams.addMember(req.user, id, dto.userId);
   }
 
   @Delete(':id/members/:userId')
@@ -64,6 +64,6 @@ export class TeamsController {
     @Param('id') id: string,
     @Param('userId') userId: string,
   ) {
-    return this.teams.removeMember(req.user.organizationId, id, userId);
+    return this.teams.removeMember(req.user, id, userId);
   }
 }

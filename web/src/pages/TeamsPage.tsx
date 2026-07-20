@@ -5,7 +5,7 @@ import { useAuth } from '@/auth/AuthContext';
 import { Avatar } from '@/components/ui/Avatar';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { apiFetch, apiJson } from '@/lib/api';
-import { roleHasPermission } from '@/lib/rolePermissions';
+import { userHasPermission } from '@/lib/rolePermissions';
 import { roleLabel } from '@/lib/roleLabels';
 import { teamIcon } from '@/lib/teamIcon';
 
@@ -73,8 +73,10 @@ function leadName(lead: TeamRow['lead'], unassigned: string): string {
 export function TeamsPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const canWrite = roleHasPermission(user?.role?.name, 'teams:write');
-  const canListUsers = roleHasPermission(user?.role?.name, 'users:read');
+  const canWrite = userHasPermission(user, 'teams:write');
+  const canListUsers = userHasPermission(user, 'users:read');
+  const canCreateTeam =
+    canWrite && (user?.role?.name === 'ADMIN' || user?.role?.name === 'DEPT_HEAD');
 
   const [teams, setTeams] = useState<TeamRow[]>([]);
   const [departments, setDepartments] = useState<DeptOption[]>([]);
@@ -277,7 +279,7 @@ export function TeamsPage() {
         subtitle={t('teams.subtitle')}
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            {canWrite ? (
+            {canCreateTeam ? (
               <button
                 type="button"
                 onClick={() => openCreate()}
@@ -355,7 +357,7 @@ export function TeamsPage() {
           <p className="text-on-surface-variant">
             {search.trim() ? t('teams.noSearchResults') : t('teams.empty')}
           </p>
-          {canWrite && !search.trim() ? (
+          {canCreateTeam && !search.trim() ? (
             <button
               type="button"
               onClick={() => openCreate()}
@@ -432,7 +434,7 @@ export function TeamsPage() {
         </div>
       ) : null}
 
-      {showCreate && canWrite ? (
+      {showCreate && canCreateTeam ? (
         <Modal title={t('teams.createTitle')} onClose={closeCreate}>
           <p className="mb-4 text-sm text-on-surface-variant">{t('teams.createHint')}</p>
           <form className="space-y-4" onSubmit={(ev) => void submitCreate(ev)}>
@@ -582,7 +584,7 @@ export function TeamsPage() {
                     <option value="">{t('teams.pickMember')}</option>
                     {availableToAdd.map((u) => (
                       <option key={u.id} value={u.id}>
-                        {`${u.firstName} ${u.lastName}`.trim() || u.email} — {roleLabel(u.role.name, t)}
+                        {`${u.firstName} ${u.lastName}`.trim() || u.email} — {roleLabel(u.role, t)}
                       </option>
                     ))}
                   </select>

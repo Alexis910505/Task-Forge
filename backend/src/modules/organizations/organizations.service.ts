@@ -1,9 +1,10 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, RoleName } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { extname } from 'path';
 import type { Express } from 'express';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { RolesService } from '../roles/roles.service';
 import { BootstrapOrganizationDto, UpdateOrganizationBrandingDto } from './dto/organization.dto';
 
 export type OrganizationBrandingKind = 'logo' | 'favicon';
@@ -127,13 +128,9 @@ export class OrganizationsService {
       });
 
       const roleRows = await Promise.all(
-        Object.values(RoleName).map((name) =>
-          tx.role.create({
-            data: { organizationId: org.id, name },
-          }),
-        ),
+        RolesService.systemRoleCreates(org.id).map((data) => tx.role.create({ data })),
       );
-      const adminRole = roleRows.find((r) => r.name === RoleName.ADMIN);
+      const adminRole = roleRows.find((r) => r.name === 'ADMIN');
       if (!adminRole) {
         throw new ConflictException('No se pudo crear rol admin');
       }

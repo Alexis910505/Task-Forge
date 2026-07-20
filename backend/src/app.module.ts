@@ -9,6 +9,7 @@ import { PrismaModule } from './core/prisma/prisma.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
+import { RolesModule } from './modules/roles/roles.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { TeamsModule } from './modules/teams/teams.module';
 import { ProjectsModule } from './modules/projects/projects.module';
@@ -33,6 +34,7 @@ import { EventsModule } from './websocket/events.module';
     OrganizationsModule,
     AuthModule,
     UsersModule,
+    RolesModule,
     DepartmentsModule,
     TeamsModule,
     ProjectsModule,

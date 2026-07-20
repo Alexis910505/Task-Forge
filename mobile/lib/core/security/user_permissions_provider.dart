@@ -1,25 +1,21 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart' hide FormData, MultipartFile, Response, Value;
 
 import '../../features/auth/application/auth_repository.dart';
 import 'role_permissions.dart';
 
-final currentUserRoleProvider = Provider<String?>((ref) {
-  final profile = ref.watch(authRepositoryProvider).valueOrNull?.profile;
-  return roleNameFromProfile(profile);
-});
+bool _can(String permission) => profileHasPermission(
+  Get.find<AuthController>().currentSession?.profile,
+  permission,
+);
 
-final canReadReportsProvider = Provider<bool>((ref) {
-  return roleHasPermission(ref.watch(currentUserRoleProvider), 'reports:read');
-});
+bool canReadReports() => _can('reports:read');
 
-final canExportReportsProvider = Provider<bool>((ref) {
-  return roleHasPermission(ref.watch(currentUserRoleProvider), 'reports:export');
-});
+bool canExportReports() => _can('reports:export');
 
-final canReadOrganizationProvider = Provider<bool>((ref) {
-  return roleHasPermission(ref.watch(currentUserRoleProvider), 'organizations:read');
-});
+bool canReadOrganization() => _can('organizations:read');
 
-final canWriteOrganizationProvider = Provider<bool>((ref) {
-  return roleHasPermission(ref.watch(currentUserRoleProvider), 'organizations:write');
-});
+bool canWriteOrganization() => _can('organizations:write');
+
+bool canReadAssets() => _can('assets:read');
+
+bool canWriteAssets() => _can('assets:write');

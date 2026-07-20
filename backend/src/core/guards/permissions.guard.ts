@@ -5,9 +5,13 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { RoleName } from '@prisma/client';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
-import { PermissionKey, roleHasPermission } from '../security/role-permissions';
+import {
+  hasPermission,
+  PermissionKey,
+  roleHasPermission,
+} from '../security/role-permissions';
+import type { RequestUser } from '../strategies/jwt.strategy';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
@@ -21,12 +25,15 @@ export class PermissionsGuard implements CanActivate {
     if (!required?.length) {
       return true;
     }
-    const request = context.switchToHttp().getRequest<{ user?: { role: RoleName } }>();
-    const role = request.user?.role;
-    if (!role) {
+    const request = context.switchToHttp().getRequest<{ user?: RequestUser }>();
+    const user = request.user;
+    if (!user) {
       throw new ForbiddenException();
     }
-    const ok = required.every((p) => roleHasPermission(role, p));
+    const ok = required.every(
+      (p) =>
+        hasPermission(user.permissions, p) || roleHasPermission(user.role, p),
+    );
     if (!ok) {
       throw new ForbiddenException('Permisos insuficientes');
     }

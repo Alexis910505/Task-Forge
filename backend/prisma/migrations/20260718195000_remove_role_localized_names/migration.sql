@@ -1,0 +1,3 @@
+ALTER TABLE "Role"
+  DROP COLUMN IF EXISTS "nameEs",
+  DROP COLUMN IF EXISTS "nameEn";

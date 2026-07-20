@@ -135,7 +135,7 @@ export function EditProfilePage() {
               </p>
               <div className="mt-2 flex flex-wrap items-center gap-3">
                 <span className="rounded bg-secondary-container px-2 py-0.5 text-xs font-bold text-on-secondary-container">
-                  {roleLabel(user.role.name, t)}
+                  {roleLabel(user.role, t)}
                 </span>
                 {user.department ? (
                   <span className="flex items-center gap-1 text-sm text-on-surface-variant">
@@ -219,7 +219,7 @@ export function EditProfilePage() {
                     <dt className="mb-1 text-xs font-bold uppercase text-on-surface-variant">
                       {t('profile.roleLabel')}
                     </dt>
-                    <dd className={readOnlyClass}>{roleLabel(user.role.name, t)}</dd>
+                    <dd className={readOnlyClass}>{roleLabel(user.role, t)}</dd>
                   </div>
                   <div>
                     <dt className="mb-1 text-xs font-bold uppercase text-on-surface-variant">

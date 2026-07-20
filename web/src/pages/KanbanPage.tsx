@@ -33,6 +33,7 @@ type BoardTask = {
   taskAssets?: { asset: { name: string } }[];
   comments?: { id: string }[];
   attachments?: { id: string }[];
+  _count?: { subtasks: number };
 };
 
 type BoardPayload = { id: string; name: string; columns: BoardColumn[] };
@@ -664,6 +665,7 @@ function KanbanCard({
   const assetCount = task.taskAssets?.length ?? 0;
   const commentCount = task.comments?.length ?? 0;
   const attachCount = task.attachments?.length ?? 0;
+  const subtaskCount = task._count?.subtasks ?? 0;
   const assigneeName = task.assignee
     ? `${task.assignee.firstName} ${task.assignee.lastName}`.trim()
     : null;
@@ -766,6 +768,15 @@ function KanbanCard({
           )}
 
           <div className="ms-auto flex shrink-0 items-center gap-1">
+            {subtaskCount > 0 ? (
+              <span
+                className="inline-flex items-center gap-0.5 rounded-md bg-primary-container/40 px-1.5 py-0.5 text-[10px] font-bold text-primary"
+                title={t('kanban.subtasksCount', { count: subtaskCount })}
+              >
+                <span className="material-symbols-outlined text-sm">checklist</span>
+                {subtaskCount}
+              </span>
+            ) : null}
             {commentCount > 0 ? (
               <span
                 className="inline-flex items-center gap-0.5 rounded-md bg-surface-container-low px-1.5 py-0.5 text-[10px] font-bold text-on-surface-variant"

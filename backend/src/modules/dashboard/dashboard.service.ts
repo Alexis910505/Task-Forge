@@ -34,7 +34,7 @@ export class DashboardService {
   ) {}
 
   async summary(organizationId: string, period: DashboardPeriod = 'daily') {
-    const taskWhere = { board: { organizationId } };
+    const taskWhere = { board: { organizationId }, parentTaskId: null };
     const { start: periodStart, previousStart } = periodBounds(period);
     const last48h = new Date(Date.now() - 48 * 60 * 60 * 1000);
     const now = new Date();
@@ -170,63 +170,89 @@ export class DashboardService {
   }
 
   private async departmentWorkload(organizationId: string) {
-    const departments = await this.prisma.department.findMany({
-      where: { organizationId },
-      orderBy: { name: 'asc' },
-      include: { _count: { select: { users: true } } },
-    });
-
-    return Promise.all(
-      departments.map(async (dept) => {
-        const deptFilter = {
-          board: { organizationId },
-          OR: [
-            { board: { project: { departmentId: dept.id } } },
-            { assignee: { departmentId: dept.id } },
-          ],
-        };
-
-        const [openTasks, completedTasks, totalTasks] = await Promise.all([
-          this.prisma.task.count({
-            where: {
-              ...deptFilter,
-              status: { not: TaskStatus.COMPLETED },
-            },
-          }),
-          this.prisma.task.count({
-            where: {
-              ...deptFilter,
-              status: TaskStatus.COMPLETED,
-            },
-          }),
-          this.prisma.task.count({ where: deptFilter }),
-        ]);
-
-        const memberCount = dept._count.users;
-        const tasksPerMember = memberCount > 0 ? openTasks / memberCount : openTasks;
-        const efficiency =
-          totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : null;
-
-        let loadLevel: 'critical' | 'balanced' | 'under' = 'balanced';
-        if (memberCount === 0 && openTasks > 0) {
-          loadLevel = 'critical';
-        } else if (tasksPerMember >= 5) {
-          loadLevel = 'critical';
-        } else if (tasksPerMember < 1.5 && openTasks > 0) {
-          loadLevel = 'under';
-        }
-
-        return {
-          id: dept.id,
-          name: dept.name,
-          openTasks,
-          totalTasks,
-          completedTasks,
-          memberCount,
-          efficiency,
-          loadLevel,
-        };
+    const [departments, stats] = await Promise.all([
+      this.prisma.department.findMany({
+        where: { organizationId },
+        orderBy: { name: 'asc' },
+        include: { _count: { select: { users: true } } },
       }),
+      this.prisma.$queryRaw<
+        {
+          departmentId: string;
+          openTasks: bigint;
+          completedTasks: bigint;
+          totalTasks: bigint;
+        }[]
+      >`
+        WITH task_dept AS (
+          SELECT t.id AS task_id, t.status, p."departmentId" AS department_id
+          FROM "Task" t
+          INNER JOIN "Board" b ON b.id = t."boardId"
+          INNER JOIN "Project" p ON p.id = b."projectId"
+          WHERE b."organizationId" = ${organizationId}
+            AND t."parentTaskId" IS NULL
+            AND p."departmentId" IS NOT NULL
+          UNION
+          SELECT t.id, t.status, u."departmentId"
+          FROM "Task" t
+          INNER JOIN "Board" b ON b.id = t."boardId"
+          INNER JOIN "User" u ON u.id = t."assigneeId"
+          WHERE b."organizationId" = ${organizationId}
+            AND t."parentTaskId" IS NULL
+            AND u."departmentId" IS NOT NULL
+        )
+        SELECT
+          department_id AS "departmentId",
+          COUNT(*) FILTER (WHERE status <> 'COMPLETED'::"TaskStatus")::bigint AS "openTasks",
+          COUNT(*) FILTER (WHERE status = 'COMPLETED'::"TaskStatus")::bigint AS "completedTasks",
+          COUNT(*)::bigint AS "totalTasks"
+        FROM task_dept
+        GROUP BY department_id
+      `,
+    ]);
+
+    const statsByDept = new Map(
+      stats.map((row) => [
+        row.departmentId,
+        {
+          openTasks: Number(row.openTasks),
+          completedTasks: Number(row.completedTasks),
+          totalTasks: Number(row.totalTasks),
+        },
+      ]),
     );
+
+    return departments.map((dept) => {
+      const counts = statsByDept.get(dept.id) ?? {
+        openTasks: 0,
+        completedTasks: 0,
+        totalTasks: 0,
+      };
+      const { openTasks, completedTasks, totalTasks } = counts;
+      const memberCount = dept._count.users;
+      const tasksPerMember = memberCount > 0 ? openTasks / memberCount : openTasks;
+      const efficiency =
+        totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : null;
+
+      let loadLevel: 'critical' | 'balanced' | 'under' = 'balanced';
+      if (memberCount === 0 && openTasks > 0) {
+        loadLevel = 'critical';
+      } else if (tasksPerMember >= 5) {
+        loadLevel = 'critical';
+      } else if (tasksPerMember < 1.5 && openTasks > 0) {
+        loadLevel = 'under';
+      }
+
+      return {
+        id: dept.id,
+        name: dept.name,
+        openTasks,
+        totalTasks,
+        completedTasks,
+        memberCount,
+        efficiency,
+        loadLevel,
+      };
+    });
   }
 }

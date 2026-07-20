@@ -17,14 +17,14 @@ export class ProjectsController {
   @RequirePermissions('projects:read')
   @ApiOperation({ summary: 'Listar proyectos' })
   findAll(@Req() req: Request & { user: RequestUser }) {
-    return this.projects.findAll(req.user.organizationId);
+    return this.projects.findAll(req.user);
   }
 
   @Post()
   @RequirePermissions('projects:write')
   @ApiOperation({ summary: 'Crear proyecto' })
   create(@Req() req: Request & { user: RequestUser }, @Body() dto: CreateProjectDto) {
-    return this.projects.create(req.user.organizationId, dto, req.user.userId);
+    return this.projects.create(req.user, dto);
   }
 
   @Get(':id')
@@ -42,13 +42,13 @@ export class ProjectsController {
     @Param('id') id: string,
     @Body() dto: UpdateProjectDto,
   ) {
-    return this.projects.update(req.user.organizationId, id, dto);
+    return this.projects.update(req.user, id, dto);
   }
 
   @Delete(':id')
   @RequirePermissions('projects:write')
   @ApiOperation({ summary: 'Eliminar proyecto y su tablero' })
   remove(@Req() req: Request & { user: RequestUser }, @Param('id') id: string) {
-    return this.projects.remove(req.user.organizationId, id);
+    return this.projects.remove(req.user, id);
   }
 }

@@ -1,10 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, TaskStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import {
+  canAssignRole,
+  canManageOtherUserByHierarchy,
+  canManageUserByHierarchy,
+} from '../../core/security/role-permissions';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+
+type ActorRef = { userId: string; role: string };
 
 @Injectable()
 export class UsersService {
@@ -20,6 +27,7 @@ export class UsersService {
         firstName: true,
         lastName: true,
         isActive: true,
+        employmentType: true,
         createdAt: true,
         role: true,
         department: true,
@@ -36,6 +44,7 @@ export class UsersService {
         firstName: true,
         lastName: true,
         isActive: true,
+        employmentType: true,
         createdAt: true,
         role: true,
         department: true,
@@ -59,7 +68,15 @@ export class UsersService {
         lastName: true,
         isActive: true,
         createdAt: true,
-        role: { select: { id: true, name: true, organizationId: true } },
+        role: {
+          select: {
+            id: true,
+            name: true,
+            organizationId: true,
+            permissions: true,
+            isSystem: true,
+          },
+        },
         department: true,
       },
     });
@@ -213,7 +230,13 @@ export class UsersService {
         firstName: true,
         lastName: true,
         isActive: true,
-        role: { select: { id: true, name: true, organizationId: true } },
+        role: {
+          select: {
+            id: true,
+            name: true,
+            organizationId: true,
+          },
+        },
         department: true,
       },
     });
@@ -244,20 +267,45 @@ export class UsersService {
         lastName: dto.lastName,
         roleId: dto.roleId,
         departmentId: dto.departmentId,
+        employmentType: dto.employmentType,
       },
       select: {
         id: true,
         email: true,
         firstName: true,
         lastName: true,
+        isActive: true,
+        employmentType: true,
         role: true,
         department: true,
       },
     });
   }
 
-  async update(organizationId: string, id: string, dto: UpdateUserDto) {
-    await this.ensureExists(organizationId, id);
+  async update(organizationId: string, id: string, dto: UpdateUserDto, actor: ActorRef) {
+    const target = await this.prisma.user.findFirst({
+      where: { id, organizationId },
+      select: {
+        id: true,
+        role: { select: { id: true, name: true } },
+      },
+    });
+    if (!target) {
+      throw new NotFoundException();
+    }
+
+    if (
+      !canManageUserByHierarchy(actor.role, actor.userId, target.role.name, target.id)
+    ) {
+      throw new ForbiddenException(
+        'Solo puedes modificar usuarios con un rol inferior al tuyo, o tu propio usuario',
+      );
+    }
+
+    const isSelf = actor.userId === id;
+    const isAdmin = actor.role === 'ADMIN';
+
+    let nextRoleId = target.role.id;
     if (dto.roleId) {
       const role = await this.prisma.role.findFirst({
         where: { id: dto.roleId, organizationId },
@@ -265,7 +313,15 @@ export class UsersService {
       if (!role) {
         throw new NotFoundException('Rol no válido');
       }
+      if (isSelf && !isAdmin && dto.roleId !== target.role.id) {
+        throw new ForbiddenException('No puedes cambiar tu propio rol');
+      }
+      if (!canAssignRole(actor.role, role.name)) {
+        throw new ForbiddenException('Solo puedes asignar roles inferiores al tuyo');
+      }
+      nextRoleId = role.id;
     }
+
     if (dto.departmentId) {
       const dept = await this.prisma.department.findFirst({
         where: { id: dto.departmentId, organizationId },
@@ -274,11 +330,46 @@ export class UsersService {
         throw new NotFoundException('Departamento no encontrado');
       }
     }
-    const { password, ...rest } = dto;
+
+    const { password, email, ...rest } = dto;
     const data: Prisma.UserUncheckedUpdateInput = { ...rest };
+
+    if (isSelf && !isAdmin) {
+      // Evitar auto-escalada o auto-bloqueo desde Usuarios/Roles.
+      delete data.roleId;
+      delete data.isActive;
+    } else if (dto.roleId) {
+      data.roleId = nextRoleId;
+    }
+
+    if (email !== undefined) {
+      if (!isAdmin) {
+        throw new ForbiddenException('Solo el administrador puede cambiar el correo');
+      }
+      const normalized = email.toLowerCase().trim();
+      const clash = await this.prisma.user.findFirst({
+        where: {
+          organizationId,
+          email: normalized,
+          NOT: { id },
+        },
+        select: { id: true },
+      });
+      if (clash) {
+        throw new ConflictException('Ese correo ya está en uso en la organización');
+      }
+      data.email = normalized;
+    }
+
     if (password) {
+      if (!isAdmin) {
+        throw new ForbiddenException(
+          'Solo el administrador puede cambiar la contraseña de otros usuarios',
+        );
+      }
       data.passwordHash = await bcrypt.hash(password, 10);
     }
+
     return this.prisma.user.update({
       where: { id },
       data,
@@ -288,14 +379,32 @@ export class UsersService {
         firstName: true,
         lastName: true,
         isActive: true,
+        employmentType: true,
         role: true,
         department: true,
       },
     });
   }
 
-  async remove(organizationId: string, id: string) {
-    await this.ensureExists(organizationId, id);
+  async remove(organizationId: string, id: string, actor: ActorRef) {
+    if (actor.userId === id) {
+      throw new ForbiddenException('No puedes eliminar tu propia cuenta');
+    }
+    const target = await this.prisma.user.findFirst({
+      where: { id, organizationId },
+      select: {
+        id: true,
+        role: { select: { name: true } },
+      },
+    });
+    if (!target) {
+      throw new NotFoundException();
+    }
+    if (!canManageOtherUserByHierarchy(actor.role, target.role.name)) {
+      throw new ForbiddenException(
+        'Solo puedes eliminar usuarios con un rol inferior al tuyo',
+      );
+    }
     await this.prisma.user.delete({ where: { id } });
     return { deleted: true };
   }
@@ -303,7 +412,14 @@ export class UsersService {
   listRoles(organizationId: string) {
     return this.prisma.role.findMany({
       where: { organizationId },
-      orderBy: { name: 'asc' },
+      orderBy: [{ isSystem: 'desc' }, { name: 'asc' }],
+      select: {
+        id: true,
+        name: true,
+        permissions: true,
+        isSystem: true,
+        _count: { select: { users: true } },
+      },
     });
   }
 

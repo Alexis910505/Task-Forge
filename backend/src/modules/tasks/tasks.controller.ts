@@ -21,7 +21,7 @@ export class TasksController {
   @RequirePermissions('tasks:read')
   @ApiOperation({ summary: 'Listar tareas con filtros y búsqueda' })
   list(@Req() req: Request & { user: RequestUser }, @Query() query: ListTasksQueryDto) {
-    return this.tasks.list(req.user.organizationId, query);
+    return this.tasks.list(req.user, query);
   }
 
   @Post()

@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DepartmentsService } from './departments.service';
 import { CreateDepartmentDto } from './dto/create-department.dto';
+import { UpdateDepartmentDto } from './dto/update-department.dto';
 import { RequirePermissions } from '../../core/decorators/permissions.decorator';
 import type { Request } from 'express';
 import { RequestUser } from '../../core/strategies/jwt.strategy';
@@ -14,16 +15,16 @@ export class DepartmentsController {
 
   @Get()
   @RequirePermissions('departments:read')
-  @ApiOperation({ summary: 'Listar departamentos' })
+  @ApiOperation({ summary: 'Listar departamentos (con alcance por rol)' })
   findAll(@Req() req: Request & { user: RequestUser }) {
-    return this.departments.findAll(req.user.organizationId);
+    return this.departments.findAll(req.user);
   }
 
   @Post()
   @RequirePermissions('departments:write')
-  @ApiOperation({ summary: 'Crear departamento' })
+  @ApiOperation({ summary: 'Crear departamento (solo admin)' })
   create(@Req() req: Request & { user: RequestUser }, @Body() dto: CreateDepartmentDto) {
-    return this.departments.create(req.user.organizationId, dto);
+    return this.departments.create(req.user, dto);
   }
 
   @Patch(':id')
@@ -32,15 +33,15 @@ export class DepartmentsController {
   update(
     @Req() req: Request & { user: RequestUser },
     @Param('id') id: string,
-    @Body() dto: Partial<CreateDepartmentDto>,
+    @Body() dto: UpdateDepartmentDto,
   ) {
-    return this.departments.update(req.user.organizationId, id, dto);
+    return this.departments.update(req.user, id, dto);
   }
 
   @Delete(':id')
   @RequirePermissions('departments:write')
-  @ApiOperation({ summary: 'Eliminar departamento' })
+  @ApiOperation({ summary: 'Eliminar departamento (solo admin)' })
   remove(@Req() req: Request & { user: RequestUser }, @Param('id') id: string) {
-    return this.departments.remove(req.user.organizationId, id);
+    return this.departments.remove(req.user, id);
   }
 }

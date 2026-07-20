@@ -147,7 +147,7 @@ export function ProfilePage() {
             </h1>
             <div className="mt-2 flex flex-wrap items-center gap-3">
               <span className="rounded bg-secondary-container px-2 py-0.5 text-xs font-bold text-on-secondary-container">
-                {roleLabel(user.role.name, t)}
+                {roleLabel(user.role, t)}
               </span>
               {user.department ? (
                 <span className="flex items-center gap-1 text-sm text-on-surface-variant">

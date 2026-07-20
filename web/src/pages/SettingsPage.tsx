@@ -5,13 +5,14 @@ import { LanguageToggle } from '@/components/i18n/LanguageToggle';
 import { BrandLogo } from '@/components/branding/BrandLogo';
 import { resolveUploadUrl } from '@/lib/api';
 import { apiFetch, apiJson } from '@/lib/api';
+import { isAllowedBrandingFile, uploadOrgBranding } from '@/lib/orgBranding';
 import {
   mergeOrgSettings,
   parseOrgSettings,
   type EmailPreferences,
   type OrganizationSettings,
 } from '@/lib/orgSettings';
-import { roleHasPermission } from '@/lib/rolePermissions';
+import { userHasPermission } from '@/lib/rolePermissions';
 import { timezoneOptionsIncluding } from '@/lib/timezones';
 
 type SettingsTab = 'workspace' | 'notifications' | 'security' | 'api';
@@ -39,7 +40,7 @@ async function parseApiError(res: Response, fallback: string): Promise<string> {
 export function SettingsPage() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
-  const canWrite = roleHasPermission(user?.role?.name, 'organizations:write');
+  const canWrite = userHasPermission(user, 'organizations:write');
 
   const [tab, setTab] = useState<SettingsTab>('workspace');
   const [loading, setLoading] = useState(true);

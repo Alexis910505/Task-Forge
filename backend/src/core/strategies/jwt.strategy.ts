@@ -3,20 +3,22 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
-import { RoleName } from '@prisma/client';
 
 export type RequestUser = {
   userId: string;
   email: string;
-  role: RoleName;
+  role: string;
+  permissions: string[];
   organizationId: string;
   organizationSlug: string;
+  departmentId: string | null;
+  teamIds: string[];
 };
 
 type JwtPayload = {
   sub: string;
   email: string;
-  role: RoleName;
+  role: string;
   organizationId: string;
   organizationSlug: string;
 };
@@ -37,7 +39,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   async validate(payload: JwtPayload): Promise<RequestUser> {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
-      include: { role: true, organization: true },
+      include: {
+        role: true,
+        organization: true,
+        teamMembers: { select: { teamId: true } },
+      },
     });
     if (!user?.isActive) {
       throw new UnauthorizedException();
@@ -52,8 +58,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       userId: user.id,
       email: user.email,
       role: user.role.name,
+      permissions: user.role.permissions ?? [],
       organizationId: user.organizationId,
       organizationSlug: user.organization.slug,
+      departmentId: user.departmentId ?? null,
+      teamIds: user.teamMembers.map((m) => m.teamId),
     };
   }
 }

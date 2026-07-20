@@ -1,6 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import i18n from '@/i18n/config';
-import { apiFetch, apiPath, clearStoredTokens, getStoredTokens, setStoredTokens } from '@/lib/api';
+import {
+  API_UNREACHABLE_EVENT,
+  AUTH_EXPIRED_EVENT,
+  apiFetch,
+  apiPath,
+  clearStoredTokens,
+  getStoredTokens,
+  setStoredTokens,
+} from '@/lib/api';
 import { clientSessionPayload } from '@/lib/clientSession';
 
 export type AuthUser = {
@@ -8,7 +16,13 @@ export type AuthUser = {
   email: string;
   firstName: string;
   lastName: string;
-  role: { id: string; name: string; organizationId: string };
+  role: {
+    id: string;
+    name: string;
+    organizationId: string;
+    permissions?: string[];
+    isSystem?: boolean;
+  };
   department?: { id: string; name: string } | null;
 };
 
@@ -28,10 +42,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
 
   const refreshProfile = useCallback(async () => {
-    const res = await apiFetch('/users/me');
-    if (!res.ok) {
+    let res: Response;
+    try {
+      res = await apiFetch('/users/me');
+    } catch {
+      // Sin red / API caída: no borrar tokens, la sesión se restaura al volver la conexión.
+      setUser(null);
+      return;
+    }
+    if (res.status === 401 || res.status === 403) {
       setUser(null);
       clearStoredTokens();
+      return;
+    }
+    if (!res.ok) {
+      // Error temporal del servidor: conservar tokens.
+      setUser(null);
       return;
     }
     setUser((await res.json()) as AuthUser);
@@ -48,6 +74,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setReady(true);
     })();
   }, [refreshProfile]);
+
+  useEffect(() => {
+    const onExpired = () => {
+      setUser(null);
+      clearStoredTokens();
+    };
+    // API inaccesible: sacar al login pero mantener los tokens guardados.
+    const onUnreachable = () => {
+      setUser(null);
+    };
+    window.addEventListener(AUTH_EXPIRED_EVENT, onExpired);
+    window.addEventListener(API_UNREACHABLE_EVENT, onUnreachable);
+    return () => {
+      window.removeEventListener(AUTH_EXPIRED_EVENT, onExpired);
+      window.removeEventListener(API_UNREACHABLE_EVENT, onUnreachable);
+    };
+  }, []);
 
   const login = useCallback(async (input: { organizationSlug: string; email: string; password: string }) => {
     let res: Response;

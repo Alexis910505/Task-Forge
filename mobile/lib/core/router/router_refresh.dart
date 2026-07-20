@@ -1,21 +1,25 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart';
 
 import '../../features/auth/application/auth_repository.dart';
 
 class GoRouterRefresh extends ChangeNotifier {
-  GoRouterRefresh(this._ref) {
-    _ref.listen<AsyncValue<AuthSession?>>(
-      authRepositoryProvider,
-      (_, __) => notifyListeners(),
-    );
+  GoRouterRefresh() {
+    _worker = ever<AuthSession?>(Get.find<AuthController>().session, (_) {
+      notifyListeners();
+    });
+    _bootWorker = ever<bool>(Get.find<AuthController>().isBootstrapping, (_) {
+      notifyListeners();
+    });
   }
 
-  final Ref _ref;
-}
+  Worker? _worker;
+  Worker? _bootWorker;
 
-final goRouterRefreshProvider = Provider<GoRouterRefresh>((ref) {
-  final notifier = GoRouterRefresh(ref);
-  ref.onDispose(notifier.dispose);
-  return notifier;
-});
+  @override
+  void dispose() {
+    _worker?.dispose();
+    _bootWorker?.dispose();
+    super.dispose();
+  }
+}

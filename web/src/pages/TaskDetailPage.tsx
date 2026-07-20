@@ -8,6 +8,7 @@ import { apiFetch, apiJson, resolveUploadUrl } from '@/lib/api';
 import { canCreateTasks } from '@/lib/projectAccess';
 import { formatDueDateLabel, isDueDateOverdue } from '@/lib/dueDates';
 import { taskPriorityPillClass, taskStatusPillClass } from '@/lib/taskStatusColors';
+import { SubtasksPanel } from '@/components/tasks/SubtasksPanel';
 
 type TaskUser = { id: string; firstName: string; lastName: string; email: string };
 
@@ -26,6 +27,20 @@ type TaskComment = {
   user?: TaskUser | null;
 };
 
+type TaskSubtask = {
+  id: string;
+  title: string;
+  status: string;
+  priority?: string;
+  assignee?: TaskUser | null;
+};
+
+type SubtaskProgress = {
+  total: number;
+  completed: number;
+  percent: number;
+};
+
 type TaskDetail = {
   id: string;
   title: string;
@@ -37,6 +52,9 @@ type TaskDetail = {
   assignee?: TaskUser | null;
   createdBy?: TaskUser | null;
   board?: { id: string; name: string; projectId?: string };
+  parentTask?: { id: string; title: string; status?: string } | null;
+  subtasks?: TaskSubtask[];
+  subtaskProgress?: SubtaskProgress;
   attachments?: TaskAttachment[];
   comments?: TaskComment[];
 };
@@ -111,6 +129,10 @@ export function TaskDetailPage() {
   const [commentText, setCommentText] = useState('');
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [commentError, setCommentError] = useState<string | null>(null);
+  const [subtaskTitle, setSubtaskTitle] = useState('');
+  const [subtaskSubmitting, setSubtaskSubmitting] = useState(false);
+  const [subtaskError, setSubtaskError] = useState<string | null>(null);
+  const [subtaskUpdatingId, setSubtaskUpdatingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!id) {
@@ -157,6 +179,43 @@ export function TaskDetailPage() {
     await load();
   }
 
+  async function submitSubtask(e: React.FormEvent) {
+    e.preventDefault();
+    const title = subtaskTitle.trim();
+    if (!title || !id || !task) return;
+    setSubtaskSubmitting(true);
+    setSubtaskError(null);
+    const res = await apiJson<TaskDetail>('/tasks', {
+      method: 'POST',
+      body: JSON.stringify({
+        title,
+        parentTaskId: id,
+        boardId: task.board?.id,
+      }),
+    });
+    setSubtaskSubmitting(false);
+    if (!res.ok) {
+      setSubtaskError(t('taskDetail.subtaskCreateFailed'));
+      return;
+    }
+    setSubtaskTitle('');
+    await load();
+  }
+
+  async function toggleSubtaskStatus(subtask: TaskSubtask) {
+    if (!canEdit) return;
+    const nextStatus = subtask.status === 'COMPLETED' ? 'TODO' : 'COMPLETED';
+    setSubtaskUpdatingId(subtask.id);
+    const res = await apiFetch(`/tasks/${subtask.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: nextStatus }),
+    });
+    setSubtaskUpdatingId(null);
+    if (res.ok) {
+      await load();
+    }
+  }
+
   if (!id) {
     return <p className="text-sm text-error">{t('taskDetail.missingId')}</p>;
   }
@@ -188,6 +247,18 @@ export function TaskDetailPage() {
   );
   const comments = [...(task.comments ?? [])].reverse();
   const shortId = task.id.length > 8 ? task.id.slice(0, 8) : task.id;
+  const subtasks = task.subtasks ?? [];
+  const subtaskProgress = task.subtaskProgress ?? { total: subtasks.length, completed: 0, percent: 0 };
+  const isRootTask = !task.parentTask;
+  const isSubtask = Boolean(task.parentTask);
+  const subtaskDone = task.status === 'COMPLETED';
+
+  function scrollToSubtasks() {
+    document.getElementById('subtasks')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.setTimeout(() => {
+      document.getElementById('subtask-title')?.focus();
+    }, 350);
+  }
 
   return (
     <div>
@@ -203,6 +274,15 @@ export function TaskDetailPage() {
         <span className="text-primary">{t('taskDetail.inspectionId', { id: shortId })}</span>
       </nav>
 
+      {task.parentTask ? (
+        <p className="mb-4 text-sm text-on-surface-variant">
+          {t('taskDetail.parentTask')}:{' '}
+          <Link to={`/tasks/${task.parentTask.id}`} className="font-semibold text-primary hover:underline">
+            {task.parentTask.title}
+          </Link>
+        </p>
+      ) : null}
+
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-8">
           <article className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest">
@@ -211,10 +291,20 @@ export function TaskDetailPage() {
                 <h1 className="text-2xl font-semibold text-on-surface md:text-[32px] md:leading-10">{task.title}</h1>
                 <div className="flex flex-wrap gap-3">
                   <span
-                    className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase ${taskStatusPillClass(task.status)}`}
+                    className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase ${
+                      isSubtask
+                        ? subtaskDone
+                          ? 'bg-tertiary-container/30 text-tertiary'
+                          : 'bg-surface-container-high text-on-surface-variant'
+                        : taskStatusPillClass(task.status)
+                    }`}
                   >
-                    <span className="material-symbols-outlined text-sm">sync</span>
-                    {t(`dashboard.status.${task.status}`, { defaultValue: task.status })}
+                    <span className="material-symbols-outlined text-sm">
+                      {isSubtask ? (subtaskDone ? 'check_circle' : 'radio_button_unchecked') : 'sync'}
+                    </span>
+                    {isSubtask
+                      ? t(subtaskDone ? 'taskDetail.subtaskDone' : 'taskDetail.subtaskTodo')
+                      : t(`dashboard.status.${task.status}`, { defaultValue: task.status })}
                   </span>
                   <span
                     className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase ${taskPriorityPillClass(task.priority)}`}
@@ -232,6 +322,16 @@ export function TaskDetailPage() {
               </div>
               {canEdit ? (
                 <div className="flex shrink-0 gap-2">
+                  {isRootTask ? (
+                    <button
+                      type="button"
+                      onClick={scrollToSubtasks}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary-container/20 px-3 py-2 text-xs font-bold uppercase tracking-wide text-primary transition-colors hover:bg-primary-container/35"
+                    >
+                      <span className="material-symbols-outlined text-base">checklist</span>
+                      {t('taskDetail.addSubtask')}
+                    </button>
+                  ) : null}
                   <Link
                     to={`/tasks/${task.id}/edit`}
                     className="rounded-lg border border-outline-variant p-2 text-on-surface transition-colors hover:bg-surface-container"
@@ -288,6 +388,21 @@ export function TaskDetailPage() {
               </section>
             ) : null}
           </article>
+
+          {isRootTask ? (
+            <SubtasksPanel
+              subtasks={subtasks}
+              progress={subtaskProgress}
+              canEdit={canEdit}
+              subtaskTitle={subtaskTitle}
+              subtaskSubmitting={subtaskSubmitting}
+              subtaskError={subtaskError}
+              subtaskUpdatingId={subtaskUpdatingId}
+              onTitleChange={setSubtaskTitle}
+              onSubmit={(ev) => void submitSubtask(ev)}
+              onToggleStatus={(sub) => void toggleSubtaskStatus(sub)}
+            />
+          ) : null}
 
           <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
             <div className="mb-6 flex items-center gap-2">

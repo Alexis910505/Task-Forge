@@ -1,0 +1,9 @@
+-- Subtareas: jerarquía padre-hijo de un nivel sobre Task.
+ALTER TABLE "Task" ADD COLUMN "parentTaskId" TEXT;
+
+CREATE INDEX "Task_parentTaskId_idx" ON "Task"("parentTaskId");
+
+ALTER TABLE "Task"
+  ADD CONSTRAINT "Task_parentTaskId_fkey"
+  FOREIGN KEY ("parentTaskId") REFERENCES "Task"("id")
+  ON DELETE CASCADE ON UPDATE CASCADE;

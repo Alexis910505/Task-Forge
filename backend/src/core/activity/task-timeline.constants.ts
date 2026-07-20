@@ -25,6 +25,7 @@ export const TaskTimelineAction = {
   TASK_SORT_ORDER_CHANGED: 'task.sort_order_changed',
   TASK_ASSETS_LINKED: 'task.assets_linked',
   TASK_ASSET_UNLINKED: 'task.asset_unlinked',
+  TASK_SUBTASK_CREATED: 'task.subtask_created',
   COMMENT_ADDED: 'comment.added',
   ATTACHMENT_ADDED: 'attachment.added',
 } as const;

@@ -3,10 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart' hide FormData, MultipartFile, Response, Value;
 
 import '../../../core/offline/app_database.dart';
-import '../../../core/offline/database_provider.dart';
 
 enum SyncQueueItemStatus { syncing, paused, waiting, error }
 
@@ -26,10 +25,24 @@ class SyncQueueItem {
   final SyncQueueItemStatus status;
 }
 
-final syncQueueItemsProvider = StreamProvider<List<SyncQueueItem>>((ref) {
-  final db = ref.watch(appDatabaseProvider);
-  return _watchSyncQueue(db);
-});
+class ReportsSyncQueueController extends GetxController {
+  final items = <SyncQueueItem>[].obs;
+  StreamSubscription<List<SyncQueueItem>>? _subscription;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _subscription = _watchSyncQueue(
+      Get.find<AppDatabase>(),
+    ).listen(items.assignAll, onError: (_) => items.clear());
+  }
+
+  @override
+  void onClose() {
+    _subscription?.cancel();
+    super.onClose();
+  }
+}
 
 Stream<List<SyncQueueItem>> _watchSyncQueue(AppDatabase db) {
   late final StreamSubscription<dynamic> sub1;
@@ -84,23 +97,26 @@ Future<SyncQueueItem> _outboxItem(OutboxOperation row) async {
       }
     } catch (_) {}
   }
-  final title = row.path == '/tasks' && body?['title'] != null
-      ? '${body!['title']}'
-      : row.path.startsWith('/tasks/')
+  final title =
+      row.path == '/tasks' && body?['title'] != null
+          ? '${body!['title']}'
+          : row.path.startsWith('/tasks/')
           ? 'Task update'
           : row.path;
-  final status = row.attempts >= 3
-      ? SyncQueueItemStatus.error
-      : row.attempts > 0
+  final status =
+      row.attempts >= 3
+          ? SyncQueueItemStatus.error
+          : row.attempts > 0
           ? SyncQueueItemStatus.waiting
           : SyncQueueItemStatus.syncing;
 
   return SyncQueueItem(
     id: 'outbox-${row.id}',
     title: title,
-    subtitle: row.lastError != null && row.lastError!.isNotEmpty
-        ? row.lastError!
-        : '${row.method} ${row.path}',
+    subtitle:
+        row.lastError != null && row.lastError!.isNotEmpty
+            ? row.lastError!
+            : '${row.method} ${row.path}',
     icon: Icons.description_outlined,
     status: status,
   );
@@ -119,15 +135,17 @@ Future<SyncQueueItem> _evidenceItem(EvidenceUploadQueueData row) async {
   return SyncQueueItem(
     id: 'evidence-${row.id}',
     title: name.isNotEmpty ? name : 'Photo evidence',
-    subtitle: row.lastError != null && row.lastError!.isNotEmpty
-        ? row.lastError!
-        : sizeLabel.isEmpty
+    subtitle:
+        row.lastError != null && row.lastError!.isNotEmpty
+            ? row.lastError!
+            : sizeLabel.isEmpty
             ? 'Pending upload'
             : 'Pending upload • $sizeLabel',
     icon: Icons.photo_outlined,
-    status: row.attempts >= 10
-        ? SyncQueueItemStatus.error
-        : paused
+    status:
+        row.attempts >= 10
+            ? SyncQueueItemStatus.error
+            : paused
             ? SyncQueueItemStatus.paused
             : SyncQueueItemStatus.syncing,
   );

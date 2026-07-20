@@ -9,7 +9,6 @@ import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { RoleName } from '@prisma/client';
 import { SocketEvents } from '../core/websocket/socket-events.constants';
 
 type HandshakeAuth = { token?: string };
@@ -17,7 +16,7 @@ type HandshakeAuth = { token?: string };
 type AccessJwtPayload = {
   sub: string;
   email: string;
-  role: RoleName;
+  role: string;
   organizationId: string;
   organizationSlug: string;
 };

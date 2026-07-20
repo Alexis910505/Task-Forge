@@ -1,21 +1,21 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:task_forge_app/l10n/gen/app_localizations.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart' hide FormData, MultipartFile, Response, Value;
 import 'package:go_router/go_router.dart';
 
 import '../../../core/branding/app_logo.dart';
 import '../../../core/config/env.dart';
 import '../application/auth_repository.dart';
 
-class LoginPage extends ConsumerStatefulWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
-  ConsumerState<LoginPage> createState() => _LoginPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends ConsumerState<LoginPage> {
+class _LoginPageState extends State<LoginPage> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _busy = false;
@@ -53,12 +53,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       _error = null;
     });
     try {
-      await ref.read(authRepositoryProvider.notifier).login(
-            organizationSlug: Env.organizationSlug,
-            email: _email.text.trim(),
-            password: _password.text,
-            persistSessionOnDisk: _keepSignedIn,
-          );
+      await Get.find<AuthController>().login(
+        organizationSlug: Env.organizationSlug,
+        email: _email.text.trim(),
+        password: _password.text,
+        persistSessionOnDisk: _keepSignedIn,
+      );
       if (mounted) {
         context.go('/dashboard');
       }
@@ -83,10 +83,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           gradient: RadialGradient(
             center: const Alignment(1.0, -1.0),
             radius: 1.15,
-            colors: [
-              scheme.primaryFixed,
-              scheme.surface,
-            ],
+            colors: [scheme.primaryFixed, scheme.surface],
             stops: const [0.0, 0.62],
           ),
         ),
@@ -105,7 +102,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     side: BorderSide(color: scheme.outlineVariant),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 28,
+                      vertical: 36,
+                    ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -143,7 +143,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           autocorrect: false,
                           decoration: InputDecoration(
                             hintText: l10n.loginEmailPlaceholder,
-                            prefixIcon: Icon(Icons.mail_outlined, color: scheme.onSurfaceVariant, size: 22),
+                            prefixIcon: Icon(
+                              Icons.mail_outlined,
+                              color: scheme.onSurfaceVariant,
+                              size: 22,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -159,18 +163,23 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           obscureText: true,
                           decoration: InputDecoration(
                             hintText: '••••••••',
-                            prefixIcon: Icon(Icons.lock_outline, color: scheme.onSurfaceVariant, size: 22),
+                            prefixIcon: Icon(
+                              Icons.lock_outline,
+                              color: scheme.onSurfaceVariant,
+                              size: 22,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 8),
                         CheckboxListTile(
                           value: _keepSignedIn,
-                          onChanged: _busy
-                              ? null
-                              : (v) {
-                                  if (v == null) return;
-                                  setState(() => _keepSignedIn = v);
-                                },
+                          onChanged:
+                              _busy
+                                  ? null
+                                  : (v) {
+                                    if (v == null) return;
+                                    setState(() => _keepSignedIn = v);
+                                  },
                           controlAffinity: ListTileControlAffinity.leading,
                           contentPadding: EdgeInsets.zero,
                           title: Text(l10n.loginKeepSignedInTitle),
@@ -185,22 +194,27 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           const SizedBox(height: 12),
                           Text(
                             _error!,
-                            style: TextStyle(color: scheme.error, fontSize: 13, height: 1.3),
+                            style: TextStyle(
+                              color: scheme.error,
+                              fontSize: 13,
+                              height: 1.3,
+                            ),
                           ),
                         ],
                         const SizedBox(height: 20),
                         FilledButton(
                           onPressed: _busy ? null : _submit,
-                          child: _busy
-                              ? SizedBox(
-                                  height: 22,
-                                  width: 22,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: scheme.onPrimary,
-                                  ),
-                                )
-                              : Text(l10n.submitLogin.toUpperCase()),
+                          child:
+                              _busy
+                                  ? SizedBox(
+                                    height: 22,
+                                    width: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: scheme.onPrimary,
+                                    ),
+                                  )
+                                  : Text(l10n.submitLogin.toUpperCase()),
                         ),
                       ],
                     ),

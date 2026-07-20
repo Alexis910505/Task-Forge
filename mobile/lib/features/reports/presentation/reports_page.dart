@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart' hide FormData, MultipartFile, Response, Value;
 import 'package:path_provider/path_provider.dart';
 import 'package:task_forge_app/l10n/gen/app_localizations.dart';
 
@@ -14,14 +14,17 @@ import '../../evidence/application/evidence_upload_worker.dart';
 import '../application/reports_sync_queue.dart';
 
 /// Reportes móviles (`assets/taskforge_reportes_y_sincronizaci_n`).
-class ReportsPage extends ConsumerStatefulWidget {
+class ReportsPage extends StatefulWidget {
   const ReportsPage({super.key});
 
   @override
-  ConsumerState<ReportsPage> createState() => _ReportsPageState();
+  State<ReportsPage> createState() => _ReportsPageState();
 }
 
-class _ReportsPageState extends ConsumerState<ReportsPage> {
+class _ReportsPageState extends State<ReportsPage> {
+  late final ReportsSyncQueueController _syncQueue;
+  late final Worker _syncQueueWorker;
+  late final Worker _connectivityWorker;
   Map<String, dynamic>? _overview;
   String? _error;
   bool _loading = true;
@@ -32,7 +35,22 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
   @override
   void initState() {
     super.initState();
+    _syncQueue = Get.put(ReportsSyncQueueController());
+    _syncQueueWorker = ever(_syncQueue.items, (_) {
+      if (mounted) setState(() {});
+    });
+    _connectivityWorker = ever(Get.find<ConnectivityService>().online, (_) {
+      if (mounted) setState(() {});
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+  }
+
+  @override
+  void dispose() {
+    _syncQueueWorker.dispose();
+    _connectivityWorker.dispose();
+    Get.delete<ReportsSyncQueueController>();
+    super.dispose();
   }
 
   String _formatError(Object e) {
@@ -71,9 +89,9 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
       _error = null;
     });
     try {
-      final dio = ref.read(dioProvider);
+      final dio = Get.find<ApiClient>().dio;
       final res = await dio.get<Map<String, dynamic>>('/reports/overview');
-      final cacheAt = await ref.read(localDataServiceProvider).lastCacheUpdatedAt();
+      final cacheAt = await Get.find<LocalDataService>().lastCacheUpdatedAt();
       if (mounted) {
         setState(() {
           _overview = res.data;
@@ -92,22 +110,25 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
   }
 
   Future<void> _forceSync() async {
-    final list = ref.read(connectivityProvider).valueOrNull ?? [];
-    if (!connectivityLooksOnline(list)) {
+    if (!Get.find<ConnectivityService>().online.value) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.reportsSyncOffline)),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.reportsSyncOffline),
+          ),
         );
       }
       return;
     }
     setState(() => _syncing = true);
     try {
-      await ref.read(outboxSyncServiceProvider).processQueue();
-      await ref.read(evidenceUploadWorkerProvider).processPending();
+      await Get.find<OutboxSyncService>().processQueue();
+      await Get.find<EvidenceUploadWorker>().processPending();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.reportsSyncDone)),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.reportsSyncDone),
+          ),
         );
       }
       await _load();
@@ -130,8 +151,9 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
 
     setState(() => _exporting = true);
     try {
-      final dio = ref.read(dioProvider);
-      final path = kind == 'pdf' ? '/reports/export/pdf' : '/reports/export/xlsx';
+      final dio = Get.find<ApiClient>().dio;
+      final path =
+          kind == 'pdf' ? '/reports/export/pdf' : '/reports/export/xlsx';
       final res = await dio.get<List<int>>(
         path,
         queryParameters: {'from': from, 'to': to},
@@ -143,19 +165,21 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
       }
       final dir = await getApplicationDocumentsDirectory();
       final ext = kind == 'pdf' ? 'pdf' : 'xlsx';
-      final file = File('${dir.path}/taskforge-report-${DateTime.now().millisecondsSinceEpoch}.$ext');
+      final file = File(
+        '${dir.path}/taskforge-report-${DateTime.now().millisecondsSinceEpoch}.$ext',
+      );
       await file.writeAsBytes(bytes, flush: true);
       if (mounted) {
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.reportsExportSaved)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.reportsExportSaved)));
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.reportsExportFailed)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.reportsExportFailed)));
       }
     } finally {
       if (mounted) {
@@ -177,7 +201,10 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(l10n.reportsExportReport, style: Theme.of(ctx).textTheme.titleMedium),
+              Text(
+                l10n.reportsExportReport,
+                style: Theme.of(ctx).textTheme.titleMedium,
+              ),
               const SizedBox(height: 12),
               _ExportOption(
                 icon: Icons.picture_as_pdf_outlined,
@@ -198,7 +225,9 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
               Text(
                 l10n.reportsExportCycleNote,
                 textAlign: TextAlign.center,
-                style: Theme.of(ctx).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                style: Theme.of(
+                  ctx,
+                ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
               ),
             ],
           ),
@@ -212,13 +241,9 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    final profile = ref.watch(authRepositoryProvider).valueOrNull?.profile;
-    final syncItems = ref.watch(syncQueueItemsProvider);
-    final connectivity = ref.watch(connectivityProvider);
-    final online = connectivity.maybeWhen(
-      data: connectivityLooksOnline,
-      orElse: () => false,
-    );
+    final profile = Get.find<AuthController>().currentSession?.profile;
+    final syncItems = _syncQueue.items;
+    final online = Get.find<ConnectivityService>().online.value;
 
     final productivity = _overview?['productivity'];
     final summary = _overview?['summary'];
@@ -234,11 +259,7 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
     final efficiencyDelta = _numOrNull(summaryMap?['efficiencyDeltaPercent']);
 
     final deptRows = _departmentRows(byDept);
-    final syncList = syncItems.when(
-      data: (v) => v,
-      error: (_, __) => const <SyncQueueItem>[],
-      loading: () => const <SyncQueueItem>[],
-    );
+    final syncList = syncItems.toList(growable: false);
 
     return ColoredBox(
       color: scheme.surface,
@@ -254,25 +275,36 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
               children: [
                 Text(
                   l10n.reportsDashboardTitle,
-                  style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   l10n.reportsDashboardSubtitle,
-                  style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: FilledButton.icon(
-                    onPressed: _overview == null || _exporting ? null : _showExportSheet,
-                    icon: _exporting
-                        ? SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: scheme.onPrimary),
-                          )
-                        : const Icon(Icons.ios_share, size: 18),
+                    onPressed:
+                        _overview == null || _exporting
+                            ? null
+                            : _showExportSheet,
+                    icon:
+                        _exporting
+                            ? SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: scheme.onPrimary,
+                              ),
+                            )
+                            : const Icon(Icons.ios_share, size: 18),
                     label: Text(l10n.reportsExportReport),
                   ),
                 ),
@@ -288,7 +320,10 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
               MaterialBanner(
                 content: Text(_error!),
                 actions: [
-                  TextButton(onPressed: _load, child: Text(l10n.dashboardRetry)),
+                  TextButton(
+                    onPressed: _load,
+                    child: Text(l10n.dashboardRetry),
+                  ),
                 ],
               )
             else if (_overview != null) ...[
@@ -358,13 +393,14 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
     }
     final total = rows.fold<num>(0, (s, r) => s + _num(r['tasksTotal']));
     final safeTotal = total > 0 ? total : 1;
-    final sorted = [...rows]..sort((a, b) => _num(b['tasksTotal']).compareTo(_num(a['tasksTotal'])));
+    final sorted = [...rows]
+      ..sort((a, b) => _num(b['tasksTotal']).compareTo(_num(a['tasksTotal'])));
     return sorted.take(6).map((r) {
-      final pct = ((_num(r['tasksTotal']) / safeTotal) * 100).round().clamp(0, 100);
-      return _DeptRow(
-        name: '${r['departmentName'] ?? '—'}',
-        percent: pct,
+      final pct = ((_num(r['tasksTotal']) / safeTotal) * 100).round().clamp(
+        0,
+        100,
       );
+      return _DeptRow(name: '${r['departmentName'] ?? '—'}', percent: pct);
     }).toList();
   }
 }
@@ -420,28 +456,33 @@ class _KpiGrid extends StatelessWidget {
           value: '${efficiency.toStringAsFixed(1)}%',
           valueColor: scheme.primary,
           icon: Icons.bolt,
-          footer: delta != null
-              ? Row(
-                  children: [
-                    Icon(
-                      trendUp ? Icons.trending_up : Icons.trending_down,
-                      size: 14,
-                      color: trendUp ? scheme.tertiary : scheme.error,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      trendUp
-                          ? l10n.reportsEfficiencyTrendUp(delta.abs().toStringAsFixed(1))
-                          : l10n.reportsEfficiencyTrendDown(delta.abs().toStringAsFixed(1)),
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
+          footer:
+              delta != null
+                  ? Row(
+                    children: [
+                      Icon(
+                        trendUp ? Icons.trending_up : Icons.trending_down,
+                        size: 14,
                         color: trendUp ? scheme.tertiary : scheme.error,
                       ),
-                    ),
-                  ],
-                )
-              : null,
+                      const SizedBox(width: 4),
+                      Text(
+                        trendUp
+                            ? l10n.reportsEfficiencyTrendUp(
+                              delta.abs().toStringAsFixed(1),
+                            )
+                            : l10n.reportsEfficiencyTrendDown(
+                              delta.abs().toStringAsFixed(1),
+                            ),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: trendUp ? scheme.tertiary : scheme.error,
+                        ),
+                      ),
+                    ],
+                  )
+                  : null,
         ),
         const SizedBox(height: 12),
         _KpiCard(
@@ -450,7 +491,11 @@ class _KpiGrid extends StatelessWidget {
           icon: Icons.task_alt,
           footer: Text(
             l10n.reportsTasksTarget(target),
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: scheme.onSurfaceVariant),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: scheme.onSurfaceVariant,
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -458,18 +503,25 @@ class _KpiGrid extends StatelessWidget {
           label: l10n.reportsAvgTimeLabel,
           value: _formatAvg(avgHours),
           icon: Icons.schedule,
-          footer: avgHours > 0
-              ? Row(
-                  children: [
-                    Icon(Icons.trending_down, size: 14, color: scheme.error),
-                    const SizedBox(width: 4),
-                    Text(
-                      l10n.reportsAvgTimeDelay((avgHours * 12).round().clamp(1, 999)),
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: scheme.error),
-                    ),
-                  ],
-                )
-              : null,
+          footer:
+              avgHours > 0
+                  ? Row(
+                    children: [
+                      Icon(Icons.trending_down, size: 14, color: scheme.error),
+                      const SizedBox(width: 4),
+                      Text(
+                        l10n.reportsAvgTimeDelay(
+                          (avgHours * 12).round().clamp(1, 999),
+                        ),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: scheme.error,
+                        ),
+                      ),
+                    ],
+                  )
+                  : null,
         ),
       ],
     );
@@ -520,11 +572,13 @@ class _KpiCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       value,
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: valueColor ?? scheme.onSurface,
-                            height: 1,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: valueColor ?? scheme.onSurface,
+                        height: 1,
+                      ),
                     ),
                   ],
                 ),
@@ -535,7 +589,11 @@ class _KpiCard extends StatelessWidget {
           Positioned(
             right: -8,
             bottom: -8,
-            child: Icon(icon, size: 80, color: scheme.onSurface.withValues(alpha: 0.06)),
+            child: Icon(
+              icon,
+              size: 80,
+              color: scheme.onSurface.withValues(alpha: 0.06),
+            ),
           ),
         ],
       ),
@@ -545,10 +603,10 @@ class _KpiCard extends StatelessWidget {
 
 TextStyle themeLabelStyle(BuildContext context, Color color) {
   return Theme.of(context).textTheme.labelSmall!.copyWith(
-        fontWeight: FontWeight.w700,
-        letterSpacing: 0.6,
-        color: color,
-      );
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0.6,
+    color: color,
+  );
 }
 
 class _DepartmentCard extends StatelessWidget {
@@ -585,31 +643,41 @@ class _DepartmentCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     l10n.reportsDeptPerformance,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-                Icon(Icons.filter_list, color: scheme.onSurfaceVariant, size: 22),
+                Icon(
+                  Icons.filter_list,
+                  color: scheme.onSurfaceVariant,
+                  size: 22,
+                ),
               ],
             ),
           ),
           Divider(height: 1, color: scheme.outlineVariant),
           Padding(
             padding: const EdgeInsets.all(16),
-            child: rows.isEmpty
-                ? Text(l10n.reportsNoDeptData, style: TextStyle(color: scheme.onSurfaceVariant))
-                : Column(
-                    children: [
-                      for (var i = 0; i < rows.length; i++) ...[
-                        if (i > 0) const SizedBox(height: 20),
-                        _DeptBar(
-                          name: rows[i].name,
-                          percent: rows[i].percent,
-                          color: barColors[i % barColors.length],
-                          l10n: l10n,
-                        ),
+            child:
+                rows.isEmpty
+                    ? Text(
+                      l10n.reportsNoDeptData,
+                      style: TextStyle(color: scheme.onSurfaceVariant),
+                    )
+                    : Column(
+                      children: [
+                        for (var i = 0; i < rows.length; i++) ...[
+                          if (i > 0) const SizedBox(height: 20),
+                          _DeptBar(
+                            name: rows[i].name,
+                            percent: rows[i].percent,
+                            color: barColors[i % barColors.length],
+                            l10n: l10n,
+                          ),
+                        ],
                       ],
-                    ],
-                  ),
+                    ),
           ),
         ],
       ),
@@ -639,7 +707,13 @@ class _DeptBar extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: Text(name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+              child: Text(
+                name,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
+              ),
             ),
             Text(
               l10n.reportsCapacity(percent),
@@ -695,18 +769,27 @@ class _SyncQueueCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   l10n.reportsSyncQueue,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
             if (items.isEmpty)
-              Text(l10n.reportsSyncDone, style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 13))
+              Text(
+                l10n.reportsSyncDone,
+                style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 13),
+              )
             else
-              ...items.take(8).map((item) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _SyncQueueTile(item: item),
-                  )),
+              ...items
+                  .take(8)
+                  .map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _SyncQueueTile(item: item),
+                    ),
+                  ),
             const SizedBox(height: 4),
             OutlinedButton(
               onPressed: syncing ? null : onForceSync,
@@ -714,13 +797,20 @@ class _SyncQueueCard extends StatelessWidget {
                 foregroundColor: scheme.primary,
                 side: BorderSide(color: scheme.primary),
               ),
-              child: syncing
-                  ? SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: scheme.primary),
-                    )
-                  : Text(l10n.reportsForceSync, style: const TextStyle(fontWeight: FontWeight.w700)),
+              child:
+                  syncing
+                      ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: scheme.primary,
+                        ),
+                      )
+                      : Text(
+                        l10n.reportsForceSync,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
             ),
           ],
         ),
@@ -740,7 +830,11 @@ class _SyncQueueTile extends StatelessWidget {
       case SyncQueueItemStatus.syncing:
         return Icon(Icons.sync, size: 18, color: scheme.tertiary);
       case SyncQueueItemStatus.paused:
-        return Icon(Icons.pause_circle_outline, size: 18, color: scheme.onSurfaceVariant);
+        return Icon(
+          Icons.pause_circle_outline,
+          size: 18,
+          color: scheme.onSurfaceVariant,
+        );
       case SyncQueueItemStatus.waiting:
         return Icon(Icons.wifi_find, size: 18, color: scheme.onSurfaceVariant);
       case SyncQueueItemStatus.error:
@@ -755,7 +849,9 @@ class _SyncQueueTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: scheme.surface,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.35)),
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: 0.35),
+        ),
         boxShadow: [
           BoxShadow(
             color: scheme.shadow.withValues(alpha: 0.04),
@@ -779,14 +875,20 @@ class _SyncQueueTile extends StatelessWidget {
                     item.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     item.subtitle,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
@@ -813,9 +915,10 @@ class _SystemHealthCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final minutes = lastCacheAt == null
-        ? null
-        : DateTime.now().difference(lastCacheAt!).inMinutes.clamp(0, 9999);
+    final minutes =
+        lastCacheAt == null
+            ? null
+            : DateTime.now().difference(lastCacheAt!).inMinutes.clamp(0, 9999);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -851,7 +954,10 @@ class _SystemHealthCard extends StatelessWidget {
                 minutes != null
                     ? l10n.reportsLastBackup(minutes)
                     : l10n.reportsSyncDone,
-                style: TextStyle(fontSize: 14, color: scheme.onInverseSurface.withValues(alpha: 0.7)),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: scheme.onInverseSurface.withValues(alpha: 0.7),
+                ),
               ),
             ],
           ),
@@ -904,8 +1010,17 @@ class _ExportOption extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-                    Text(subtitle, style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
+                    Text(
+                      title,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
                   ],
                 ),
               ),

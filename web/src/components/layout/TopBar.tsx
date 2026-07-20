@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/auth/AuthContext';
 import { LanguageToggle } from '@/components/i18n/LanguageToggle';
 import { useUnreadNotifications } from '@/hooks/useUnreadNotifications';
+import { roleLabel } from '@/lib/roleLabels';
 
 export function TopBar() {
   const { t } = useTranslation();
@@ -11,7 +12,7 @@ export function TopBar() {
   const { unreadCount } = useUnreadNotifications(Boolean(user));
 
   const displayName = user ? `${user.firstName} ${user.lastName}`.trim() || user.email : t('common.userFallback');
-  const roleLabel = user?.role?.name ?? t('common.roleFallback');
+  const roleText = user?.role ? roleLabel(user.role, t) : t('common.roleFallback');
 
   async function onLogout() {
     await logout();
@@ -56,7 +57,7 @@ export function TopBar() {
         <Link to="/profile" className="flex items-center gap-3 border-l border-outline-variant pl-4">
           <div className="hidden text-right lg:block">
             <p className="text-xs font-bold text-on-surface">{displayName}</p>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">{roleLabel}</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">{roleText}</p>
           </div>
           <div
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-primary-container/25 text-xs font-bold text-primary"
