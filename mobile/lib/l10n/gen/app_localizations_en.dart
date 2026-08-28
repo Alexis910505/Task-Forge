@@ -801,8 +801,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get assetsUpdateSuccess => 'Asset updated';
 
   @override
-  String get assetsCatalogLoadFailed =>
-      'Could not load categories or statuses';
+  String get assetsCatalogLoadFailed => 'Could not load categories or statuses';
 
   @override
   String get assetDetailTitle => 'Asset Detail';
