@@ -11,6 +11,7 @@ import {
   Post,
   Req,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -18,6 +19,7 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nes
 import type { Express, Request } from 'express';
 import { OrganizationsService } from './organizations.service';
 import { BootstrapOrganizationDto, UpdateOrganizationBrandingDto } from './dto/organization.dto';
+import { PublicSignupGuard } from '../../core/guards/public-signup.guard';
 import { Public } from '../../core/decorators/public.decorator';
 import { RequirePermissions } from '../../core/decorators/permissions.decorator';
 import { RequestUser } from '../../core/strategies/jwt.strategy';
@@ -42,6 +44,7 @@ export class OrganizationsController {
   }
 
   @Public()
+  @UseGuards(PublicSignupGuard)
   @Post('bootstrap')
   @ApiOperation({ summary: 'Crear organización + roles + primer administrador (alta SaaS)' })
   bootstrap(@Body() dto: BootstrapOrganizationDto) {
@@ -93,7 +96,8 @@ export class OrganizationsController {
         fileIsRequired: true,
         validators: [
           new MaxFileSizeValidator({ maxSize: MAX_ORG_LOGO_BYTES }),
-          new FileTypeValidator({ fileType: ORG_BRANDING_MIME }),
+          // diskStorage no rellena buffer; validar por mimetype del multipart.
+          new FileTypeValidator({ fileType: ORG_BRANDING_MIME, fallbackToMimetype: true }),
         ],
       }),
     )

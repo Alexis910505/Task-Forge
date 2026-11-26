@@ -34,3 +34,6 @@ backend/uploads/
 
 # Logs
 *.log
+
+# Firebase CLI
+.firebase/

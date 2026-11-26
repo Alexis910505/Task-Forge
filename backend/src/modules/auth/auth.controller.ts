@@ -6,6 +6,7 @@ import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { LogoutDto } from './dto/logout.dto';
 import { Public } from '../../core/decorators/public.decorator';
+import { PublicSignupGuard } from '../../core/guards/public-signup.guard';
 import { JwtRefreshGuard } from '../../core/guards/jwt-refresh.guard';
 import type { Request } from 'express';
 import { RequestUser } from '../../core/strategies/jwt.strategy';
@@ -17,6 +18,7 @@ export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
   @Public()
+  @UseGuards(PublicSignupGuard)
   @Post('register')
   @ApiOperation({ summary: 'Registro público (rol Worker por defecto)' })
   register(@Body() dto: RegisterDto) {

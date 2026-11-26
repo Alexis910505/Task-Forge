@@ -17,7 +17,8 @@ class ApiClient extends GetxService {
       BaseOptions(
         baseUrl: Env.apiBaseUrl,
         connectTimeout: const Duration(seconds: 15),
-        receiveTimeout: const Duration(seconds: 20),
+        // El hosting gratuito puede tardar ~1 min en despertar la API.
+        receiveTimeout: const Duration(seconds: 75),
         headers: const {'Content-Type': 'application/json'},
       ),
     );
@@ -26,7 +27,8 @@ class ApiClient extends GetxService {
       BaseOptions(
         baseUrl: Env.apiBaseUrl,
         connectTimeout: const Duration(seconds: 15),
-        receiveTimeout: const Duration(seconds: 20),
+        // El hosting gratuito puede tardar ~1 min en despertar la API.
+        receiveTimeout: const Duration(seconds: 75),
         headers: const {'Content-Type': 'application/json'},
       ),
     );

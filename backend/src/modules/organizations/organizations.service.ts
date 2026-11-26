@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { extname } from 'path';
 import type { Express } from 'express';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { StorageService } from '../../core/storage/storage.service';
 import { RolesService } from '../roles/roles.service';
 import { BootstrapOrganizationDto, UpdateOrganizationBrandingDto } from './dto/organization.dto';
 
@@ -11,7 +12,10 @@ export type OrganizationBrandingKind = 'logo' | 'favicon';
 
 @Injectable()
 export class OrganizationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storage: StorageService,
+  ) {}
 
   async resolveBySlug(slug: string) {
     const org = await this.prisma.organization.findUnique({
@@ -49,7 +53,7 @@ export class OrganizationsService {
     file: Express.Multer.File,
   ) {
     await this.ensureExists(organizationId);
-    const publicUrl = `/uploads/branding/${file.filename}`;
+    const publicUrl = await this.storage.persist('branding', file);
     const data =
       kind === 'logo' ? { logoUrl: publicUrl } : { faviconUrl: publicUrl };
     return this.prisma.organization.update({

@@ -1,5 +1,5 @@
 import { plainToInstance } from 'class-transformer';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, validateSync } from 'class-validator';
+import { IsEnum, IsIn, IsNotEmpty, IsOptional, IsString, ValidateIf, validateSync } from 'class-validator';
 
 export class EnvironmentVariables {
   @IsOptional()
@@ -33,6 +33,40 @@ export class EnvironmentVariables {
   @IsOptional()
   @IsString()
   CORS_ORIGIN?: string;
+
+  /** `false` deshabilita /auth/register y /organizations/bootstrap. */
+  @IsOptional()
+  @IsIn(['true', 'false'])
+  PUBLIC_SIGNUP?: string;
+
+  @IsOptional()
+  @IsIn(['local', 's3'])
+  STORAGE_DRIVER?: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.STORAGE_DRIVER === 's3')
+  @IsString()
+  @IsNotEmpty()
+  S3_ENDPOINT?: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.STORAGE_DRIVER === 's3')
+  @IsString()
+  @IsNotEmpty()
+  S3_REGION?: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.STORAGE_DRIVER === 's3')
+  @IsString()
+  @IsNotEmpty()
+  S3_BUCKET?: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.STORAGE_DRIVER === 's3')
+  @IsString()
+  @IsNotEmpty()
+  S3_ACCESS_KEY_ID?: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.STORAGE_DRIVER === 's3')
+  @IsString()
+  @IsNotEmpty()
+  S3_SECRET_ACCESS_KEY?: string;
 }
 
 export function validateEnv(config: Record<string, unknown>): EnvironmentVariables {

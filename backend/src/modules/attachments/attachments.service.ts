@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { EvidenceKind } from '@prisma/client';
 import type { Express } from 'express';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { StorageService } from '../../core/storage/storage.service';
 import { ActivityService } from '../activity/activity.service';
 import { TaskTimelineAction } from '../../core/activity/task-timeline.constants';
 import { CreateAttachmentDto } from './dto/create-attachment.dto';
@@ -11,6 +12,7 @@ export class AttachmentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly activity: ActivityService,
+    private readonly storage: StorageService,
   ) {}
 
   async listByTask(organizationId: string, taskId: string) {
@@ -56,7 +58,7 @@ export class AttachmentsService {
     },
   ) {
     await this.ensureTask(organizationId, taskId);
-    const publicUrl = `/uploads/attachments/${file.filename}`;
+    const publicUrl = await this.storage.persist('attachments', file);
     const row = await this.prisma.attachment.create({
       data: {
         taskId,
@@ -82,7 +84,7 @@ export class AttachmentsService {
     file: Express.Multer.File,
   ) {
     await this.ensureTask(organizationId, taskId);
-    const publicUrl = `/uploads/attachments/${file.filename}`;
+    const publicUrl = await this.storage.persist('attachments', file);
     const row = await this.prisma.attachment.create({
       data: {
         taskId,

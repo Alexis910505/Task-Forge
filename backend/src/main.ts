@@ -3,9 +3,11 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { IoAdapter } from '@nestjs/platform-socket.io';
+import type { NextFunction, Request, Response } from 'express';
 import { join } from 'path';
 import { mkdir } from 'fs/promises';
 import { AppModule } from './app.module';
+import { StorageService } from './core/storage/storage.service';
 import { HttpExceptionFilter } from './core/filters/http-exception.filter';
 
 async function bootstrap() {
@@ -18,8 +20,6 @@ async function bootstrap() {
   app.useLogger(['error', 'warn', 'log']);
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useWebSocketAdapter(new IoAdapter(app));
-
-  app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads/' });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -34,6 +34,19 @@ async function bootstrap() {
     origin: corsOrigin === '*' ? true : corsOrigin.split(',').map((o) => o.trim()),
     credentials: true,
   });
+
+  // Contenido subido por usuarios: un SVG abierto directamente no debe ejecutar scripts.
+  app.use('/uploads', (_req: Request, res: Response, next: NextFunction) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; sandbox");
+    next();
+  });
+  const storage = app.get(StorageService);
+  if (storage.isRemote) {
+    app.use('/uploads', storage.serve());
+  } else {
+    app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads/' });
+  }
 
   const config = new DocumentBuilder()
     .setTitle('TaskForge API')

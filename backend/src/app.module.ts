@@ -5,6 +5,8 @@ import { validateEnv } from './core/config/environment-variables';
 import { JwtAuthGuard } from './core/guards/jwt-auth.guard';
 import { RolesGuard } from './core/guards/roles.guard';
 import { PermissionsGuard } from './core/guards/permissions.guard';
+import { StorageModule } from './core/storage/storage.module';
+import { HealthController } from './core/health/health.controller';
 import { PrismaModule } from './core/prisma/prisma.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -31,6 +33,7 @@ import { EventsModule } from './websocket/events.module';
       validate: validateEnv,
     }),
     PrismaModule,
+    StorageModule,
     OrganizationsModule,
     AuthModule,
     UsersModule,
@@ -49,6 +52,7 @@ import { EventsModule } from './websocket/events.module';
     ReportsModule,
     EventsModule,
   ],
+  controllers: [HealthController],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
