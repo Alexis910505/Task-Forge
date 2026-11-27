@@ -8,7 +8,8 @@ services:
     rootDir: backend
     dockerfilePath: ./Dockerfile
     healthCheckPath: /health
-    autoDeployTrigger: "off"
+    # Despliega solo cuando pasan los checks de GitHub Actions (.github/workflows/ci-deploy.yml)
+    autoDeployTrigger: checksPass
     envVars:
       - key: NODE_ENV
         value: production

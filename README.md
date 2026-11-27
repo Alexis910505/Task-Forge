@@ -80,11 +80,16 @@ flutter run --dart-define=API_BASE=https://taskforge-api-rolx.onrender.com
 
 ## Desplegar
 
-Lo que está online sale de la rama `main`.
+Se trabaja en local. **Todo push a `main` se publica solo** si pasa la revisión:
 
-**API (Render):** el auto-deploy está apagado. Después de hacer push, ve a Render, `taskforge-api` → *Manual Deploy*. El contenedor **no** aplica migraciones: si cambia el esquema de Prisma, antes de desplegar corre `npx prisma migrate deploy` desde `backend/`, con `DATABASE_URL` apuntando a la URL **directa** de Neon (sin `-pooler`).
+1. GitHub Actions ([ci-deploy.yml](.github/workflows/ci-deploy.yml)) compila la API y la web.
+2. Si algo falla, no se publica nada. Lo ves en la pestaña *Actions* de GitHub.
+3. Si todo pasa, la web se publica en Firebase y Render despliega la API (*Auto-Deploy: After CI Checks Pass*).
+4. Al arrancar, la API aplica sola las migraciones pendientes de Prisma ([migrate-and-start.js](backend/scripts/migrate-and-start.js)), por la conexión directa de Neon. Si una migración falla, Render mantiene la versión anterior.
 
-**Web (Firebase):**
+Un deploy completo tarda unos 5–10 minutos. La app móvil no se publica sola: hay que compilar el APK.
+
+Para publicar a mano si hiciera falta: en Render, *Manual Deploy*; para la web:
 
 ```bash
 cd web
@@ -92,6 +97,8 @@ VITE_API_URL=https://taskforge-api-rolx.onrender.com npm run build
 cd ..
 firebase deploy --only hosting --project taskforge-ops
 ```
+
+El flujo necesita el secret `FIREBASE_SERVICE_ACCOUNT` en GitHub (*Settings → Secrets and variables → Actions*), con la clave JSON de una cuenta de servicio del proyecto `taskforge-ops`.
 
 ### Variables de entorno de la API
 

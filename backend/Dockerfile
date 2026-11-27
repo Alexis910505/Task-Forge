@@ -20,5 +20,7 @@ RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/prisma ./prisma
+COPY scripts/migrate-and-start.js ./scripts/migrate-and-start.js
 EXPOSE 3000
-CMD ["node", "dist/main.js"]
+# Aplica migraciones pendientes y arranca la API
+CMD ["node", "scripts/migrate-and-start.js"]
