@@ -141,37 +141,44 @@ model TeamMember {
 }
 
 model User {
-  id              String            @id @default(cuid())
-  organizationId  String
-  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  email           String
-  passwordHash    String
-  firstName       String
-  lastName        String
-  isActive        Boolean           @default(true)
-  employmentType  EmploymentType    @default(FULL_TIME)
-  roleId          String
-  role            Role              @relation(fields: [roleId], references: [id])
-  departmentId    String?
-  department      Department?       @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  teamMembers     TeamMember[]
-  refreshTokens   RefreshToken[]
-  tasksCreated    Task[]            @relation("TaskCreatedBy")
-  tasksAssigned   Task[]            @relation("TaskAssignee")
-  comments        TaskComment[]
-  attachments     Attachment[]
-  notifications   Notification[]
-  activityLogs    ActivityLog[]
-  ownedProjects   Project[]         @relation("ProjectOwner")
-  assetHistory    AssetHistory[]
-  assetPhotos     AssetPhoto[]
-  routinesOwned   Routine[]         @relation("RoutineOwner")
-  routineAssigned RoutineAssignee[]
-  routineRuns     RoutineRun[]
+  id                String            @id @default(cuid())
+  organizationId    String
+  organization      Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email             String
+  passwordHash      String
+  /// Cuenta de Microsoft vinculada (claim `oid`) y su directorio (`tid`).
+  microsoftOid      String?
+  microsoftTenantId String?
+  /// Invitación pendiente: hash del token del enlace y su caducidad.
+  inviteTokenHash   String?           @unique
+  inviteExpiresAt   DateTime?
+  firstName         String
+  lastName          String
+  isActive          Boolean           @default(true)
+  employmentType    EmploymentType    @default(FULL_TIME)
+  roleId            String
+  role              Role              @relation(fields: [roleId], references: [id])
+  departmentId      String?
+  department        Department?       @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  teamMembers       TeamMember[]
+  refreshTokens     RefreshToken[]
+  tasksCreated      Task[]            @relation("TaskCreatedBy")
+  tasksAssigned     Task[]            @relation("TaskAssignee")
+  comments          TaskComment[]
+  attachments       Attachment[]
+  notifications     Notification[]
+  activityLogs      ActivityLog[]
+  ownedProjects     Project[]         @relation("ProjectOwner")
+  assetHistory      AssetHistory[]
+  assetPhotos       AssetPhoto[]
+  routinesOwned     Routine[]         @relation("RoutineOwner")
+  routineAssigned   RoutineAssignee[]
+  routineRuns       RoutineRun[]
 
   @@unique([organizationId, email])
+  @@unique([organizationId, microsoftOid])
   @@index([organizationId])
 }
 
