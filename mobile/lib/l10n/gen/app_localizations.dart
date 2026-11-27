@@ -2179,6 +2179,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Done {done} of {total} times'**
   String taskDetailRecurrenceStats(int done, int total);
+
+  /// No description provided for @routinesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Routines'**
+  String get routinesTitle;
+
+  /// No description provided for @routinesToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get routinesToday;
+
+  /// No description provided for @routinesNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New routine'**
+  String get routinesNew;
+
+  /// No description provided for @routinesNoneToday.
+  ///
+  /// In en, this message translates to:
+  /// **'No routines due today. Tap “New routine” to create one.'**
+  String get routinesNoneToday;
+
+  /// No description provided for @routinesNoneTodayShort.
+  ///
+  /// In en, this message translates to:
+  /// **'None due today'**
+  String get routinesNoneTodayShort;
+
+  /// No description provided for @routinesPersonal.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal'**
+  String get routinesPersonal;
+
+  /// No description provided for @routinesShared.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared'**
+  String get routinesShared;
+
+  /// No description provided for @routinesCompletedToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed today!'**
+  String get routinesCompletedToday;
+
+  /// No description provided for @routinesStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1-day streak} other{{count}-day streak}}'**
+  String routinesStreak(int count);
+
+  /// No description provided for @routinesRate.
+  ///
+  /// In en, this message translates to:
+  /// **'{rate}% last 30 days'**
+  String routinesRate(int rate);
+
+  /// No description provided for @routinesNoRateYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No history yet'**
+  String get routinesNoRateYet;
+
+  /// No description provided for @routinesCheckFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save. Please try again.'**
+  String get routinesCheckFailed;
+
+  /// No description provided for @routinesDashboardCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s routines'**
+  String get routinesDashboardCard;
+
+  /// No description provided for @routinesDashboardProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} completed'**
+  String routinesDashboardProgress(int done, int total);
+
+  /// No description provided for @routinesWeekdaysShort.
+  ///
+  /// In en, this message translates to:
+  /// **'M,T,W,T,F,S,S'**
+  String get routinesWeekdaysShort;
+
+  /// No description provided for @routinesCreateName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get routinesCreateName;
+
+  /// No description provided for @routinesCreateNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Morning routine'**
+  String get routinesCreateNameHint;
+
+  /// No description provided for @routinesCreateDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Days it is due'**
+  String get routinesCreateDays;
+
+  /// No description provided for @routinesCreateSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps'**
+  String get routinesCreateSteps;
+
+  /// No description provided for @routinesCreateStepHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a step'**
+  String get routinesCreateStepHint;
+
+  /// No description provided for @routinesCreateSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save routine'**
+  String get routinesCreateSave;
+
+  /// No description provided for @routinesCreateErrName.
+  ///
+  /// In en, this message translates to:
+  /// **'Give it a name.'**
+  String get routinesCreateErrName;
+
+  /// No description provided for @routinesCreateErrDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick at least one day.'**
+  String get routinesCreateErrDays;
+
+  /// No description provided for @routinesCreateErrSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one step.'**
+  String get routinesCreateErrSteps;
+
+  /// No description provided for @routinesCreateSharedOnWeb.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a personal routine: only you will see it. Routines for a team are created on the web.'**
+  String get routinesCreateSharedOnWeb;
 }
 
 class _AppLocalizationsDelegate

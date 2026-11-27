@@ -496,5 +496,45 @@
     "placeholders": {
       "done": { "type": "int" }, "total": { "type": "int" }
     }
-  }
+  },
+  "routinesTitle": "Rutinas",
+  "routinesToday": "Hoy",
+  "routinesNew": "Nueva rutina",
+  "routinesNoneToday": "Hoy no te toca ninguna rutina. Pulsa «Nueva rutina» para crear una.",
+  "routinesNoneTodayShort": "Hoy no te toca ninguna",
+  "routinesPersonal": "Personal",
+  "routinesShared": "Compartida",
+  "routinesCompletedToday": "¡Completada hoy!",
+  "routinesStreak": "{count, plural, =1{1 día seguido} other{{count} días seguidos}}",
+  "@routinesStreak": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "routinesRate": "{rate}% últimos 30 días",
+  "@routinesRate": {
+    "placeholders": {
+      "rate": { "type": "int" }
+    }
+  },
+  "routinesNoRateYet": "Aún sin historial",
+  "routinesCheckFailed": "No se pudo guardar. Inténtalo de nuevo.",
+  "routinesDashboardCard": "Rutinas de hoy",
+  "routinesDashboardProgress": "{done} de {total} completas",
+  "@routinesDashboardProgress": {
+    "placeholders": {
+      "done": { "type": "int" }, "total": { "type": "int" }
+    }
+  },
+  "routinesWeekdaysShort": "L,M,X,J,V,S,D",
+  "routinesCreateName": "Nombre",
+  "routinesCreateNameHint": "p. ej. Rutina de la mañana",
+  "routinesCreateDays": "Días en que toca",
+  "routinesCreateSteps": "Pasos",
+  "routinesCreateStepHint": "Añade un paso",
+  "routinesCreateSave": "Guardar rutina",
+  "routinesCreateErrName": "Ponle un nombre.",
+  "routinesCreateErrDays": "Elige al menos un día.",
+  "routinesCreateErrSteps": "Añade al menos un paso.",
+  "routinesCreateSharedOnWeb": "Es una rutina personal: solo la verás tú. Las rutinas para un equipo se crean en la web."
 }

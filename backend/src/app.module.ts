@@ -24,6 +24,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { ActivityModule } from './modules/activity/activity.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { RoutinesModule } from './modules/routines/routines.module';
 import { EventsModule } from './websocket/events.module';
 
 @Module({
@@ -50,6 +51,7 @@ import { EventsModule } from './websocket/events.module';
     ActivityModule,
     DashboardModule,
     ReportsModule,
+    RoutinesModule,
     EventsModule,
   ],
   controllers: [HealthController],

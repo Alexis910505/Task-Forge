@@ -16,6 +16,7 @@ import { NotificationsPage } from '@/pages/NotificationsPage';
 import { EditProfilePage } from '@/pages/EditProfilePage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { ReportsPage } from '@/pages/ReportsPage';
+import { RoutinesPage } from '@/pages/RoutinesPage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { TaskDetailPage } from '@/pages/TaskDetailPage';
 import { TeamsPage } from '@/pages/TeamsPage';
@@ -57,6 +58,7 @@ export default function App() {
         <Route path="/assets" element={<AssetsPage />} />
         <Route path="/users" element={<UsersRolesPage />} />
         <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/routines" element={<RoutinesPage />} />
         <Route path="/tasks/new" element={<CreateTaskPage />} />
         <Route path="/tasks/:taskId/edit" element={<CreateTaskPage />} />
         <Route path="/tasks/:taskId" element={<TaskDetailPage />} />

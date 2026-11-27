@@ -1146,4 +1146,93 @@ class AppLocalizationsEn extends AppLocalizations {
   String taskDetailRecurrenceStats(int done, int total) {
     return 'Done $done of $total times';
   }
+
+  @override
+  String get routinesTitle => 'Routines';
+
+  @override
+  String get routinesToday => 'Today';
+
+  @override
+  String get routinesNew => 'New routine';
+
+  @override
+  String get routinesNoneToday =>
+      'No routines due today. Tap “New routine” to create one.';
+
+  @override
+  String get routinesNoneTodayShort => 'None due today';
+
+  @override
+  String get routinesPersonal => 'Personal';
+
+  @override
+  String get routinesShared => 'Shared';
+
+  @override
+  String get routinesCompletedToday => 'Completed today!';
+
+  @override
+  String routinesStreak(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count-day streak',
+      one: '1-day streak',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String routinesRate(int rate) {
+    return '$rate% last 30 days';
+  }
+
+  @override
+  String get routinesNoRateYet => 'No history yet';
+
+  @override
+  String get routinesCheckFailed => 'Could not save. Please try again.';
+
+  @override
+  String get routinesDashboardCard => 'Today\'s routines';
+
+  @override
+  String routinesDashboardProgress(int done, int total) {
+    return '$done of $total completed';
+  }
+
+  @override
+  String get routinesWeekdaysShort => 'M,T,W,T,F,S,S';
+
+  @override
+  String get routinesCreateName => 'Name';
+
+  @override
+  String get routinesCreateNameHint => 'e.g. Morning routine';
+
+  @override
+  String get routinesCreateDays => 'Days it is due';
+
+  @override
+  String get routinesCreateSteps => 'Steps';
+
+  @override
+  String get routinesCreateStepHint => 'Add a step';
+
+  @override
+  String get routinesCreateSave => 'Save routine';
+
+  @override
+  String get routinesCreateErrName => 'Give it a name.';
+
+  @override
+  String get routinesCreateErrDays => 'Pick at least one day.';
+
+  @override
+  String get routinesCreateErrSteps => 'Add at least one step.';
+
+  @override
+  String get routinesCreateSharedOnWeb =>
+      'This is a personal routine: only you will see it. Routines for a team are created on the web.';
 }

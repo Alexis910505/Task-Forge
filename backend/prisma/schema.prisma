@@ -66,16 +66,17 @@ model Organization {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  roles       Role[]
-  users       User[]
-  departments Department[]
-  teams       Team[]
-  projects    Project[]
-  boards      Board[]
-  assets      Asset[]
+  roles           Role[]
+  users           User[]
+  departments     Department[]
+  teams           Team[]
+  projects        Project[]
+  boards          Board[]
+  assets          Asset[]
   assetCategories AssetCategoryOption[]
   assetStatuses   AssetStatusOption[]
-  activityLogs ActivityLog[]
+  activityLogs    ActivityLog[]
+  routines        Routine[]
 }
 
 model Role {
@@ -140,32 +141,35 @@ model TeamMember {
 }
 
 model User {
-  id             String       @id @default(cuid())
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  email          String
-  passwordHash   String
-  firstName      String
-  lastName       String
-  isActive       Boolean        @default(true)
-  employmentType EmploymentType @default(FULL_TIME)
-  roleId         String
-  role           Role         @relation(fields: [roleId], references: [id])
-  departmentId   String?
-  department     Department?  @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  teamMembers    TeamMember[]
-  refreshTokens  RefreshToken[]
-  tasksCreated   Task[]       @relation("TaskCreatedBy")
-  tasksAssigned  Task[]       @relation("TaskAssignee")
-  comments       TaskComment[]
-  attachments    Attachment[]
-  notifications  Notification[]
-  activityLogs   ActivityLog[]
-  ownedProjects  Project[]    @relation("ProjectOwner")
-  assetHistory   AssetHistory[]
-  assetPhotos    AssetPhoto[]
+  id              String            @id @default(cuid())
+  organizationId  String
+  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email           String
+  passwordHash    String
+  firstName       String
+  lastName        String
+  isActive        Boolean           @default(true)
+  employmentType  EmploymentType    @default(FULL_TIME)
+  roleId          String
+  role            Role              @relation(fields: [roleId], references: [id])
+  departmentId    String?
+  department      Department?       @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  teamMembers     TeamMember[]
+  refreshTokens   RefreshToken[]
+  tasksCreated    Task[]            @relation("TaskCreatedBy")
+  tasksAssigned   Task[]            @relation("TaskAssignee")
+  comments        TaskComment[]
+  attachments     Attachment[]
+  notifications   Notification[]
+  activityLogs    ActivityLog[]
+  ownedProjects   Project[]         @relation("ProjectOwner")
+  assetHistory    AssetHistory[]
+  assetPhotos     AssetPhoto[]
+  routinesOwned   Routine[]         @relation("RoutineOwner")
+  routineAssigned RoutineAssignee[]
+  routineRuns     RoutineRun[]
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -194,7 +198,7 @@ model Project {
   departmentId   String?
   department     Department?  @relation(fields: [departmentId], references: [id], onDelete: SetNull)
   ownerId        String?
-  owner            User?        @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  owner          User?        @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: SetNull)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   boards         Board[]
@@ -218,24 +222,24 @@ model Board {
 }
 
 model Task {
-  id           String         @id @default(cuid())
-  title        String
-  description  String?
-  boardId      String
-  board        Board          @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  parentTaskId String?
-  parentTask   Task?          @relation("TaskSubtasks", fields: [parentTaskId], references: [id], onDelete: Cascade)
-  subtasks     Task[]         @relation("TaskSubtasks")
-  status       TaskStatus     @default(BACKLOG)
-  priority     TaskPriority   @default(MEDIUM)
-  assigneeId   String?
-  assignee     User?          @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
-  createdById  String
-  createdBy    User           @relation("TaskCreatedBy", fields: [createdById], references: [id])
-  location     String?
-  dueDate      DateTime?
-  sortOrder    Int            @default(0)
-  completedAt  DateTime?
+  id               String          @id @default(cuid())
+  title            String
+  description      String?
+  boardId          String
+  board            Board           @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  parentTaskId     String?
+  parentTask       Task?           @relation("TaskSubtasks", fields: [parentTaskId], references: [id], onDelete: Cascade)
+  subtasks         Task[]          @relation("TaskSubtasks")
+  status           TaskStatus      @default(BACKLOG)
+  priority         TaskPriority    @default(MEDIUM)
+  assigneeId       String?
+  assignee         User?           @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  createdById      String
+  createdBy        User            @relation("TaskCreatedBy", fields: [createdById], references: [id])
+  location         String?
+  dueDate          DateTime?
+  sortOrder        Int             @default(0)
+  completedAt      DateTime?
   /// Repetición (solo tareas raíz). null = no se repite.
   recurrence       TaskRecurrence?
   /// Serie de ocurrencias: id de la primera tarea. Todas las repeticiones comparten este valor.
@@ -246,18 +250,18 @@ model Task {
   nextOccurrenceAt DateTime?
   /// Ocurrencia siguiente ya creada a partir de esta tarea.
   spawnedNextId    String?         @unique
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  comments     TaskComment[]
-  attachments  Attachment[]
-  activity     ActivityLog[]
-  taskAssets   TaskAsset[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  comments         TaskComment[]
+  attachments      Attachment[]
+  activity         ActivityLog[]
+  taskAssets       TaskAsset[]
 
+  @@unique([seriesId, occurrence])
   @@index([boardId])
   @@index([status])
   @@index([assigneeId])
   @@index([parentTaskId])
-  @@unique([seriesId, occurrence])
   @@index([nextOccurrenceAt])
 }
 
@@ -421,4 +425,82 @@ model AssetPhoto {
   createdAt DateTime @default(now())
 
   @@index([assetId])
+}
+
+/// Rutina: lista de pasos que se repite los días elegidos de la semana y se marca cada día.
+model Routine {
+  id             String            @id @default(cuid())
+  organizationId String
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  description    String?
+  /// Personal: solo la ve y la hace su creador. Compartida: la hacen los asignados (o todos si no hay asignados).
+  personal       Boolean           @default(true)
+  ownerId        String
+  owner          User              @relation("RoutineOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  /// Días en que toca, ISO: 1 = lunes … 7 = domingo.
+  weekdays       Int[]
+  isActive       Boolean           @default(true)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  items          RoutineItem[]
+  assignees      RoutineAssignee[]
+  runs           RoutineRun[]
+
+  @@index([organizationId])
+  @@index([ownerId])
+}
+
+model RoutineItem {
+  id        String            @id @default(cuid())
+  routineId String
+  routine   Routine           @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  title     String
+  sortOrder Int               @default(0)
+  createdAt DateTime          @default(now())
+  checks    RoutineRunCheck[]
+
+  @@index([routineId])
+}
+
+model RoutineAssignee {
+  routineId String
+  routine   Routine @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([routineId, userId])
+  @@index([userId])
+}
+
+/// Lo que hizo un usuario en una rutina un día concreto (fecha local del usuario, YYYY-MM-DD).
+model RoutineRun {
+  id          String            @id @default(cuid())
+  routineId   String
+  routine     Routine           @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        String
+  /// Pasos que tenía la rutina ese día (para calcular el % aunque luego cambie la lista).
+  totalItems  Int
+  completedAt DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  checks      RoutineRunCheck[]
+
+  @@unique([routineId, userId, date])
+  @@index([userId, date])
+}
+
+model RoutineRunCheck {
+  id        String       @id @default(cuid())
+  runId     String
+  run       RoutineRun   @relation(fields: [runId], references: [id], onDelete: Cascade)
+  /// null si el paso se borró después; el título queda guardado en itemTitle.
+  itemId    String?
+  item      RoutineItem? @relation(fields: [itemId], references: [id], onDelete: SetNull)
+  itemTitle String
+  checkedAt DateTime     @default(now())
+
+  @@unique([runId, itemId])
 }

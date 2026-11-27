@@ -1152,4 +1152,93 @@ class AppLocalizationsEs extends AppLocalizations {
   String taskDetailRecurrenceStats(int done, int total) {
     return 'Hecha $done de $total veces';
   }
+
+  @override
+  String get routinesTitle => 'Rutinas';
+
+  @override
+  String get routinesToday => 'Hoy';
+
+  @override
+  String get routinesNew => 'Nueva rutina';
+
+  @override
+  String get routinesNoneToday =>
+      'Hoy no te toca ninguna rutina. Pulsa «Nueva rutina» para crear una.';
+
+  @override
+  String get routinesNoneTodayShort => 'Hoy no te toca ninguna';
+
+  @override
+  String get routinesPersonal => 'Personal';
+
+  @override
+  String get routinesShared => 'Compartida';
+
+  @override
+  String get routinesCompletedToday => '¡Completada hoy!';
+
+  @override
+  String routinesStreak(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count días seguidos',
+      one: '1 día seguido',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String routinesRate(int rate) {
+    return '$rate% últimos 30 días';
+  }
+
+  @override
+  String get routinesNoRateYet => 'Aún sin historial';
+
+  @override
+  String get routinesCheckFailed => 'No se pudo guardar. Inténtalo de nuevo.';
+
+  @override
+  String get routinesDashboardCard => 'Rutinas de hoy';
+
+  @override
+  String routinesDashboardProgress(int done, int total) {
+    return '$done de $total completas';
+  }
+
+  @override
+  String get routinesWeekdaysShort => 'L,M,X,J,V,S,D';
+
+  @override
+  String get routinesCreateName => 'Nombre';
+
+  @override
+  String get routinesCreateNameHint => 'p. ej. Rutina de la mañana';
+
+  @override
+  String get routinesCreateDays => 'Días en que toca';
+
+  @override
+  String get routinesCreateSteps => 'Pasos';
+
+  @override
+  String get routinesCreateStepHint => 'Añade un paso';
+
+  @override
+  String get routinesCreateSave => 'Guardar rutina';
+
+  @override
+  String get routinesCreateErrName => 'Ponle un nombre.';
+
+  @override
+  String get routinesCreateErrDays => 'Elige al menos un día.';
+
+  @override
+  String get routinesCreateErrSteps => 'Añade al menos un paso.';
+
+  @override
+  String get routinesCreateSharedOnWeb =>
+      'Es una rutina personal: solo la verás tú. Las rutinas para un equipo se crean en la web.';
 }
