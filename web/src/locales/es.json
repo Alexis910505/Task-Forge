@@ -1029,7 +1029,6 @@
   "sso": {
     "signInMicrosoft": "Entrar con Microsoft",
     "microsoftHint": "Usa el mismo usuario y contraseña de tu computadora del trabajo.",
-    "orWithPassword": "o con correo y contraseña",
     "signingIn": "Entrando…",
     "errors": {
       "cancelled": "Se canceló el inicio de sesión con Microsoft.",
@@ -1040,7 +1039,8 @@
       "other_account": "Este usuario ya está vinculado a otra cuenta de Microsoft.",
       "tenant": "Esa cuenta de Microsoft no pertenece a la empresa.",
       "failed": "No se pudo entrar con Microsoft. Inténtalo de nuevo."
-    }
+    },
+    "or": "o"
   },
   "invite": {
     "hello": "Hola, {{name}}",

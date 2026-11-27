@@ -539,7 +539,7 @@
   "routinesCreateSharedOnWeb": "Es una rutina personal: solo la verás tú. Las rutinas para un equipo se crean en la web.",
   "ssoSignInMicrosoft": "Entrar con Microsoft",
   "ssoMicrosoftHint": "Usa el mismo usuario y contraseña de tu computadora del trabajo.",
-  "ssoOrWithPassword": "o con correo y contraseña",
+  "ssoOr": "o",
   "ssoErrorNotRegistered": "Tu cuenta de Microsoft no está dada de alta en Task Forge. Pide al encargado que te agregue.",
   "ssoErrorOtherAccount": "Este usuario ya está vinculado a otra cuenta de Microsoft.",
   "ssoErrorTenant": "Esa cuenta de Microsoft no pertenece a la empresa.",

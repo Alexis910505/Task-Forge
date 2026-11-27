@@ -1028,7 +1028,6 @@
   "sso": {
     "signInMicrosoft": "Sign in with Microsoft",
     "microsoftHint": "Use the same account and password as your work computer.",
-    "orWithPassword": "or with email and password",
     "signingIn": "Signing in…",
     "errors": {
       "cancelled": "Microsoft sign-in was cancelled.",
@@ -1039,7 +1038,8 @@
       "other_account": "This user is already linked to a different Microsoft account.",
       "tenant": "That Microsoft account does not belong to the company.",
       "failed": "Could not sign in with Microsoft. Please try again."
-    }
+    },
+    "or": "or"
   },
   "invite": {
     "hello": "Hi, {{name}}",

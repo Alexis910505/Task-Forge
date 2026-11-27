@@ -52,18 +52,6 @@ export function LoginPage() {
           </div>
         ) : null}
 
-        {microsoft ? (
-          <>
-            <MicrosoftButton large onClick={() => startMicrosoftSignIn()} />
-            <p className="mt-2 text-center text-xs text-on-surface-variant">{t('sso.microsoftHint')}</p>
-            <div className="my-6 flex items-center gap-3 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-              <span className="h-px flex-1 bg-outline-variant" />
-              {t('sso.orWithPassword')}
-              <span className="h-px flex-1 bg-outline-variant" />
-            </div>
-          </>
-        ) : null}
-
         <form className="space-y-4" onSubmit={onSubmit}>
           <div>
             <label htmlFor="email" className="mb-1 block text-xs font-bold uppercase text-on-surface-variant">
@@ -96,14 +84,23 @@ export function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className={[
-              'block w-full rounded py-3 text-center text-sm font-bold uppercase transition-opacity hover:opacity-90 disabled:opacity-60',
-              microsoft ? 'border border-primary text-primary' : 'bg-primary text-on-primary',
-            ].join(' ')}
+            className="block w-full rounded bg-primary py-3 text-center text-sm font-bold uppercase text-on-primary transition-opacity hover:opacity-90 disabled:opacity-60"
           >
             {loading ? t('login.signingIn') : t('login.signIn')}
           </button>
         </form>
+
+        {microsoft ? (
+          <>
+            <div className="my-6 flex items-center gap-3 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+              <span className="h-px flex-1 bg-outline-variant" />
+              {t('sso.or')}
+              <span className="h-px flex-1 bg-outline-variant" />
+            </div>
+            <MicrosoftButton large onClick={() => startMicrosoftSignIn()} />
+            <p className="mt-2 text-center text-xs text-on-surface-variant">{t('sso.microsoftHint')}</p>
+          </>
+        ) : null}
       </div>
     </div>
   );

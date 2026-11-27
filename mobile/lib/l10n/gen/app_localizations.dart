@@ -2342,11 +2342,11 @@ abstract class AppLocalizations {
   /// **'Use the same account and password as your work computer.'**
   String get ssoMicrosoftHint;
 
-  /// No description provided for @ssoOrWithPassword.
+  /// No description provided for @ssoOr.
   ///
   /// In en, this message translates to:
-  /// **'or with email and password'**
-  String get ssoOrWithPassword;
+  /// **'or'**
+  String get ssoOr;
 
   /// No description provided for @ssoErrorNotRegistered.
   ///

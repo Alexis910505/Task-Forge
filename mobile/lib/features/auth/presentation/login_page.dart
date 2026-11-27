@@ -204,61 +204,6 @@ class _LoginPageState extends State<LoginPage> {
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 28),
-                        if (_microsoft) ...[
-                          OutlinedButton(
-                            onPressed: _busy ? null : _signInWithMicrosoft,
-                            style: OutlinedButton.styleFrom(
-                              minimumSize: const Size.fromHeight(56),
-                              backgroundColor: Colors.white,
-                              foregroundColor: const Color(0xFF5E5E5E),
-                              side: const BorderSide(color: Color(0xFF8C8C8C)),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const _MicrosoftLogo(),
-                                const SizedBox(width: 12),
-                                Text(
-                                  l10n.ssoSignInMicrosoft,
-                                  style: const TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            l10n.ssoMicrosoftHint,
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Row(
-                            children: [
-                              const Expanded(child: Divider()),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                ),
-                                child: Text(
-                                  l10n.ssoOrWithPassword,
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    color: scheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              ),
-                              const Expanded(child: Divider()),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-                        ],
                         Text(
                           l10n.emailLabel.toUpperCase(),
                           style: theme.textTheme.labelLarge?.copyWith(
@@ -345,6 +290,61 @@ class _LoginPageState extends State<LoginPage> {
                                   )
                                   : Text(l10n.submitLogin.toUpperCase()),
                         ),
+                        if (_microsoft) ...[
+                          const SizedBox(height: 24),
+                          Row(
+                            children: [
+                              const Expanded(child: Divider()),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
+                                child: Text(
+                                  l10n.ssoOr,
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: scheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                              const Expanded(child: Divider()),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          OutlinedButton(
+                            onPressed: _busy ? null : _signInWithMicrosoft,
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size.fromHeight(56),
+                              backgroundColor: Colors.white,
+                              foregroundColor: const Color(0xFF5E5E5E),
+                              side: const BorderSide(color: Color(0xFF8C8C8C)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const _MicrosoftLogo(),
+                                const SizedBox(width: 12),
+                                Text(
+                                  l10n.ssoSignInMicrosoft,
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n.ssoMicrosoftHint,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),

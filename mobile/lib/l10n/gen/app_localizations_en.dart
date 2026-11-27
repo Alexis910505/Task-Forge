@@ -1244,7 +1244,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Use the same account and password as your work computer.';
 
   @override
-  String get ssoOrWithPassword => 'or with email and password';
+  String get ssoOr => 'or';
 
   @override
   String get ssoErrorNotRegistered =>

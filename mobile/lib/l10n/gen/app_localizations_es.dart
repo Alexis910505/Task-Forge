@@ -1250,7 +1250,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Usa el mismo usuario y contraseña de tu computadora del trabajo.';
 
   @override
-  String get ssoOrWithPassword => 'o con correo y contraseña';
+  String get ssoOr => 'o';
 
   @override
   String get ssoErrorNotRegistered =>
