@@ -860,7 +860,10 @@
       "WEEKLY": "When completed, an identical task is created in To do 1 week later.",
       "MONTHLY": "When completed, an identical task is created in To do 1 month later.",
       "YEARLY": "When completed, an identical task is created in To do 1 year later."
-    }
+    },
+    "deptOwnHint": "Your department. Tasks you create belong to your department.",
+    "teamOwnHint": "“No team” = individual task. You can also pick one of your teams.",
+    "teamOwnNone": "You are not in any team: the task will be individual."
   },
   "taskDetail": {
     "breadcrumbTasks": "Tasks",

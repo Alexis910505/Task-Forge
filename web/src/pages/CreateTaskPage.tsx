@@ -11,6 +11,8 @@ import {
 } from '@/components/tasks/TaskAttachmentPicker';
 import { apiFetch, apiJson } from '@/lib/api';
 import { roleLabel } from '@/lib/roleLabels';
+import { useAuth } from '@/auth/AuthContext';
+import { userHasPermission } from '@/lib/rolePermissions';
 import { clearTaskDraft, loadTaskDraft, saveTaskDraft } from '@/lib/taskDraft';
 import {
   apiIsoToLocalDateInput,
@@ -57,6 +59,13 @@ const RECURRENCES = ['', 'DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'] as const;
 
 export function CreateTaskPage() {
   const { t } = useTranslation();
+  const { user: me } = useAuth();
+  /**
+   * Sin «Asignar tareas» la persona solo crea tareas para sí misma (o «para todos»):
+   * su departamento viene fijo y solo elige entre sus propios equipos.
+   */
+  const ownScope = !userHasPermission(me, 'tasks:assign');
+  const myDepartmentId = me?.department?.id ?? '';
   const navigate = useNavigate();
   const { taskId: editTaskId } = useParams<{ taskId?: string }>();
   const isEdit = Boolean(editTaskId);
@@ -192,15 +201,21 @@ export function CreateTaskPage() {
 
   const boardOptions = useMemo(() => {
     return projects.flatMap((p) => {
-      if (departmentId && p.departmentId !== departmentId) return [];
+      if (!ownScope && departmentId && p.departmentId !== departmentId) return [];
       return p.boards.map((b) => ({ id: b.id, label: p.name, project: p }));
     });
-  }, [projects, departmentId]);
+  }, [projects, departmentId, ownScope]);
+
+  const myTeams = useMemo(
+    () => teams.filter((tm) => tm.members.some((m) => m.user.id === me?.id)),
+    [teams, me?.id],
+  );
 
   const filteredTeams = useMemo(() => {
+    if (ownScope) return myTeams;
     if (!departmentId) return teams;
     return teams.filter((tm) => tm.departmentId === departmentId || !tm.departmentId);
-  }, [teams, departmentId]);
+  }, [teams, departmentId, ownScope, myTeams]);
 
   const lockedProjectName = projects.find((p) => p.boards.some((b) => b.id === boardId))?.name ?? '';
 
@@ -227,12 +242,18 @@ export function CreateTaskPage() {
   }, [departmentId, boardOptions, boardId, isEdit]);
 
   useEffect(() => {
-    if (!teamId) return;
+    if (!teamId || ownScope) return;
     const team = teams.find((tm) => tm.id === teamId);
     if (team?.departmentId && team.departmentId !== departmentId) {
       setDepartmentId(team.departmentId);
     }
-  }, [teamId, teams, departmentId]);
+  }, [teamId, teams, departmentId, ownScope]);
+
+  useEffect(() => {
+    if (!ownScope) return;
+    if (departmentId !== myDepartmentId) setDepartmentId(myDepartmentId);
+    if (teamId && !myTeams.some((tm) => tm.id === teamId)) setTeamId('');
+  }, [ownScope, departmentId, myDepartmentId, teamId, myTeams]);
 
   async function uploadPendingFiles(taskId: string): Promise<string | null> {
     if (pendingAttachments.length === 0) return null;
@@ -579,6 +600,11 @@ export function CreateTaskPage() {
                 <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
                   {t('createTask.department')}
                 </label>
+                {ownScope ? (
+                  <p className="rounded-lg border border-outline-variant bg-surface-container-low p-3 text-sm font-semibold text-on-surface">
+                    {me?.department?.name ?? t('createTask.deptNone')}
+                  </p>
+                ) : (
                 <div className="relative">
                   <select
                     value={departmentId}
@@ -599,6 +625,10 @@ export function CreateTaskPage() {
                     expand_more
                   </span>
                 </div>
+                )}
+                {ownScope ? (
+                  <p className="mt-1 text-[11px] text-on-surface-variant">{t('createTask.deptOwnHint')}</p>
+                ) : null}
               </div>
               <div>
                 <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
@@ -621,6 +651,11 @@ export function CreateTaskPage() {
                     expand_more
                   </span>
                 </div>
+                {ownScope ? (
+                  <p className="mt-1 text-[11px] text-on-surface-variant">
+                    {myTeams.length ? t('createTask.teamOwnHint') : t('createTask.teamOwnNone')}
+                  </p>
+                ) : null}
               </div>
               <AssigneeSearch users={users} value={assigneeId} onChange={setAssigneeId} />
               <div>

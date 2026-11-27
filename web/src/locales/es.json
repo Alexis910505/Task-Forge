@@ -860,7 +860,10 @@
       "WEEKLY": "Cuando se complete, se creará otra igual en Por hacer 1 semana después.",
       "MONTHLY": "Cuando se complete, se creará otra igual en Por hacer 1 mes después.",
       "YEARLY": "Cuando se complete, se creará otra igual en Por hacer 1 año después."
-    }
+    },
+    "deptOwnHint": "Tu departamento. Las tareas que creas son de tu departamento.",
+    "teamOwnHint": "«Sin equipo» = tarea individual. También puedes elegir uno de tus equipos.",
+    "teamOwnNone": "No perteneces a ningún equipo: la tarea será individual."
   },
   "taskDetail": {
     "breadcrumbTasks": "Tareas",
