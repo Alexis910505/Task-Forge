@@ -31,6 +31,21 @@ export type PermissionKey = (typeof ALL_PERMISSIONS)[number];
 /** Permisos por defecto de roles de sistema (fallback / documentación). */
 export const ROLE_PERMISSIONS = {
   ADMIN: [...ALL_PERMISSIONS],
+  /** Control informático: usuarios y accesos, estructura, organización, activos y auditoría. */
+  IT: [
+    'users:read',
+    'users:write',
+    'departments:read',
+    'departments:write',
+    'teams:read',
+    'teams:write',
+    'notifications:read',
+    'activity:read',
+    'assets:read',
+    'assets:write',
+    'organizations:read',
+    'organizations:write',
+  ],
   DEPT_HEAD: [
     'users:read',
     'users:write',
@@ -122,11 +137,24 @@ export type RoleNameKey = keyof typeof ROLE_PERMISSIONS;
 /** Rank: menor número = más autoridad. Roles personalizados no tienen rank. */
 export const SYSTEM_ROLE_RANK: Record<RoleNameKey, number> = {
   ADMIN: 0,
-  DEPT_HEAD: 1,
-  SUPERVISOR: 2,
-  TEAM_LEAD: 3,
-  WORKER: 4,
+  IT: 1,
+  DEPT_HEAD: 2,
+  SUPERVISOR: 3,
+  TEAM_LEAD: 4,
+  WORKER: 5,
 };
+
+/** Super Admin o IT: crean usuarios, cambian correo/contraseña y gestionan roles personalizados. */
+export function isAccessManagerRole(role: string | undefined): boolean {
+  return role === 'ADMIN' || role === 'IT';
+}
+
+/** Primera página a la que puede entrar el usuario (IT no tiene Panel: va a Usuarios). */
+export function homePathFor(user: PermissionBearer): string {
+  if (userHasPermission(user, 'dashboard:read')) return '/dashboard';
+  if (userHasPermission(user, 'users:read')) return '/users';
+  return '/profile';
+}
 
 export function getRoleRank(role: string | undefined): number | null {
   if (!role || !(role in SYSTEM_ROLE_RANK)) {
@@ -141,6 +169,9 @@ export function canManageOtherUserByHierarchy(
 ): boolean {
   if (actorRole === 'ADMIN') {
     return true;
+  }
+  if (actorRole === 'IT') {
+    return targetRole !== 'ADMIN' && targetRole !== 'IT';
   }
   const actorRank = getRoleRank(actorRole);
   const targetRank = getRoleRank(targetRole);
@@ -185,6 +216,9 @@ export function canAssignRoleByHierarchy(
 ): boolean {
   if (actorRole === 'ADMIN') {
     return true;
+  }
+  if (actorRole === 'IT') {
+    return newRoleName !== 'ADMIN' && newRoleName !== 'IT';
   }
   const actorRank = getRoleRank(actorRole);
   const newRank = getRoleRank(newRoleName);

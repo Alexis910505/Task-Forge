@@ -5,6 +5,7 @@ import * as crypto from 'crypto';
 import { InvitationsService } from '../auth/invitations.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import {
+  isAccessManagerRole,
   canAssignRole,
   canManageOtherUserByHierarchy,
   canManageUserByHierarchy,
@@ -273,12 +274,15 @@ export class UsersService {
     });
   }
 
-  async create(organizationId: string, dto: CreateUserDto, inviterName?: string) {
+  async create(organizationId: string, dto: CreateUserDto, inviterName?: string, actorRole = 'ADMIN') {
     const role = await this.prisma.role.findFirst({
       where: { id: dto.roleId, organizationId },
     });
     if (!role) {
       throw new NotFoundException('Rol no válido para la organización');
+    }
+    if (!canAssignRole(actorRole, role.name)) {
+      throw new ForbiddenException('No puedes crear usuarios con ese rol');
     }
     if (dto.departmentId) {
       const dept = await this.prisma.department.findFirst({
@@ -338,6 +342,8 @@ export class UsersService {
 
     const isSelf = actor.userId === id;
     const isAdmin = actor.role === 'ADMIN';
+    /** Super Admin o IT: pueden cambiar correo y contraseña de quien gestionan. */
+    const managesAccess = isAccessManagerRole(actor.role);
 
     let nextRoleId = target.role.id;
     if (dto.roleId) {
@@ -377,8 +383,8 @@ export class UsersService {
     }
 
     if (email !== undefined) {
-      if (!isAdmin) {
-        throw new ForbiddenException('Solo el administrador puede cambiar el correo');
+      if (!managesAccess) {
+        throw new ForbiddenException('Solo el Super Admin o IT pueden cambiar el correo');
       }
       const normalized = email.toLowerCase().trim();
       const clash = await this.prisma.user.findFirst({
@@ -396,9 +402,9 @@ export class UsersService {
     }
 
     if (password) {
-      if (!isAdmin) {
+      if (!managesAccess) {
         throw new ForbiddenException(
-          'Solo el administrador puede cambiar la contraseña de otros usuarios',
+          'Solo el Super Admin o IT pueden cambiar la contraseña de otros usuarios',
         );
       }
       data.passwordHash = await bcrypt.hash(password, 10);

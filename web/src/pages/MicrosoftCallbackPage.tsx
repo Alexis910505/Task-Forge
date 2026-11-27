@@ -36,7 +36,7 @@ export function MicrosoftCallbackPage() {
         });
         if (!res.ok) return fail('session');
         await completeLogin(await res.json());
-        navigate('/dashboard', { replace: true });
+        navigate('/', { replace: true });
       } catch {
         fail('failed');
       }

@@ -407,7 +407,7 @@
   "profileHelpSupport": "Help & support",
   "profileSecurityPrivacy": "Security & privacy",
   "profileComingSoon": "Coming soon",
-  "profileRoleAdmin": "Administrator",
+  "profileRoleAdmin": "Super Admin",
   "profileRoleDeptHead": "Department head",
   "profileRoleSupervisor": "Supervisor",
   "profileRoleTeamLead": "Team lead",
@@ -545,5 +545,6 @@
   "ssoErrorTenant": "That Microsoft account does not belong to the company.",
   "ssoErrorSession": "The session expired. Try again.",
   "ssoErrorCancelled": "Microsoft sign-in was cancelled.",
-  "ssoErrorFailed": "Could not sign in with Microsoft. Please try again."
+  "ssoErrorFailed": "Could not sign in with Microsoft. Please try again.",
+  "profileRoleIt": "IT"
 }

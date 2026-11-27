@@ -492,7 +492,8 @@
     "hidePassword": "Hide password",
     "selectRole": "Role",
     "roleNames": {
-      "ADMIN": "Administrator",
+      "ADMIN": "Super Admin",
+      "IT": "IT",
       "DEPT_HEAD": "Department head",
       "SUPERVISOR": "Supervisor",
       "TEAM_LEAD": "Team lead",

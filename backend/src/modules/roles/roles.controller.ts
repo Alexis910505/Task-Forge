@@ -29,15 +29,15 @@ export class RolesController {
   }
 
   @Post()
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'IT')
   @RequirePermissions('users:write')
   @ApiOperation({ summary: 'Crear rol custom (solo administrador)' })
   create(@Req() req: Request & { user: RequestUser }, @Body() dto: CreateRoleDto) {
-    return this.roles.create(req.user.organizationId, dto);
+    return this.roles.create(req.user.organizationId, dto, req.user.role);
   }
 
   @Patch(':id')
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'IT')
   @RequirePermissions('users:write')
   @ApiOperation({ summary: 'Actualizar nombre o permisos del rol (solo administrador)' })
   update(
@@ -45,14 +45,14 @@ export class RolesController {
     @Param('id') id: string,
     @Body() dto: UpdateRoleDto,
   ) {
-    return this.roles.update(req.user.organizationId, id, dto);
+    return this.roles.update(req.user.organizationId, id, dto, req.user.role);
   }
 
   @Delete(':id')
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'IT')
   @RequirePermissions('users:write')
   @ApiOperation({ summary: 'Eliminar rol sin usuarios, excepto ADMIN (solo administrador)' })
   remove(@Req() req: Request & { user: RequestUser }, @Param('id') id: string) {
-    return this.roles.remove(req.user.organizationId, id);
+    return this.roles.remove(req.user.organizationId, id, req.user.role);
   }
 }

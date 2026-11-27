@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -50,7 +51,7 @@ export class RolesService {
     });
   }
 
-  async create(organizationId: string, dto: CreateRoleDto) {
+  async create(organizationId: string, dto: CreateRoleDto, actorRole?: string) {
     const name = dto.name.trim();
     if (name.length < 2) {
       throw new BadRequestException('El nombre debe tener al menos 2 caracteres');
@@ -59,7 +60,10 @@ export class RolesService {
     if (reserved && name.toUpperCase() === name) {
       throw new ConflictException('Ese nombre está reservado para un rol de sistema');
     }
-    const permissions = withInventoryPermissions(sanitizePermissions(dto.permissions));
+    const permissions = this.limitForActor(
+      withInventoryPermissions(sanitizePermissions(dto.permissions)),
+      actorRole,
+    );
     try {
       return await this.prisma.role.create({
         data: {
@@ -83,8 +87,9 @@ export class RolesService {
     }
   }
 
-  async update(organizationId: string, id: string, dto: UpdateRoleDto) {
+  async update(organizationId: string, id: string, dto: UpdateRoleDto, actorRole?: string) {
     const role = await this.ensure(organizationId, id);
+    this.assertActorCanEdit(role, actorRole);
     const data: { name?: string; permissions?: string[] } = {};
 
     if (dto.name !== undefined) {
@@ -99,7 +104,10 @@ export class RolesService {
     }
 
     if (dto.permissions !== undefined) {
-      data.permissions = withInventoryPermissions(sanitizePermissions(dto.permissions));
+      data.permissions = this.limitForActor(
+        withInventoryPermissions(sanitizePermissions(dto.permissions)),
+        actorRole,
+      );
     }
 
     try {
@@ -121,8 +129,9 @@ export class RolesService {
     }
   }
 
-  async remove(organizationId: string, id: string) {
+  async remove(organizationId: string, id: string, actorRole?: string) {
     const role = await this.ensure(organizationId, id);
+    this.assertActorCanEdit(role, actorRole);
     if (role.name === 'ADMIN') {
       throw new BadRequestException(
         'El rol de administrador no se puede eliminar: la organización quedaría sin administración',
@@ -144,6 +153,20 @@ export class RolesService {
       isSystem: true,
       permissions: [...SYSTEM_ROLE_PERMISSIONS[name]],
     }));
+  }
+
+  /** IT solo gestiona roles personalizados; los de sistema son del Super Admin. */
+  private assertActorCanEdit(role: { isSystem: boolean }, actorRole?: string) {
+    if (actorRole === 'IT' && role.isSystem) {
+      throw new ForbiddenException('Los roles de fábrica solo los puede cambiar el Super Admin');
+    }
+  }
+
+  /** IT no puede dar a un rol personalizado permisos que él mismo no tiene (evita escalar). */
+  private limitForActor(permissions: PermissionKey[], actorRole?: string): PermissionKey[] {
+    if (actorRole !== 'IT') return permissions;
+    const allowed = new Set<string>(SYSTEM_ROLE_PERMISSIONS.IT);
+    return permissions.filter((p) => allowed.has(p) || p === 'assets:read' || p === 'assets:write');
   }
 
   private async ensure(organizationId: string, id: string) {

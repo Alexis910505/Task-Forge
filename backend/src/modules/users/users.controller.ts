@@ -55,11 +55,16 @@ export class UsersController {
   }
 
   @Post()
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'IT')
   @RequirePermissions('users:write')
-  @ApiOperation({ summary: 'Crear usuario (solo administrador)' })
+  @ApiOperation({ summary: 'Crear usuario (Super Admin o IT)' })
   async create(@Req() req: Request & { user: RequestUser }, @Body() dto: CreateUserDto) {
-    return this.users.create(req.user.organizationId, dto, await this.users.displayName(req.user.userId));
+    return this.users.create(
+      req.user.organizationId,
+      dto,
+      await this.users.displayName(req.user.userId),
+      req.user.role,
+    );
   }
 
   @Post(':id/invitation')

@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { homePathFor } from '@/lib/rolePermissions';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/auth/AuthContext';
 import { BrandLogo } from '@/components/branding/BrandLogo';
@@ -41,7 +42,7 @@ function BootScreen() {
 }
 
 export default function App() {
-  const { ready, isAuthenticated } = useAuth();
+  const { ready, isAuthenticated, user } = useAuth();
 
   if (!ready) {
     return <BootScreen />;
@@ -49,11 +50,11 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
+      <Route path="/login" element={isAuthenticated ? <Navigate to={homePathFor(user)} replace /> : <LoginPage />} />
       <Route path="/auth/callback" element={<MicrosoftCallbackPage />} />
       <Route path="/invite/:token" element={<InvitePage />} />
       <Route element={isAuthenticated ? <AppShell /> : <Navigate to="/login" replace />}>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<Navigate to={homePathFor(user)} replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/activity" element={<ActivityPage />} />
         <Route path="/kanban" element={<KanbanPage />} />

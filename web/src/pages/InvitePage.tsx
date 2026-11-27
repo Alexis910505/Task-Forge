@@ -54,7 +54,7 @@ export function InvitePage() {
       return setError(res.status === 410 ? t('invite.expired') : t('invite.activateFailed'));
     }
     await completeLogin(await res.json());
-    navigate('/dashboard', { replace: true });
+    navigate('/', { replace: true });
   }
 
   const input =

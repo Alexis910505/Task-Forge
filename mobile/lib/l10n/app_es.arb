@@ -407,7 +407,7 @@
   "profileHelpSupport": "Ayuda y soporte",
   "profileSecurityPrivacy": "Seguridad y privacidad",
   "profileComingSoon": "Disponible próximamente",
-  "profileRoleAdmin": "Administrador",
+  "profileRoleAdmin": "Super Admin",
   "profileRoleDeptHead": "Jefe de departamento",
   "profileRoleSupervisor": "Supervisor",
   "profileRoleTeamLead": "Jefe de equipo",
@@ -545,5 +545,6 @@
   "ssoErrorTenant": "Esa cuenta de Microsoft no pertenece a la empresa.",
   "ssoErrorSession": "La sesión caducó. Inténtalo de nuevo.",
   "ssoErrorCancelled": "Se canceló el inicio de sesión con Microsoft.",
-  "ssoErrorFailed": "No se pudo entrar con Microsoft. Inténtalo de nuevo."
+  "ssoErrorFailed": "No se pudo entrar con Microsoft. Inténtalo de nuevo.",
+  "profileRoleIt": "IT (informática)"
 }

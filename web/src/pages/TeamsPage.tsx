@@ -76,7 +76,7 @@ export function TeamsPage() {
   const canWrite = userHasPermission(user, 'teams:write');
   const canListUsers = userHasPermission(user, 'users:read');
   const canCreateTeam =
-    canWrite && (user?.role?.name === 'ADMIN' || user?.role?.name === 'DEPT_HEAD');
+    canWrite && (user?.role?.name === 'ADMIN' || user?.role?.name === 'IT' || user?.role?.name === 'DEPT_HEAD');
 
   const [teams, setTeams] = useState<TeamRow[]>([]);
   const [departments, setDepartments] = useState<DeptOption[]>([]);

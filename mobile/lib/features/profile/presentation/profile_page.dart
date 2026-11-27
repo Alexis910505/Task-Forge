@@ -64,6 +64,8 @@ class _ProfilePageState extends State<ProfilePage> {
     switch (role) {
       case 'ADMIN':
         return l10n.profileRoleAdmin;
+      case 'IT':
+        return l10n.profileRoleIt;
       case 'DEPT_HEAD':
         return l10n.profileRoleDeptHead;
       case 'SUPERVISOR':

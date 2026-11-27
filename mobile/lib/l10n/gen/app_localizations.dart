@@ -1787,7 +1787,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileRoleAdmin.
   ///
   /// In en, this message translates to:
-  /// **'Administrator'**
+  /// **'Super Admin'**
   String get profileRoleAdmin;
 
   /// No description provided for @profileRoleDeptHead.
@@ -2383,6 +2383,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not sign in with Microsoft. Please try again.'**
   String get ssoErrorFailed;
+
+  /// No description provided for @profileRoleIt.
+  ///
+  /// In en, this message translates to:
+  /// **'IT'**
+  String get profileRoleIt;
 }
 
 class _AppLocalizationsDelegate

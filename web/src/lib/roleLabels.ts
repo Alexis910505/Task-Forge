@@ -6,6 +6,7 @@ type RoleLabelInput = {
 
 const SYSTEM_ROLE_NAMES = new Set([
   'ADMIN',
+  'IT',
   'DEPT_HEAD',
   'SUPERVISOR',
   'TEAM_LEAD',

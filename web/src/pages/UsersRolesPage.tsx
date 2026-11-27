@@ -7,6 +7,7 @@ import {
   canAssignRoleByHierarchy,
   canDeleteUserByHierarchy,
   canEditUserByHierarchy,
+  isAccessManagerRole,
   userHasPermission,
 } from '@/lib/rolePermissions';
 import { permissionHint, permissionLabel, permissionsForDisplay } from '@/lib/permissionLabels';
@@ -82,11 +83,14 @@ function roleBadgeClass(roleName: string): string {
 export function UsersRolesPage() {
   const { t } = useTranslation();
   const { user: currentUser, refreshProfile } = useAuth();
-  const canWriteRoles =
-    currentUser?.role?.name === 'ADMIN' && userHasPermission(currentUser, 'users:write');
-  const canCreateUsers = currentUser?.role?.name === 'ADMIN';
-  // Solo el administrador puede cambiar correo y contraseña de otros usuarios.
-  const canEditCredentials = currentUser?.role?.name === 'ADMIN';
+  const managesAccess = isAccessManagerRole(currentUser?.role?.name);
+  const canWriteRoles = managesAccess && userHasPermission(currentUser, 'users:write');
+  const canCreateUsers = managesAccess;
+  // Super Admin o IT pueden cambiar correo y contraseña de otros usuarios.
+  const canEditCredentials = managesAccess;
+  /** IT gestiona solo roles personalizados; los de fábrica son del Super Admin. */
+  const canEditRole = (r: { isSystem: boolean }) =>
+    currentUser?.role?.name === 'ADMIN' || (canWriteRoles && !r.isSystem);
   const canManageUsers = userHasPermission(currentUser, 'users:write');
   const isAdmin = currentUser?.role?.name === 'ADMIN';
   const [users, setUsers] = useState<UserRow[]>([]);
@@ -555,7 +559,7 @@ export function UsersRolesPage() {
   }
 
   async function togglePermissionInMatrix(role: RoleRow, perm: string) {
-    if (!canWriteRoles) return;
+    if (!canWriteRoles || !canEditRole(role)) return;
     const next = new Set(role.permissions ?? []);
     if (next.has(perm)) next.delete(perm);
     else next.add(perm);
@@ -923,7 +927,7 @@ export function UsersRolesPage() {
                 <p className="text-xs text-on-surface-variant">
                   {t('users.rolePermCount', { count: r.permissions?.length ?? 0 })}
                 </p>
-                {canWriteRoles ? (
+                {canWriteRoles && canEditRole(r) ? (
                   <div className="mt-auto flex gap-2 pt-2">
                     <button
                       type="button"
@@ -984,7 +988,7 @@ export function UsersRolesPage() {
                     {roles.map((role) => {
                       const has = (role.permissions ?? []).includes(perm);
                       const busy = permSavingId === role.id;
-                      if (!canWriteRoles) {
+                      if (!canWriteRoles || !canEditRole(role)) {
                         return (
                           <td key={role.id} className="px-3 py-2 text-center">
                             {has ? (

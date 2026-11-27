@@ -936,7 +936,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get profileComingSoon => 'Disponible próximamente';
 
   @override
-  String get profileRoleAdmin => 'Administrador';
+  String get profileRoleAdmin => 'Super Admin';
 
   @override
   String get profileRoleDeptHead => 'Jefe de departamento';
@@ -1274,4 +1274,7 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get ssoErrorFailed =>
       'No se pudo entrar con Microsoft. Inténtalo de nuevo.';
+
+  @override
+  String get profileRoleIt => 'IT (informática)';
 }

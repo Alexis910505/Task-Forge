@@ -28,6 +28,7 @@ export type PermissionKey =
 /** Códigos de los roles sembrados al crear una organización (orden jerárquico). */
 export const SYSTEM_ROLE_NAMES = [
   'ADMIN',
+  'IT',
   'DEPT_HEAD',
   'SUPERVISOR',
   'TEAM_LEAD',
@@ -42,11 +43,20 @@ export type SystemRoleName = (typeof SYSTEM_ROLE_NAMES)[number];
  */
 export const SYSTEM_ROLE_RANK: Record<SystemRoleName, number> = {
   ADMIN: 0,
-  DEPT_HEAD: 1,
-  SUPERVISOR: 2,
-  TEAM_LEAD: 3,
-  WORKER: 4,
+  IT: 1,
+  DEPT_HEAD: 2,
+  SUPERVISOR: 3,
+  TEAM_LEAD: 4,
+  WORKER: 5,
 };
+
+/**
+ * Roles que administran accesos: crean usuarios, cambian correo/contraseña y
+ * gestionan roles personalizados. IT no puede tocar al Super Admin ni a otro IT.
+ */
+export function isAccessManagerRole(role: string | undefined): boolean {
+  return role === 'ADMIN' || role === 'IT';
+}
 
 export function getRoleRank(role: string | undefined): number | null {
   if (!role || !(role in SYSTEM_ROLE_RANK)) {
@@ -68,13 +78,19 @@ export function canManageUserByHierarchy(
   return canManageOtherUserByHierarchy(actorRole, targetRole);
 }
 
-/** Gestión de terceros: ADMIN cualquiera; resto solo roles de sistema estrictamente inferiores. */
+/**
+ * Gestión de terceros: ADMIN cualquiera; IT cualquiera salvo ADMIN/IT (incluidos roles
+ * personalizados); resto solo roles de sistema estrictamente inferiores.
+ */
 export function canManageOtherUserByHierarchy(
   actorRole: string,
   targetRole: string,
 ): boolean {
   if (actorRole === 'ADMIN') {
     return true;
+  }
+  if (actorRole === 'IT') {
+    return targetRole !== 'ADMIN' && targetRole !== 'IT';
   }
   const actorRank = getRoleRank(actorRole);
   const targetRank = getRoleRank(targetRole);
@@ -88,6 +104,10 @@ export function canManageOtherUserByHierarchy(
 export function canAssignRole(actorRole: string, newRoleName: string): boolean {
   if (actorRole === 'ADMIN') {
     return true;
+  }
+  if (actorRole === 'IT') {
+    // Cualquier rol por debajo de IT, incluidos los personalizados.
+    return newRoleName !== 'ADMIN' && newRoleName !== 'IT';
   }
   const actorRank = getRoleRank(actorRole);
   const newRank = getRoleRank(newRoleName);
@@ -129,6 +149,25 @@ const PERM_SET = new Set<string>(ALL_PERMISSIONS);
 /** Permisos por defecto de cada rol de sistema (seed / bootstrap). */
 export const SYSTEM_ROLE_PERMISSIONS: Record<SystemRoleName, PermissionKey[]> = {
   ADMIN: [...ALL_PERMISSIONS],
+  /**
+   * IT: control informático. Usuarios y accesos, roles personalizados, estructura
+   * (departamentos y equipos), ajustes de la organización, activos y auditoría.
+   * No ve tareas, proyectos, reportes ni rutinas compartidas.
+   */
+  IT: [
+    'users:read',
+    'users:write',
+    'departments:read',
+    'departments:write',
+    'teams:read',
+    'teams:write',
+    'notifications:read',
+    'activity:read',
+    'assets:read',
+    'assets:write',
+    'organizations:read',
+    'organizations:write',
+  ],
   /** Jefe de departamento: gestiona su depto y todos sus equipos. */
   DEPT_HEAD: [
     'users:read',

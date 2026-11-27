@@ -80,7 +80,7 @@ export function DepartmentsPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const canWrite = userHasPermission(user, 'departments:write');
-  const canCreateDepartment = user?.role?.name === 'ADMIN' && canWrite;
+  const canCreateDepartment = (user?.role?.name === 'ADMIN' || user?.role?.name === 'IT') && canWrite;
   const canManageManagers =
     userHasPermission(user, 'users:read') && userHasPermission(user, 'users:write');
   const canManageTeams =
