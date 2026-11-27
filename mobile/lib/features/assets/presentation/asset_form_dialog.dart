@@ -65,18 +65,22 @@ Future<AssetFormResult?> showAssetFormDialog({
                 children: [
                   TextField(
                     controller: nameCtrl,
-                    decoration: InputDecoration(labelText: l10n.assetsFieldName),
+                    decoration: InputDecoration(
+                      labelText: l10n.assetsFieldName,
+                    ),
                     textCapitalization: TextCapitalization.sentences,
                   ),
                   const SizedBox(height: 8),
                   TextField(
                     controller: codeCtrl,
-                    decoration: InputDecoration(labelText: l10n.assetsFieldCode),
+                    decoration: InputDecoration(
+                      labelText: l10n.assetsFieldCode,
+                    ),
                     textCapitalization: TextCapitalization.characters,
                   ),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
-                    value: category,
+                    initialValue: category,
                     decoration: InputDecoration(
                       labelText: l10n.assetsFieldCategory,
                     ),
@@ -96,7 +100,7 @@ Future<AssetFormResult?> showAssetFormDialog({
                   ),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
-                    value: status,
+                    initialValue: status,
                     decoration: InputDecoration(
                       labelText: l10n.assetsFieldStatus,
                     ),
