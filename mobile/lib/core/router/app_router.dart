@@ -16,6 +16,8 @@ import '../../features/notifications/presentation/notifications_page.dart';
 import '../../features/organization/presentation/organization_page.dart';
 import '../../features/profile/presentation/profile_page.dart';
 import '../../features/reports/presentation/reports_page.dart';
+import '../../features/routines/presentation/routine_create_page.dart';
+import '../../features/routines/presentation/routines_page.dart';
 import '../../features/settings/presentation/settings_page.dart';
 import '../../features/shell/app_shell.dart';
 import '../../features/tasks/presentation/task_activity_page.dart';
@@ -125,6 +127,14 @@ void initAppRouter() {
           final id = state.pathParameters['assetId']!;
           return AssetDetailPage(assetId: id);
         },
+      ),
+      GoRoute(
+        path: '/routines',
+        builder: (context, state) => const RoutinesPage(),
+      ),
+      GoRoute(
+        path: '/routines/new',
+        builder: (context, state) => const RoutineCreatePage(),
       ),
       GoRoute(
         path: '/tasks/new',

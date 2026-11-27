@@ -496,5 +496,45 @@
     "placeholders": {
       "done": { "type": "int" }, "total": { "type": "int" }
     }
-  }
+  },
+  "routinesTitle": "Routines",
+  "routinesToday": "Today",
+  "routinesNew": "New routine",
+  "routinesNoneToday": "No routines due today. Tap “New routine” to create one.",
+  "routinesNoneTodayShort": "None due today",
+  "routinesPersonal": "Personal",
+  "routinesShared": "Shared",
+  "routinesCompletedToday": "Completed today!",
+  "routinesStreak": "{count, plural, =1{1-day streak} other{{count}-day streak}}",
+  "@routinesStreak": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "routinesRate": "{rate}% last 30 days",
+  "@routinesRate": {
+    "placeholders": {
+      "rate": { "type": "int" }
+    }
+  },
+  "routinesNoRateYet": "No history yet",
+  "routinesCheckFailed": "Could not save. Please try again.",
+  "routinesDashboardCard": "Today's routines",
+  "routinesDashboardProgress": "{done} of {total} completed",
+  "@routinesDashboardProgress": {
+    "placeholders": {
+      "done": { "type": "int" }, "total": { "type": "int" }
+    }
+  },
+  "routinesWeekdaysShort": "M,T,W,T,F,S,S",
+  "routinesCreateName": "Name",
+  "routinesCreateNameHint": "e.g. Morning routine",
+  "routinesCreateDays": "Days it is due",
+  "routinesCreateSteps": "Steps",
+  "routinesCreateStepHint": "Add a step",
+  "routinesCreateSave": "Save routine",
+  "routinesCreateErrName": "Give it a name.",
+  "routinesCreateErrDays": "Pick at least one day.",
+  "routinesCreateErrSteps": "Add at least one step.",
+  "routinesCreateSharedOnWeb": "This is a personal routine: only you will see it. Routines for a team are created on the web."
 }

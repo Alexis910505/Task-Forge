@@ -7,6 +7,7 @@ import { userHasPermission } from '@/lib/rolePermissions';
 const navRoutes = [
   { to: '/dashboard', key: 'nav.work', icon: 'assignment', permission: 'dashboard:read' as const },
   { to: '/kanban', key: 'nav.kanban', icon: 'format_list_bulleted', permission: 'boards:read' as const },
+  { to: '/routines', key: 'nav.routines', icon: 'checklist', permission: 'tasks:read' as const },
   { to: '/teams', key: 'nav.team', icon: 'groups', permission: 'teams:read' as const },
   { to: '/departments', key: 'nav.departments', icon: 'domain', permission: 'departments:read' as const },
   { to: '/assets', key: 'nav.assets', icon: 'inventory_2', permission: 'assets:read' as const },

@@ -13,6 +13,7 @@ import '../../../core/realtime/realtime_service.dart';
 import '../../../core/layout/app_mobile_top_bar.dart';
 import '../../auth/application/auth_repository.dart';
 import 'activity_presentation.dart';
+import '../../routines/presentation/routines_dashboard_card.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -259,6 +260,8 @@ class _DashboardPageState extends State<DashboardPage> {
               _BentoUrgentCard(urgent: urgent, l10n: l10n),
               const SizedBox(height: 12),
               _BentoAssignedCard(count: _assignedToMe, l10n: l10n),
+              const SizedBox(height: 12),
+              const RoutinesDashboardCard(),
               const SizedBox(height: 12),
               _BentoWeeklyOutputCard(
                 percent: outputPercent,
