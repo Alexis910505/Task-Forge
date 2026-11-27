@@ -13,11 +13,12 @@ import {
   SYSTEM_ROLE_PERMISSIONS,
   type PermissionKey,
 } from '../../core/security/role-permissions';
+import { rolesBelow } from '../../core/security/role-chain';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 
-/** Inventario: todos los roles pueden ver y gestionar activos. */
-const INVENTORY_PERMISSIONS: PermissionKey[] = ['assets:read', 'assets:write'];
+/** Inventario: todos los roles pueden ver activos (editarlos depende del rol). */
+const INVENTORY_PERMISSIONS: PermissionKey[] = ['assets:read'];
 
 function withInventoryPermissions(permissions: PermissionKey[]): PermissionKey[] {
   const set = new Set(permissions);
@@ -35,8 +36,8 @@ export class RolesService {
     return { permissions: ALL_PERMISSIONS };
   }
 
-  findAll(organizationId: string) {
-    return this.prisma.role.findMany({
+  async findAll(organizationId: string) {
+    const roles = await this.prisma.role.findMany({
       where: { organizationId },
       orderBy: [{ isSystem: 'desc' }, { name: 'asc' }],
       select: {
@@ -48,6 +49,19 @@ export class RolesService {
         updatedAt: true,
         _count: { select: { users: true } },
       },
+    });
+    // Cadena de mando: qué permisos recibe cada rol de los de debajo (y de cuál).
+    const byName = new Map(roles.filter((r) => r.isSystem).map((r) => [r.name, r.permissions]));
+    return roles.map((r) => {
+      const inherited: Record<string, string> = {};
+      if (r.isSystem) {
+        for (const below of rolesBelow(r.name)) {
+          for (const p of byName.get(below) ?? []) {
+            if (!r.permissions.includes(p) && !(p in inherited)) inherited[p] = below;
+          }
+        }
+      }
+      return { ...r, inheritedPermissions: inherited };
     });
   }
 

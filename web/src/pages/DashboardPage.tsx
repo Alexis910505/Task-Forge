@@ -39,7 +39,9 @@ type UrgentTaskRow = {
 
 type DashboardSummary = {
   period: DashboardPeriod;
-  usersActive: number;
+  usersActive: number | null;
+  /** `mine`: panel personal (Operario); `all`: panel de gestión. */
+  scope?: 'mine' | 'all';
   tasksTotal: number;
   tasksByStatus: Partial<Record<string, number>>;
   overdue: number;
@@ -125,7 +127,9 @@ export function DashboardPage() {
     loadErrorStatus != null
       ? `${t('dashboard.loadErrorPrefix')} (${loadErrorStatus}). ${t('dashboard.loadErrorRetry')}`
       : summary
-        ? t('dashboard.subtitleLive')
+        ? summary.scope === 'mine'
+          ? t('dashboard.subtitleMine')
+          : t('dashboard.subtitleLive')
         : t('dashboard.subtitle');
 
   const donutSegments = useMemo(() => {
@@ -241,7 +245,7 @@ export function DashboardPage() {
           <div className="mb-6 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-on-surface">{t('dashboard.tasksByStatus')}</h2>
-              <p className="text-sm text-on-surface-variant">{t('dashboard.orgDataCaption')}</p>
+              <p className="text-sm text-on-surface-variant">{summary?.scope === 'mine' ? t('dashboard.mineDataCaption') : t('dashboard.orgDataCaption')}</p>
             </div>
           </div>
           <div className="flex flex-col items-center gap-8 md:flex-row md:items-center md:justify-center">
@@ -253,7 +257,7 @@ export function DashboardPage() {
         <div className="rounded-xl border border-outline-variant bg-surface-container-low p-6 lg:col-span-4">
           <h2 className="text-lg font-semibold text-on-surface">{t('dashboard.recentActivity')}</h2>
           <p className="mt-1 text-xs text-on-surface-variant">{t('dashboard.recentActivityHint')}</p>
-          {summary ? (
+          {summary && summary.usersActive != null ? (
             <p className="mt-0.5 text-xs text-on-surface-variant">
               {t('dashboard.activeUsers', { count: summary.usersActive })}
             </p>
@@ -308,6 +312,7 @@ export function DashboardPage() {
         </div>
       </div>
 
+      {summary?.scope !== 'mine' ? (
       <div className="mt-8">
         <h2 className="mb-4 text-lg font-semibold text-on-surface">{t('dashboard.deptWorkloadTitle')}</h2>
         {summary?.departmentWorkload?.length ? (
@@ -322,6 +327,7 @@ export function DashboardPage() {
           </p>
         )}
       </div>
+      ) : null}
     </div>
   );
 }

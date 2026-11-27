@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
-import { TaskPriority, TaskStatus } from '@prisma/client';
+import { Prisma, TaskPriority, TaskStatus } from '@prisma/client';
 import {
   ActivityService,
   DASHBOARD_RECENT_ACTIVITY_LIMIT,
@@ -33,8 +33,17 @@ export class DashboardService {
     private readonly activity: ActivityService,
   ) {}
 
-  async summary(organizationId: string, period: DashboardPeriod = 'daily') {
-    const taskWhere = { board: { organizationId }, parentTaskId: null };
+  async summary(
+    organizationId: string,
+    period: DashboardPeriod = 'daily',
+    /** Acotar el panel a lo que ve el usuario (p. ej. Operario: solo lo suyo). */
+    restrict?: { userId: string; taskWhere: Prisma.TaskWhereInput },
+  ) {
+    const taskWhere: Prisma.TaskWhereInput = {
+      board: { organizationId },
+      parentTaskId: null,
+      ...(restrict ? { AND: [restrict.taskWhere] } : {}),
+    };
     const { start: periodStart, previousStart } = periodBounds(period);
     const last48h = new Date(Date.now() - 48 * 60 * 60 * 1000);
     const now = new Date();
@@ -94,8 +103,14 @@ export class DashboardService {
           createdAt: { gte: previousStart, lt: periodStart },
         },
       }),
-      this.activity.findRecentForOrganization(organizationId, DASHBOARD_RECENT_ACTIVITY_LIMIT),
-      this.departmentWorkload(organizationId),
+      this.activity.findRecentForOrganization(
+        organizationId,
+        DASHBOARD_RECENT_ACTIVITY_LIMIT,
+        undefined,
+        restrict,
+      ),
+      // La carga por departamento es información de gestión: no se muestra acotada.
+      restrict ? Promise.resolve([]) : this.departmentWorkload(organizationId),
       this.prisma.task.findMany({
         where: {
           ...taskWhere,
@@ -132,7 +147,10 @@ export class DashboardService {
 
     return {
       period,
-      usersActive: users,
+      /** `mine`: panel personal (solo lo del usuario); `all`: panel de gestión. */
+      scope: restrict ? 'mine' : 'all',
+      // Cuántas personas hay en la empresa es dato de gestión.
+      usersActive: restrict ? null : users,
       tasksTotal,
       tasksByStatus: statusMap,
       overdue,

@@ -1,11 +1,15 @@
 import { ForbiddenException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { userCan } from './role-permissions';
+import { effectivePermissions } from './role-chain';
 
 export type AccessScope = {
   userId: string;
   organizationId: string;
   role: string;
+  /** Sin permiso tasks:read_all: solo sus tareas, las «para todos» y las que creó. */
+  selfOnly: boolean;
   /** Sin filtro: ADMIN (u otros roles no acotados). */
   unrestricted: boolean;
   departmentId: string | null;
@@ -33,16 +37,27 @@ export async function resolveAccessScope(
     select: {
       departmentId: true,
       teamMembers: { select: { teamId: true } },
+      role: { select: { permissions: true } },
     },
   });
+  const permissions = await effectivePermissions(
+    prisma,
+    organizationId,
+    role,
+    user?.role.permissions ?? [],
+  );
 
   const departmentId = user?.departmentId ?? null;
   const teamIds = user?.teamMembers.map((m) => m.teamId) ?? [];
+  // Lo decide la tabla de Permisos del rol.
+  const selfOnly = !userCan({ role, permissions }, 'tasks:read_all');
 
   return {
     userId,
     organizationId,
     role,
+    selfOnly,
+    // Estructura (departamentos, equipos, proyectos): no depende de ver tareas ajenas.
     unrestricted: role === 'ADMIN' || !isScopedLeadRole(role),
     departmentId,
     teamIds,
@@ -145,6 +160,22 @@ export function projectListWhere(scope: AccessScope): Prisma.ProjectWhereInput {
  * TEAM_LEAD: assignee en sus equipos, o sin assignee en tableros de su depto.
  */
 export function taskScopeWhere(scope: AccessScope): Prisma.TaskWhereInput | undefined {
+  if (scope.selfOnly && scope.role !== 'ADMIN') {
+    // Suyas, «para todos» y las que creó; las subtareas siguen a su tarea padre.
+    const mine: Prisma.TaskWhereInput[] = [
+      { assigneeId: scope.userId },
+      { assigneeId: null },
+      { createdById: scope.userId },
+    ];
+    return {
+      OR: [
+        { assigneeId: scope.userId },
+        { parentTaskId: null, OR: mine },
+        { parentTask: { OR: mine } },
+      ],
+    };
+  }
+
   if (scope.unrestricted) return undefined;
 
   if (scope.role === 'DEPT_HEAD' && scope.departmentId) {
@@ -197,8 +228,8 @@ export async function assertCanAccessTask(
   scope: AccessScope,
   taskId: string,
 ) {
-  if (scope.unrestricted) return;
   const extra = taskScopeWhere(scope);
+  if (!extra) return;
   const found = await prisma.task.findFirst({
     where: {
       id: taskId,

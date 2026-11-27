@@ -59,6 +59,8 @@ export class ActivityService {
     organizationId: string,
     limit = 50,
     since?: Date,
+    /** Acotar a lo que ve el usuario: sus propias acciones o actividad de tareas visibles. */
+    restrict?: { userId: string; taskWhere: Prisma.TaskWhereInput },
   ) {
     return this.prisma.activityLog.findMany({
       where: {
@@ -70,6 +72,9 @@ export class ActivityService {
             ],
           },
           ...(since ? [{ createdAt: { gte: since } }] : []),
+          ...(restrict
+            ? [{ OR: [{ userId: restrict.userId }, { task: restrict.taskWhere }] }]
+            : []),
         ],
       },
       orderBy: { createdAt: 'desc' },

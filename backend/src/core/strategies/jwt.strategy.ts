@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
+import { effectivePermissions } from '../security/role-chain';
 
 export type RequestUser = {
   userId: string;
@@ -58,7 +59,13 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       userId: user.id,
       email: user.email,
       role: user.role.name,
-      permissions: user.role.permissions ?? [],
+      // Cadena de mando: propios + heredados de los roles de debajo.
+      permissions: await effectivePermissions(
+        this.prisma,
+        user.organizationId,
+        user.role.name,
+        user.role.permissions ?? [],
+      ),
       organizationId: user.organizationId,
       organizationSlug: user.organization.slug,
       departmentId: user.departmentId ?? null,

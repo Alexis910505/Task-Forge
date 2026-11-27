@@ -11,15 +11,23 @@ export type PermissionKey =
   | 'boards:read'
   | 'boards:write'
   | 'tasks:read'
+  /** Ver tareas de otras personas (sin él: solo las suyas, las «para todos» y las que creó). */
+  | 'tasks:read_all'
   | 'tasks:write'
+  /** Cambiar datos (título, fecha…) de tareas que no creó. */
+  | 'tasks:edit_all'
   | 'tasks:assign'
   | 'comments:write'
   | 'attachments:write'
   | 'notifications:read'
   | 'dashboard:read'
+  /** Trabajo/panel con datos de toda la organización (sin él: solo lo suyo). */
+  | 'dashboard:read_all'
   | 'reports:read'
   | 'reports:export'
   | 'activity:read'
+  /** Actividad de toda la organización (sin él: solo la de sus tareas). */
+  | 'activity:read_all'
   | 'assets:read'
   | 'assets:write'
   | 'organizations:read'
@@ -129,15 +137,19 @@ export const ALL_PERMISSIONS: PermissionKey[] = [
   'boards:read',
   'boards:write',
   'tasks:read',
+  'tasks:read_all',
   'tasks:write',
+  'tasks:edit_all',
   'tasks:assign',
   'comments:write',
   'attachments:write',
   'notifications:read',
   'dashboard:read',
+  'dashboard:read_all',
   'reports:read',
   'reports:export',
   'activity:read',
+  'activity:read_all',
   'assets:read',
   'assets:write',
   'organizations:read',
@@ -163,6 +175,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<SystemRoleName, PermissionKey[]> = 
     'teams:write',
     'notifications:read',
     'activity:read',
+    'activity:read_all',
     'assets:read',
     'assets:write',
     'organizations:read',
@@ -181,15 +194,19 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<SystemRoleName, PermissionKey[]> = 
     'boards:read',
     'boards:write',
     'tasks:read',
+    'tasks:read_all',
     'tasks:write',
+    'tasks:edit_all',
     'tasks:assign',
     'comments:write',
     'attachments:write',
     'notifications:read',
     'dashboard:read',
+    'dashboard:read_all',
     'reports:read',
     'reports:export',
     'activity:read',
+    'activity:read_all',
     'assets:read',
     'assets:write',
     'organizations:read',
@@ -205,14 +222,18 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<SystemRoleName, PermissionKey[]> = 
     'boards:read',
     'boards:write',
     'tasks:read',
+    'tasks:read_all',
     'tasks:write',
+    'tasks:edit_all',
     'tasks:assign',
     'comments:write',
     'attachments:write',
     'notifications:read',
     'dashboard:read',
+    'dashboard:read_all',
     'reports:read',
     'activity:read',
+    'activity:read_all',
     'assets:read',
     'assets:write',
     'organizations:read',
@@ -228,17 +249,22 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<SystemRoleName, PermissionKey[]> = 
     'boards:read',
     'boards:write',
     'tasks:read',
+    'tasks:read_all',
     'tasks:write',
+    'tasks:edit_all',
     'tasks:assign',
     'comments:write',
     'attachments:write',
     'notifications:read',
     'dashboard:read',
+    'dashboard:read_all',
     'activity:read',
+    'activity:read_all',
     'assets:read',
     'assets:write',
     'organizations:read',
   ],
+  /** Operario: sus tareas y las «para todos»; activos solo lectura. */
   WORKER: [
     'departments:read',
     'teams:read',
@@ -252,7 +278,6 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<SystemRoleName, PermissionKey[]> = 
     'dashboard:read',
     'activity:read',
     'assets:read',
-    'assets:write',
     'organizations:read',
   ],
 };
@@ -278,6 +303,21 @@ export function hasPermission(
   permission: PermissionKey,
 ): boolean {
   return permissions?.includes(permission) ?? false;
+}
+
+/**
+ * ¿El usuario tiene este permiso? Manda lo guardado en su rol (tabla de Permisos).
+ * Solo si el rol no tiene ningún permiso guardado se usan los de fábrica por nombre.
+ */
+export function userCan(
+  user: { role: string; permissions?: readonly string[] },
+  permission: PermissionKey,
+): boolean {
+  if (user.role === 'ADMIN') return true;
+  if (user.permissions && user.permissions.length > 0) {
+    return user.permissions.includes(permission);
+  }
+  return roleHasPermission(user.role, permission);
 }
 
 /** Fallback por nombre de rol de sistema (p. ej. JWT antiguo sin permissions en DB). */

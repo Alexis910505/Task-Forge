@@ -6,11 +6,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
-import {
-  hasPermission,
-  PermissionKey,
-  roleHasPermission,
-} from '../security/role-permissions';
+import { PermissionKey, userCan } from '../security/role-permissions';
 import type { RequestUser } from '../strategies/jwt.strategy';
 
 @Injectable()
@@ -30,10 +26,7 @@ export class PermissionsGuard implements CanActivate {
     if (!user) {
       throw new ForbiddenException();
     }
-    const ok = required.every(
-      (p) =>
-        hasPermission(user.permissions, p) || roleHasPermission(user.role, p),
-    );
+    const ok = required.every((p) => userCan(user, p));
     if (!ok) {
       throw new ForbiddenException('Permisos insuficientes');
     }

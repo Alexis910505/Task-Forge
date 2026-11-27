@@ -7,6 +7,7 @@ import { RolesGuard } from './core/guards/roles.guard';
 import { PermissionsGuard } from './core/guards/permissions.guard';
 import { StorageModule } from './core/storage/storage.module';
 import { MailModule } from './core/mail/mail.module';
+import { TaskAccessModule } from './core/security/task-access.service';
 import { HealthController } from './core/health/health.controller';
 import { PrismaModule } from './core/prisma/prisma.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
@@ -37,6 +38,7 @@ import { EventsModule } from './websocket/events.module';
     PrismaModule,
     StorageModule,
     MailModule,
+    TaskAccessModule,
     OrganizationsModule,
     AuthModule,
     UsersModule,

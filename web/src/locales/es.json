@@ -34,7 +34,7 @@
   "dashboard": {
     "title": "Resumen operativo",
     "subtitle": "Estado en tiempo real de tu TaskForge enterprise.",
-    "subtitleLive": "Datos en vivo de tu organización (API /dashboard/summary).",
+    "subtitleLive": "Datos en vivo de tu organización.",
     "loadErrorPrefix": "No se pudo cargar el panel",
     "loadErrorRetry": "Pulsa Reintentar para volver a cargar.",
     "loadErrorSuffix": "Comprueba que el backend esté en marcha.",
@@ -85,7 +85,9 @@
       "IN_PROGRESS": "En curso",
       "REVIEW": "Revisión",
       "COMPLETED": "Hecho"
-    }
+    },
+    "subtitleMine": "Tus tareas y tu actividad.",
+    "mineDataCaption": "Distribución de tus tareas por estado."
   },
   "common": {
     "loading": "Cargando…",
@@ -376,7 +378,7 @@
   "assets": {
     "title": "Inventario de activos",
     "subtitle": "Equipamiento y flota vinculados a órdenes de trabajo.",
-    "subtitleLive": "Gestiona el inventario de tu organización. Todos los roles pueden registrar y editar activos.",
+    "subtitleLive": "Inventario de activos de tu organización.",
     "empty": "Aún no hay activos.",
     "categoryCol": "Categoría",
     "register": "Registrar activo",
@@ -639,7 +641,23 @@
       },
       "assets_write": {
         "label": "Gestionar inventario",
-        "hint": "Crear, editar y eliminar activos (todos los roles)"
+        "hint": "Crear, editar y eliminar activos"
+      },
+      "tasks_read_all": {
+        "label": "Ver tareas de otras personas",
+        "hint": "Sin esto solo ve sus tareas, las «para todos» y las que creó"
+      },
+      "tasks_edit_all": {
+        "label": "Editar tareas ajenas",
+        "hint": "Cambiar título, descripción, fecha o prioridad de tareas que no creó"
+      },
+      "dashboard_read_all": {
+        "label": "Trabajo de toda la organización",
+        "hint": "Sin esto, en Trabajo solo ve sus propias tareas y números"
+      },
+      "activity_read_all": {
+        "label": "Actividad de toda la organización",
+        "hint": "Sin esto solo ve la actividad de sus tareas"
       }
     },
     "expansionTitle": "¿Más equipo?",
@@ -669,7 +687,9 @@
       "pendingBadge": "Invitación pendiente",
       "expiredBadge": "Invitación caducada",
       "microsoftBadge": "Microsoft"
-    }
+    },
+    "inheritedFrom": "Heredado de {{role}} (cadena de mando). Para quitarlo, quítaselo a ese rol.",
+    "permissionChainHint": "Cadena de mando: cada rol tiene sus permisos y los de los roles que están por debajo (Operario → Jefe de equipo → Supervisor → Jefe de departamento). Los heredados se ven con candado."
   },
   "reports": {
     "title": "Reportes",
@@ -709,7 +729,8 @@
   "activity": {
     "title": "Actividad",
     "subtitle": "Últimas 50 actualizaciones de tu organización",
-    "backToDashboard": "Volver al panel"
+    "backToDashboard": "Volver al panel",
+    "subtitleMine": "Últimas actualizaciones de tus tareas"
   },
   "notifications": {
     "title": "Notificaciones",

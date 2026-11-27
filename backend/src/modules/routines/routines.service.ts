@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../core/prisma/prisma.service';
-import { hasPermission, roleHasPermission } from '../../core/security/role-permissions';
+import { userCan } from '../../core/security/role-permissions';
 import type { RequestUser } from '../../core/strategies/jwt.strategy';
 import { CheckRoutineItemDto, CreateRoutineDto, UpdateRoutineDto } from './dto/routine.dto';
 import { addDays, isoWeekday, isPlausibleToday, utcDateOf } from './routine-dates.util';
@@ -38,7 +38,7 @@ export class RoutinesService {
 
   /** Crear y gestionar rutinas compartidas: quien puede asignar tareas (supervisores, jefes, admin). */
   canManageShared(user: RequestUser): boolean {
-    return hasPermission(user.permissions, 'tasks:assign') || roleHasPermission(user.role, 'tasks:assign');
+    return userCan(user, 'tasks:assign');
   }
 
   private canEdit(user: RequestUser, r: { personal: boolean; ownerId: string }): boolean {

@@ -22,6 +22,8 @@ import { CreateAttachmentDto } from './dto/create-attachment.dto';
 import { UploadEvidenceDto } from './dto/upload-evidence.dto';
 import { RequirePermissions } from '../../core/decorators/permissions.decorator';
 import { RequestUser } from '../../core/strategies/jwt.strategy';
+import { TaskAccessService } from '../../core/security/task-access.service';
+
 
 const evidenceUploadDir = join(process.cwd(), 'uploads', 'attachments');
 const MAX_EVIDENCE_BYTES = 20 * 1024 * 1024;
@@ -40,12 +42,16 @@ const evidenceMulterStorage = diskStorage({
 @ApiBearerAuth()
 @Controller('tasks')
 export class TaskAttachmentsController {
-  constructor(private readonly attachments: AttachmentsService) {}
+  constructor(
+    private readonly attachments: AttachmentsService,
+    private readonly access: TaskAccessService,
+  ) {}
 
   @Get(':taskId/attachments')
   @RequirePermissions('tasks:read')
   @ApiOperation({ summary: 'Evidencias / adjuntos de una tarea' })
-  list(@Req() req: Request & { user: RequestUser }, @Param('taskId') taskId: string) {
+  async list(@Req() req: Request & { user: RequestUser }, @Param('taskId') taskId: string) {
+    await this.access.assert(req.user, taskId);
     return this.attachments.listByTask(req.user.organizationId, taskId);
   }
 
@@ -72,7 +78,7 @@ export class TaskAttachmentsController {
       limits: { fileSize: MAX_EVIDENCE_BYTES },
     }),
   )
-  upload(
+  async upload(
     @Req() req: Request & { user: RequestUser },
     @Param('taskId') taskId: string,
     @UploadedFile(
@@ -90,6 +96,7 @@ export class TaskAttachmentsController {
     file: Express.Multer.File,
     @Body() body: UploadEvidenceDto,
   ) {
+    await this.access.assert(req.user, taskId);
     return this.attachments.createFromUpload(req.user.organizationId, req.user.userId, taskId, file, {
       evidenceKind: body.evidenceKind,
       capturedAt: body.capturedAt ? new Date(body.capturedAt) : undefined,
@@ -117,7 +124,7 @@ export class TaskAttachmentsController {
       limits: { fileSize: MAX_FILE_BYTES },
     }),
   )
-  uploadFile(
+  async uploadFile(
     @Req() req: Request & { user: RequestUser },
     @Param('taskId') taskId: string,
     @UploadedFile(
@@ -133,17 +140,19 @@ export class TaskAttachmentsController {
     )
     file: Express.Multer.File,
   ) {
+    await this.access.assert(req.user, taskId);
     return this.attachments.createFromFileUpload(req.user.organizationId, req.user.userId, taskId, file);
   }
 
   @Post(':taskId/attachments')
   @RequirePermissions('attachments:write')
   @ApiOperation({ summary: 'Registrar adjunto (tras subida a blob/S3)' })
-  create(
+  async create(
     @Req() req: Request & { user: RequestUser },
     @Param('taskId') taskId: string,
     @Body() dto: CreateAttachmentDto,
   ) {
+    await this.access.assert(req.user, taskId);
     return this.attachments.create(req.user.organizationId, req.user.userId, taskId, dto);
   }
 }

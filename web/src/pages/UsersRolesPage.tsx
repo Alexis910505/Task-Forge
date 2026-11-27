@@ -37,6 +37,8 @@ type RoleRow = {
   permissions: string[];
   isSystem: boolean;
   _count?: { users: number };
+  /** Cadena de mando: permiso → rol de debajo del que lo hereda. */
+  inheritedPermissions?: Record<string, string>;
 };
 type DeptRow = { id: string; name: string };
 type ModalMode = 'create' | 'edit' | 'moveDept' | null;
@@ -52,6 +54,13 @@ async function parseApiError(res: Response, fallback: string): Promise<string> {
 /** Rol sugerido al crear: el de menos permisos (Operario), nunca Administrador por descuido. */
 function defaultRoleId(roles: RoleRow[]): string {
   return (roles.find((r) => r.name === 'WORKER') ?? roles[roles.length - 1])?.id ?? '';
+}
+
+/** Orden de la cadena de mando (los personalizados al final, por nombre). */
+const ROLE_ORDER = ['ADMIN', 'IT', 'DEPT_HEAD', 'SUPERVISOR', 'TEAM_LEAD', 'WORKER'];
+function sortRolesByChain<T extends { name: string }>(list: T[]): T[] {
+  const rank = (n: string) => (ROLE_ORDER.indexOf(n) < 0 ? ROLE_ORDER.length : ROLE_ORDER.indexOf(n));
+  return [...list].sort((a, b) => rank(a.name) - rank(b.name) || a.name.localeCompare(b.name));
 }
 
 function userInitials(u: UserRow): string {
@@ -155,7 +164,7 @@ export function UsersRolesPage() {
     setError(null);
     setUsers(uRes.data ?? []);
     if (rRes.ok && rRes.data) {
-      setRoles(rRes.data);
+      setRoles(sortRolesByChain(rRes.data));
     }
     if (dRes.ok && dRes.data) {
       setDepartments(dRes.data);
@@ -925,7 +934,9 @@ export function UsersRolesPage() {
                 </p>
                 <p className="text-sm text-on-surface-variant">{t('users.roleMembers')}</p>
                 <p className="text-xs text-on-surface-variant">
-                  {t('users.rolePermCount', { count: r.permissions?.length ?? 0 })}
+                  {t('users.rolePermCount', {
+                    count: (r.permissions?.length ?? 0) + Object.keys(r.inheritedPermissions ?? {}).length,
+                  })}
                 </p>
                 {canWriteRoles && canEditRole(r) ? (
                   <div className="mt-auto flex gap-2 pt-2">
@@ -957,6 +968,8 @@ export function UsersRolesPage() {
         <div>
           <p className="mb-4 text-sm text-on-surface-variant">
             {canWriteRoles ? t('users.permissionEditHint') : t('users.permissionColHint')}
+            {' '}
+            {t('users.permissionChainHint')}
           </p>
           <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
           <div className="overflow-x-auto">
@@ -986,8 +999,20 @@ export function UsersRolesPage() {
                       ) : null}
                     </td>
                     {roles.map((role) => {
-                      const has = (role.permissions ?? []).includes(perm);
+                      const inheritedFrom = role.inheritedPermissions?.[perm];
+                      const has = (role.permissions ?? []).includes(perm) || Boolean(inheritedFrom);
                       const busy = permSavingId === role.id;
+                      if (inheritedFrom) {
+                        const why = t('users.inheritedFrom', { role: roleLabel(inheritedFrom, t) });
+                        return (
+                          <td key={role.id} className="px-3 py-2 text-center" title={why}>
+                            <span className="inline-flex items-center text-tertiary/70" aria-label={`${permissionLabel(perm, t)}: ${why}`}>
+                              <span className="material-symbols-outlined text-lg">check_circle</span>
+                              <span className="material-symbols-outlined -ms-1 text-xs">lock</span>
+                            </span>
+                          </td>
+                        );
+                      }
                       if (!canWriteRoles || !canEditRole(role)) {
                         return (
                           <td key={role.id} className="px-3 py-2 text-center">

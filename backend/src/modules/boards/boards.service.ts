@@ -1,5 +1,5 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { TaskStatus } from '@prisma/client';
+import { Prisma, TaskStatus } from '@prisma/client';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 
@@ -30,13 +30,13 @@ export class BoardsService {
     });
   }
 
-  async findOneWithTasks(organizationId: string, id: string) {
+  async findOneWithTasks(organizationId: string, id: string, taskWhere?: Prisma.TaskWhereInput) {
     const board = await this.prisma.board.findFirst({
       where: { id, organizationId },
       include: {
         project: true,
         tasks: {
-          where: { parentTaskId: null },
+          where: { parentTaskId: null, ...(taskWhere ?? {}) },
           orderBy: [{ status: 'asc' }, { sortOrder: 'asc' }],
           include: {
             assignee: { select: { id: true, firstName: true, lastName: true, email: true } },

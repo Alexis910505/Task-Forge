@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/auth/AuthContext';
+import { userHasPermission } from '@/lib/rolePermissions';
 import { Avatar } from '@/components/ui/Avatar';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { activityIcon, activityTimelineMessage } from '@/lib/activityMessage';
@@ -16,6 +18,7 @@ type ActivityRow = {
 };
 
 export function ActivityPage() {
+  const { user } = useAuth();
   const { t, i18n } = useTranslation();
   const locale = i18n.language ?? 'es';
   const [items, setItems] = useState<ActivityRow[]>([]);
@@ -43,7 +46,7 @@ export function ActivityPage() {
     <div>
       <PageHeader
         title={t('activity.title')}
-        subtitle={t('activity.subtitle')}
+        subtitle={userHasPermission(user, 'activity:read_all') ? t('activity.subtitle') : t('activity.subtitleMine')}
         actions={
           <Link
             to="/dashboard"

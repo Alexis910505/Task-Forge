@@ -34,7 +34,7 @@
   "dashboard": {
     "title": "Operational overview",
     "subtitle": "Real-time status of your enterprise task forge.",
-    "subtitleLive": "Live data from your organization (API /dashboard/summary).",
+    "subtitleLive": "Live data from your organization.",
     "loadErrorPrefix": "Could not load the dashboard",
     "loadErrorRetry": "Press Retry to load again.",
     "loadErrorSuffix": "Check that the backend is running.",
@@ -85,7 +85,9 @@
       "IN_PROGRESS": "In progress",
       "REVIEW": "Review",
       "COMPLETED": "Done"
-    }
+    },
+    "subtitleMine": "Your tasks and your activity.",
+    "mineDataCaption": "Your tasks by status."
   },
   "common": {
     "loading": "Loading…",
@@ -376,7 +378,7 @@
   "assets": {
     "title": "Asset inventory",
     "subtitle": "Equipment and fleet linked to work orders.",
-    "subtitleLive": "Manage your organization inventory. Every role can register and edit assets.",
+    "subtitleLive": "Your organization’s asset inventory.",
     "empty": "No assets yet.",
     "categoryCol": "Category",
     "register": "Register asset",
@@ -639,7 +641,23 @@
       },
       "assets_write": {
         "label": "Manage inventory",
-        "hint": "Create, edit, and delete assets (all roles)"
+        "hint": "Create, edit and delete assets"
+      },
+      "tasks_read_all": {
+        "label": "See other people’s tasks",
+        "hint": "Without it they only see their own tasks, open tasks and the ones they created"
+      },
+      "tasks_edit_all": {
+        "label": "Edit others’ tasks",
+        "hint": "Change title, description, date or priority of tasks they did not create"
+      },
+      "dashboard_read_all": {
+        "label": "Organization-wide Work page",
+        "hint": "Without it the Work page only shows their own tasks and numbers"
+      },
+      "activity_read_all": {
+        "label": "Organization-wide activity",
+        "hint": "Without it they only see activity on their own tasks"
       }
     },
     "expansionTitle": "Growing the team?",
@@ -669,7 +687,9 @@
       "pendingBadge": "Invitation pending",
       "expiredBadge": "Invitation expired",
       "microsoftBadge": "Microsoft"
-    }
+    },
+    "inheritedFrom": "Inherited from {{role}} (chain of command). Remove it from that role to remove it here.",
+    "permissionChainHint": "Chain of command: each role has its own permissions plus those of the roles below it (Worker → Team lead → Supervisor → Department head). Inherited ones show a lock."
   },
   "reports": {
     "title": "Reports",
@@ -709,7 +729,8 @@
   "activity": {
     "title": "Activity",
     "subtitle": "Last 50 updates across your organization",
-    "backToDashboard": "Back to dashboard"
+    "backToDashboard": "Back to dashboard",
+    "subtitleMine": "Latest updates on your tasks"
   },
   "notifications": {
     "title": "Notifications",

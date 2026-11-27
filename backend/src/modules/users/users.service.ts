@@ -3,6 +3,7 @@ import { Prisma, TaskStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { InvitationsService } from '../auth/invitations.service';
+import { effectivePermissions } from '../../core/security/role-chain';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import {
   isAccessManagerRole,
@@ -115,7 +116,18 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException();
     }
-    return user;
+    return {
+      ...user,
+      role: {
+        ...user.role,
+        permissions: await effectivePermissions(
+          this.prisma,
+          organizationId,
+          user.role.name,
+          user.role.permissions,
+        ),
+      },
+    };
   }
 
   async getMyProfile(organizationId: string, userId: string) {

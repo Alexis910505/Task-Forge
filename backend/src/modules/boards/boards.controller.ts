@@ -5,12 +5,17 @@ import { CreateBoardDto } from './dto/create-board.dto';
 import { RequirePermissions } from '../../core/decorators/permissions.decorator';
 import type { Request } from 'express';
 import { RequestUser } from '../../core/strategies/jwt.strategy';
+import { TaskAccessService } from '../../core/security/task-access.service';
+
 
 @ApiTags('boards')
 @ApiBearerAuth()
 @Controller('boards')
 export class BoardsController {
-  constructor(private readonly boards: BoardsService) {}
+  constructor(
+    private readonly boards: BoardsService,
+    private readonly access: TaskAccessService,
+  ) {}
 
   @Post()
   @RequirePermissions('boards:write')
@@ -22,7 +27,7 @@ export class BoardsController {
   @Get(':id')
   @RequirePermissions('boards:read')
   @ApiOperation({ summary: 'Tablero con tareas agrupadas por estado' })
-  findOne(@Req() req: Request & { user: RequestUser }, @Param('id') id: string) {
-    return this.boards.findOneWithTasks(req.user.organizationId, id);
+  async findOne(@Req() req: Request & { user: RequestUser }, @Param('id') id: string) {
+    return this.boards.findOneWithTasks(req.user.organizationId, id, await this.access.whereFor(req.user));
   }
 }
