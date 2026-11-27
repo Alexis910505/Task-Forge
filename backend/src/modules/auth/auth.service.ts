@@ -157,6 +157,25 @@ export class AuthService {
     await this.prisma.refreshToken.deleteMany({ where: { userId } });
   }
 
+  /** Sesión para un usuario ya identificado (invitación aceptada o entrada con Microsoft). */
+  async issueTokensForUser(userId: string, session?: ClientSessionDto): Promise<AuthTokensDto> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { role: true, organization: true },
+    });
+    if (!user?.isActive) {
+      throw new UnauthorizedException();
+    }
+    return this.issueTokens(
+      user.id,
+      user.email,
+      user.role.name,
+      user.organizationId,
+      user.organization.slug,
+      session ? this.clientSessionFromDto(session) : undefined,
+    );
+  }
+
   private clientSessionFromDto(dto: ClientSessionDto): ClientSession | undefined {
     const clientId = dto.clientId?.trim();
     const platform = dto.platform;
@@ -191,6 +210,8 @@ export class AuthService {
       {
         secret: this.config.getOrThrow<string>('JWT_REFRESH_SECRET'),
         expiresIn: refreshSeconds,
+        // Identificador único: dos sesiones en el mismo segundo no generan el mismo token.
+        jwtid: crypto.randomUUID(),
       },
     );
 

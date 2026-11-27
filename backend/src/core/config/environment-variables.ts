@@ -67,6 +67,54 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   S3_SECRET_ACCESS_KEY?: string;
+
+  /** URL pública de la API (redirect de Microsoft). */
+  @IsOptional()
+  @IsString()
+  PUBLIC_API_URL?: string;
+
+  /** URL de la web (enlaces de invitación). Por defecto, el primer CORS_ORIGIN. */
+  @IsOptional()
+  @IsString()
+  WEB_APP_URL?: string;
+
+  /** «Entrar con Microsoft»: se activa al definir MS_CLIENT_ID y MS_CLIENT_SECRET. */
+  @IsOptional()
+  @IsString()
+  MS_CLIENT_ID?: string;
+
+  @ValidateIf((o: EnvironmentVariables) => Boolean(o.MS_CLIENT_ID))
+  @IsString()
+  @IsNotEmpty()
+  MS_CLIENT_SECRET?: string;
+
+  /** common | organizations | id del directorio de la empresa. */
+  @IsOptional()
+  @IsString()
+  MS_TENANT?: string;
+
+  /** Ids de directorio permitidos, separados por comas (vacío = cualquiera). */
+  @IsOptional()
+  @IsString()
+  MS_ALLOWED_TENANTS?: string;
+
+  @IsOptional()
+  @IsString()
+  MS_AUTHORITY?: string;
+
+  /** Correo de invitaciones por API de Brevo (Render gratis bloquea SMTP). */
+  @IsOptional()
+  @IsString()
+  BREVO_API_KEY?: string;
+
+  @ValidateIf((o: EnvironmentVariables) => Boolean(o.BREVO_API_KEY))
+  @IsString()
+  @IsNotEmpty()
+  MAIL_FROM_EMAIL?: string;
+
+  @IsOptional()
+  @IsString()
+  MAIL_FROM_NAME?: string;
 }
 
 export function validateEnv(config: Record<string, unknown>): EnvironmentVariables {

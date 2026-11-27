@@ -6,6 +6,8 @@ App de gestión de tareas y activos para equipos: una API, una web y una app mó
 
 **Funciones:** tareas y subtareas (lista y kanban) con adjuntos, tareas repetitivas (diarias, semanales, mensuales o anuales), panel y reportes, equipos y departamentos, catálogo de activos, usuarios con roles y permisos, notificaciones en tiempo real y organizaciones con su propio logo. Hay más capturas en [TaskForge/](TaskForge/).
 
+**Entrar con Microsoft e invitaciones:** el encargado da de alta a una persona con su correo y el sistema le manda (o le muestra para copiar) un enlace de invitación; la persona entra con el mismo usuario y contraseña de Microsoft de su computadora del trabajo, o crea una contraseña. Se activa configurando la app en Microsoft Entra: ver [docs/entrar-con-microsoft.md](docs/entrar-con-microsoft.md).
+
 **Rutinas:** listas de pasos (por ejemplo, "Apertura del local") que tocan ciertos días de la semana y se marcan cada día. Cada persona puede crear rutinas personales; supervisores, jefes y admin crean rutinas compartidas y las asignan (sin asignados, son para todos). Se guarda el historial: racha de días seguidos, % de cumplimiento de los últimos 30 días y, para quien gestiona la rutina, quién cumplió. En la web está en *Rutinas*; en el móvil, en la tarjeta *Rutinas de hoy* del panel (desde el móvil solo se crean rutinas personales).
 
 **Tareas repetitivas:** al crear una tarea se elige si se repite. Cuando se completa, pasado el intervalo (contado desde que se completó) aparece sola en *Por hacer* una tarea nueva con los mismos datos y subtareas. Cada repetición es una tarea distinta, así que su historial y las estadísticas (cuántas veces se hizo) se conservan; se ven en el detalle de la tarea.

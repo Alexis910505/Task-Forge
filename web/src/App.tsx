@@ -11,6 +11,8 @@ import { DashboardPage } from '@/pages/DashboardPage';
 import { DepartmentsPage } from '@/pages/DepartmentsPage';
 import { KanbanPage } from '@/pages/KanbanPage';
 import { LoginPage } from '@/pages/LoginPage';
+import { MicrosoftCallbackPage } from '@/pages/MicrosoftCallbackPage';
+import { InvitePage } from '@/pages/InvitePage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { NotificationsPage } from '@/pages/NotificationsPage';
 import { EditProfilePage } from '@/pages/EditProfilePage';
@@ -48,6 +50,8 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
+      <Route path="/auth/callback" element={<MicrosoftCallbackPage />} />
+      <Route path="/invite/:token" element={<InvitePage />} />
       <Route element={isAuthenticated ? <AppShell /> : <Navigate to="/login" replace />}>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />

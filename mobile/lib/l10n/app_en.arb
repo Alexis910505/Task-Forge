@@ -536,5 +536,14 @@
   "routinesCreateErrName": "Give it a name.",
   "routinesCreateErrDays": "Pick at least one day.",
   "routinesCreateErrSteps": "Add at least one step.",
-  "routinesCreateSharedOnWeb": "This is a personal routine: only you will see it. Routines for a team are created on the web."
+  "routinesCreateSharedOnWeb": "This is a personal routine: only you will see it. Routines for a team are created on the web.",
+  "ssoSignInMicrosoft": "Sign in with Microsoft",
+  "ssoMicrosoftHint": "Use the same account and password as your work computer.",
+  "ssoOrWithPassword": "or with email and password",
+  "ssoErrorNotRegistered": "Your Microsoft account is not set up in Task Forge. Ask your manager to add you.",
+  "ssoErrorOtherAccount": "This user is already linked to a different Microsoft account.",
+  "ssoErrorTenant": "That Microsoft account does not belong to the company.",
+  "ssoErrorSession": "The session expired. Try again.",
+  "ssoErrorCancelled": "Microsoft sign-in was cancelled.",
+  "ssoErrorFailed": "Could not sign in with Microsoft. Please try again."
 }

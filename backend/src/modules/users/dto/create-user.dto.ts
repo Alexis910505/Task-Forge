@@ -7,10 +7,14 @@ export class CreateUserDto {
   @IsEmail()
   email!: string;
 
-  @ApiPropertyOptional({ minLength: 8 })
+  @ApiPropertyOptional({
+    minLength: 8,
+    description: 'Sin contraseña se crea con invitación: se envía un enlace para activar la cuenta',
+  })
+  @IsOptional()
   @IsString()
   @MinLength(8)
-  password!: string;
+  password?: string;
 
   @ApiPropertyOptional()
   @IsString()

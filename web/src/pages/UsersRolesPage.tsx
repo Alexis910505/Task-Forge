@@ -23,7 +23,12 @@ type UserRow = {
   employmentType?: EmploymentType;
   role: { id: string; name: string };
   department?: { id: string; name: string } | null;
+  invitationPending?: boolean;
+  invitationExpired?: boolean;
+  microsoftLinked?: boolean;
 };
+
+type InvitationResult = { email: string; url: string; emailSent: boolean; mailConfigured: boolean };
 
 type RoleRow = {
   id: string;
@@ -41,6 +46,11 @@ async function parseApiError(res: Response, fallback: string): Promise<string> {
   const body = (await res.json().catch(() => ({}))) as { message?: string | string[] };
   const msg = Array.isArray(body.message) ? body.message.join(', ') : body.message;
   return msg || fallback;
+}
+
+/** Rol sugerido al crear: el de menos permisos (Operario), nunca Administrador por descuido. */
+function defaultRoleId(roles: RoleRow[]): string {
+  return (roles.find((r) => r.name === 'WORKER') ?? roles[roles.length - 1])?.id ?? '';
 }
 
 function userInitials(u: UserRow): string {
@@ -96,6 +106,11 @@ export function UsersRolesPage() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  /** Alta por invitación (sin contraseña): la persona activa su cuenta con el enlace. */
+  const [inviteMode, setInviteMode] = useState(true);
+  const [invitation, setInvitation] = useState<InvitationResult | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [resendingId, setResendingId] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -221,10 +236,11 @@ export function UsersRolesPage() {
     setFormError(null);
     setEmail('');
     setPassword('');
+    setInviteMode(true);
     setShowPassword(false);
     setFirstName('');
     setLastName('');
-    setRoleId(roles[0]?.id ?? '');
+    setRoleId(defaultRoleId(roles));
     setDepartmentId('');
     setIsActive(true);
     setEmploymentType('FULL_TIME');
@@ -253,14 +269,14 @@ export function UsersRolesPage() {
 
   useEffect(() => {
     if (modalMode === 'create' && roles.length && !roleId) {
-      setRoleId(roles[0].id);
+      setRoleId(defaultRoleId(roles));
     }
   }, [modalMode, roles, roleId]);
 
   async function submitCreate(e: React.FormEvent) {
     e.preventDefault();
     setFormError(null);
-    if (password.length < 8) {
+    if (!inviteMode && password.length < 8) {
       setFormError(t('users.validationPassword'));
       return;
     }
@@ -273,7 +289,7 @@ export function UsersRolesPage() {
       method: 'POST',
       body: JSON.stringify({
         email: email.trim().toLowerCase(),
-        password,
+        ...(inviteMode ? {} : { password }),
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         roleId,
@@ -286,8 +302,39 @@ export function UsersRolesPage() {
       setFormError(await parseApiError(res, t('users.createFailed')));
       return;
     }
+    const created = (await res.json().catch(() => ({}))) as {
+      email?: string;
+      invitation?: Omit<InvitationResult, 'email'> | null;
+    };
     closeModal();
+    if (created.invitation) {
+      setCopied(false);
+      setInvitation({ email: created.email ?? email, ...created.invitation });
+    }
     await load();
+  }
+
+  async function resendInvitation(u: UserRow) {
+    setResendingId(u.id);
+    const res = await apiFetch(`/users/${u.id}/invitation`, { method: 'POST' });
+    setResendingId(null);
+    if (!res.ok) {
+      setError(await parseApiError(res, t('users.invitation.resendFailed')));
+      return;
+    }
+    setCopied(false);
+    setInvitation({ email: u.email, ...((await res.json()) as Omit<InvitationResult, 'email'>) });
+    await load();
+  }
+
+  async function copyInvitation() {
+    if (!invitation) return;
+    try {
+      await navigator.clipboard.writeText(invitation.url);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
   }
 
   async function submitEdit(e: React.FormEvent) {
@@ -733,10 +780,35 @@ export function UsersRolesPage() {
                             {u.isActive ? t('users.active') : t('users.inactive')}
                           </span>
                         </div>
+                        {u.invitationPending ? (
+                          <span
+                            className={`mt-1 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${u.invitationExpired ? 'bg-error/10 text-error' : 'bg-secondary-container text-on-secondary-container'}`}
+                          >
+                            <span className="material-symbols-outlined text-xs">mail</span>
+                            {u.invitationExpired ? t('users.invitation.expiredBadge') : t('users.invitation.pendingBadge')}
+                          </span>
+                        ) : null}
+                        {u.microsoftLinked ? (
+                          <span className="mt-1 inline-flex items-center gap-1 rounded bg-surface-container-high px-1.5 py-0.5 text-[10px] font-bold uppercase text-on-surface-variant">
+                            {t('users.invitation.microsoftBadge')}
+                          </span>
+                        ) : null}
                       </td>
                       <td className="px-6 py-4 text-end">
                         {canManageUsers && canEditUserByHierarchy(currentUser, u) ? (
                           <div className="flex items-center justify-end gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
+                            {u.invitationPending ? (
+                              <button
+                                type="button"
+                                onClick={() => void resendInvitation(u)}
+                                disabled={resendingId === u.id}
+                                className="rounded-lg p-2 text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary disabled:opacity-50"
+                                title={t('users.invitation.resend')}
+                                aria-label={t('users.invitation.resend')}
+                              >
+                                <span className="material-symbols-outlined text-xl">forward_to_inbox</span>
+                              </button>
+                            ) : null}
                             <button
                               type="button"
                               onClick={() => openEdit(u)}
@@ -1039,7 +1111,28 @@ export function UsersRolesPage() {
                   autoComplete="off"
                 />
               </div>
-              {isCreate || canEditCredentials ? (
+              {isCreate ? (
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2" role="radiogroup" aria-label={t('users.invitation.howTitle')}>
+                  {[true, false].map((inv) => (
+                    <button
+                      key={String(inv)}
+                      type="button"
+                      role="radio"
+                      aria-checked={inviteMode === inv}
+                      onClick={() => setInviteMode(inv)}
+                      className={`rounded-lg border p-3 text-left ${inviteMode === inv ? 'border-primary bg-primary/10' : 'border-outline-variant hover:bg-surface-container-low'}`}
+                    >
+                      <p className="text-sm font-semibold text-on-surface">
+                        {inv ? t('users.invitation.optionInvite') : t('users.invitation.optionPassword')}
+                      </p>
+                      <p className="text-[11px] text-on-surface-variant">
+                        {inv ? t('users.invitation.optionInviteHint') : t('users.invitation.optionPasswordHint')}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+              {(isCreate && !inviteMode) || (!isCreate && canEditCredentials) ? (
                 <div>
                   <label className="mb-1 block text-xs font-bold uppercase text-on-surface-variant">
                     {isCreate ? t('users.password') : t('users.passwordOptional')}
@@ -1047,8 +1140,8 @@ export function UsersRolesPage() {
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
-                      required={isCreate}
-                      minLength={isCreate ? 8 : undefined}
+                      required={isCreate && !inviteMode}
+                      minLength={isCreate && !inviteMode ? 8 : undefined}
                       value={password}
                       onChange={(ev) => setPassword(ev.target.value)}
                       className="w-full rounded-lg border border-outline-variant bg-surface p-3 pr-12 text-sm outline-none ring-primary focus:ring-2"
@@ -1271,6 +1364,61 @@ export function UsersRolesPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      ) : null}
+          {invitation ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4" onClick={() => setInvitation(null)}>
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="invite-result-title"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-lg rounded-2xl bg-surface-container-lowest p-6 shadow-xl"
+          >
+            <div className="mb-4 flex items-center gap-3">
+              <span className="material-symbols-outlined rounded-full bg-tertiary/15 p-2 text-tertiary">mark_email_read</span>
+              <h2 id="invite-result-title" className="text-lg font-semibold text-on-surface">
+                {t('users.invitation.resultTitle')}
+              </h2>
+            </div>
+            <p className="text-sm text-on-surface">
+              {invitation.emailSent
+                ? t('users.invitation.resultSent', { email: invitation.email })
+                : invitation.mailConfigured
+                  ? t('users.invitation.resultMailFailed', { email: invitation.email })
+                  : t('users.invitation.resultNoMail', { email: invitation.email })}
+            </p>
+            <label className="mb-1 mt-4 block text-xs font-bold uppercase text-on-surface-variant" htmlFor="invite-url">
+              {t('users.invitation.link')}
+            </label>
+            <div className="flex gap-2">
+              <input
+                id="invite-url"
+                readOnly
+                value={invitation.url}
+                onFocus={(e) => e.target.select()}
+                className="w-full rounded-lg border border-outline-variant bg-surface-container-low p-2 text-xs"
+              />
+              <button type="button" onClick={() => void copyInvitation()} className="shrink-0 rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary">
+                {copied ? t('users.invitation.copied') : t('users.invitation.copy')}
+              </button>
+            </div>
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(t('users.invitation.whatsappText', { url: invitation.url }))}`}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+            >
+              <span className="material-symbols-outlined text-lg">share</span>
+              {t('users.invitation.shareWhatsapp')}
+            </a>
+            <p className="mt-4 text-[11px] text-on-surface-variant">{t('users.invitation.validity')}</p>
+            <div className="mt-6 flex justify-end">
+              <button type="button" onClick={() => setInvitation(null)} className="rounded-lg px-5 py-2 text-sm font-semibold text-on-surface-variant hover:bg-surface-container-high">
+                {t('users.invitation.close')}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}

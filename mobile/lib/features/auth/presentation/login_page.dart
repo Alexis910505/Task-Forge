@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:task_forge_app/l10n/gen/app_localizations.dart';
 import 'package:get/get.dart' hide FormData, MultipartFile, Response, Value;
 import 'package:go_router/go_router.dart';
@@ -21,6 +23,78 @@ class _LoginPageState extends State<LoginPage> {
   bool _busy = false;
   String? _error;
   bool _keepSignedIn = true;
+  bool _microsoft = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Get.find<AuthController>().microsoftEnabled().then((on) {
+      if (mounted) setState(() => _microsoft = on);
+    });
+  }
+
+  String _microsoftError(String code, AppLocalizations l10n) {
+    switch (code) {
+      case 'not_registered':
+        return l10n.ssoErrorNotRegistered;
+      case 'other_account':
+        return l10n.ssoErrorOtherAccount;
+      case 'tenant':
+        return l10n.ssoErrorTenant;
+      case 'session':
+        return l10n.ssoErrorSession;
+      case 'cancelled':
+        return l10n.ssoErrorCancelled;
+      default:
+        return l10n.ssoErrorFailed;
+    }
+  }
+
+  Future<void> _signInWithMicrosoft() async {
+    final l10n = AppLocalizations.of(context)!;
+    final auth = Get.find<AuthController>();
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final url = await auth.microsoftStartUrl(
+        organizationSlug: Env.organizationSlug,
+      );
+      // Abre Microsoft en una pestaña segura del navegador y espera la vuelta a taskforge://
+      final result = await FlutterWebAuth2.authenticate(
+        url: url,
+        callbackUrlScheme: 'taskforge',
+      );
+      final params = Uri.parse(result).queryParameters;
+      final code = params['code'];
+      if (code == null) {
+        setState(
+          () => _error = _microsoftError(params['error'] ?? 'failed', l10n),
+        );
+        return;
+      }
+      await auth.loginWithMicrosoftCode(
+        code,
+        persistSessionOnDisk: _keepSignedIn,
+      );
+      if (mounted) context.go('/dashboard');
+    } on PlatformException catch (e) {
+      if (mounted) {
+        setState(
+          () =>
+              _error =
+                  e.code == 'CANCELED'
+                      ? l10n.ssoErrorCancelled
+                      : l10n.ssoErrorFailed,
+        );
+      }
+    } catch (e) {
+      if (mounted) setState(() => _error = _formatLoginError(e, l10n));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -130,6 +204,61 @@ class _LoginPageState extends State<LoginPage> {
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 28),
+                        if (_microsoft) ...[
+                          OutlinedButton(
+                            onPressed: _busy ? null : _signInWithMicrosoft,
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size.fromHeight(56),
+                              backgroundColor: Colors.white,
+                              foregroundColor: const Color(0xFF5E5E5E),
+                              side: const BorderSide(color: Color(0xFF8C8C8C)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const _MicrosoftLogo(),
+                                const SizedBox(width: 12),
+                                Text(
+                                  l10n.ssoSignInMicrosoft,
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n.ssoMicrosoftHint,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Row(
+                            children: [
+                              const Expanded(child: Divider()),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
+                                child: Text(
+                                  l10n.ssoOrWithPassword,
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: scheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                              const Expanded(child: Divider()),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                        ],
                         Text(
                           l10n.emailLabel.toUpperCase(),
                           style: theme.textTheme.labelLarge?.copyWith(
@@ -224,6 +353,39 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Logotipo de Microsoft (cuatro cuadros), según su guía de marca.
+class _MicrosoftLogo extends StatelessWidget {
+  const _MicrosoftLogo();
+
+  @override
+  Widget build(BuildContext context) {
+    Widget sq(Color c) => Container(width: 10, height: 10, color: c);
+    return SizedBox(
+      width: 22,
+      height: 22,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              sq(const Color(0xFFF25022)),
+              sq(const Color(0xFF7FBA00)),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              sq(const Color(0xFF00A4EF)),
+              sq(const Color(0xFFFFB900)),
+            ],
+          ),
+        ],
       ),
     );
   }

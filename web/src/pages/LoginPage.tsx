@@ -1,21 +1,23 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
+import { MicrosoftButton } from '@/components/auth/MicrosoftButton';
 import { BrandLogo } from '@/components/branding/BrandLogo';
 import { LanguageToggle } from '@/components/i18n/LanguageToggle';
-
-const organizationSlug =
-  (typeof import.meta.env.VITE_ORGANIZATION_SLUG === 'string' && import.meta.env.VITE_ORGANIZATION_SLUG.trim()) ||
-  'default';
+import { ORGANIZATION_SLUG, startMicrosoftSignIn, useMicrosoftEnabled } from '@/lib/microsoftSignIn';
 
 export function LoginPage() {
   const { t } = useTranslation();
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('admin@taskforge.local');
-  const [password, setPassword] = useState('Admin123!');
-  const [error, setError] = useState<string | null>(null);
+  const [params] = useSearchParams();
+  const microsoft = useMicrosoftEnabled();
+  // Datos de prueba solo en desarrollo; nunca en la versión publicada.
+  const [email, setEmail] = useState(import.meta.env.DEV ? 'admin@taskforge.local' : '');
+  const [password, setPassword] = useState(import.meta.env.DEV ? 'Admin123!' : '');
+  const msError = params.get('msError');
+  const [error, setError] = useState<string | null>(msError ? t(`sso.errors.${msError}`, t('sso.errors.failed')) : null);
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
@@ -23,7 +25,7 @@ export function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      await login({ organizationSlug, email, password });
+      await login({ organizationSlug: ORGANIZATION_SLUG, email, password });
       navigate('/dashboard', { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -43,10 +45,26 @@ export function LoginPage() {
           <h1 className="text-xl font-semibold text-on-surface">{t('login.title')}</h1>
           <p className="mt-1 text-sm text-on-surface-variant">{t('login.subtitle')}</p>
         </div>
+
+        {error ? (
+          <div className="mb-4 rounded-lg border border-error/30 bg-error-container/30 px-3 py-2 text-sm text-error" role="alert">
+            {error}
+          </div>
+        ) : null}
+
+        {microsoft ? (
+          <>
+            <MicrosoftButton large onClick={() => startMicrosoftSignIn()} />
+            <p className="mt-2 text-center text-xs text-on-surface-variant">{t('sso.microsoftHint')}</p>
+            <div className="my-6 flex items-center gap-3 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+              <span className="h-px flex-1 bg-outline-variant" />
+              {t('sso.orWithPassword')}
+              <span className="h-px flex-1 bg-outline-variant" />
+            </div>
+          </>
+        ) : null}
+
         <form className="space-y-4" onSubmit={onSubmit}>
-          {error ? (
-            <div className="rounded-lg border border-error/30 bg-error-container/30 px-3 py-2 text-sm text-error">{error}</div>
-          ) : null}
           <div>
             <label htmlFor="email" className="mb-1 block text-xs font-bold uppercase text-on-surface-variant">
               {t('login.email')}
@@ -78,7 +96,10 @@ export function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="block w-full rounded bg-primary py-3 text-center text-sm font-bold uppercase text-on-primary transition-opacity hover:opacity-90 disabled:opacity-60"
+            className={[
+              'block w-full rounded py-3 text-center text-sm font-bold uppercase transition-opacity hover:opacity-90 disabled:opacity-60',
+              microsoft ? 'border border-primary text-primary' : 'bg-primary text-on-primary',
+            ].join(' ')}
           >
             {loading ? t('login.signingIn') : t('login.signIn')}
           </button>

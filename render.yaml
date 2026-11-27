@@ -39,3 +39,22 @@ services:
         sync: false
       - key: S3_SECRET_ACCESS_KEY
         sync: false
+      # URLs públicas (enlaces de invitación y vuelta desde Microsoft)
+      - key: PUBLIC_API_URL
+        value: https://taskforge-api-rolx.onrender.com
+      - key: WEB_APP_URL
+        value: https://taskforge-ops.web.app
+      # «Entrar con Microsoft» (opcional: sin estas dos variables el botón no aparece)
+      - key: MS_CLIENT_ID
+        sync: false
+      - key: MS_CLIENT_SECRET
+        sync: false
+      - key: MS_TENANT
+        value: common
+      # Correos de invitación por Brevo (opcional: sin clave, el enlace se copia a mano)
+      - key: BREVO_API_KEY
+        sync: false
+      - key: MAIL_FROM_EMAIL
+        sync: false
+      - key: MAIL_FROM_NAME
+        value: Task Forge

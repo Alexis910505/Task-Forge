@@ -86,7 +86,9 @@ class AuthController extends GetxController {
     await _storage.write(key: _kRefresh, value: refresh);
   }
 
-  Future<(String access, String refresh)?> _refreshTokens(String refreshToken) async {
+  Future<(String access, String refresh)?> _refreshTokens(
+    String refreshToken,
+  ) async {
     if (_refreshInFlight != null) {
       return _refreshInFlight!;
     }
@@ -99,7 +101,9 @@ class AuthController extends GetxController {
     }
   }
 
-  Future<(String access, String refresh)?> _doRefresh(String refreshToken) async {
+  Future<(String access, String refresh)?> _doRefresh(
+    String refreshToken,
+  ) async {
     try {
       final res = await _plainDio.post<Map<String, dynamic>>(
         '/auth/refresh',
@@ -123,9 +127,7 @@ class AuthController extends GetxController {
   Future<Map<String, dynamic>?> _fetchProfile(String accessToken) async {
     final me = await _plainDio.get<Map<String, dynamic>>(
       '/users/me',
-      options: Options(
-        headers: {'Authorization': 'Bearer $accessToken'},
-      ),
+      options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
     );
     return me.data;
   }
@@ -246,7 +248,67 @@ class AuthController extends GetxController {
           ...clientPayload,
         },
       );
-      final data = res.data;
+      await _completeSession(res.data, persistSessionOnDisk);
+    } catch (e) {
+      authError.value = e;
+      session.value = null;
+      rethrow;
+    } finally {
+      isBootstrapping.value = false;
+    }
+  }
+
+  /// URL para «Entrar con Microsoft» desde la app (vuelve a taskforge://auth).
+  Future<String> microsoftStartUrl({required String organizationSlug}) async {
+    final client = await _clientSession.apiPayload();
+    final q =
+        Uri(
+          queryParameters: {
+            'org': organizationSlug.trim().toLowerCase(),
+            'platform': 'mobile',
+            if (client['clientId'] != null) 'clientId': '${client['clientId']}',
+          },
+        ).query;
+    return '${Env.apiBaseUrl}/auth/microsoft/start?$q';
+  }
+
+  /// ¿Está activado «Entrar con Microsoft» en el servidor?
+  Future<bool> microsoftEnabled() async {
+    try {
+      final res = await _plainDio.get<Map<String, dynamic>>('/auth/providers');
+      return res.data?['microsoft'] == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Cambia el código de un solo uso (tras volver de Microsoft) por la sesión.
+  Future<void> loginWithMicrosoftCode(
+    String code, {
+    bool persistSessionOnDisk = true,
+  }) async {
+    isBootstrapping.value = true;
+    authError.value = null;
+    try {
+      final res = await _plainDio.post<Map<String, dynamic>>(
+        '/auth/microsoft/exchange',
+        data: {'code': code},
+      );
+      await _completeSession(res.data, persistSessionOnDisk);
+    } catch (e) {
+      authError.value = e;
+      session.value = null;
+      rethrow;
+    } finally {
+      isBootstrapping.value = false;
+    }
+  }
+
+  Future<void> _completeSession(
+    Map<String, dynamic>? data,
+    bool persistSessionOnDisk,
+  ) async {
+    {
       if (data == null ||
           data['accessToken'] is! String ||
           data['refreshToken'] is! String) {
@@ -279,12 +341,6 @@ class AuthController extends GetxController {
         refreshToken: refresh,
         profile: me.data,
       );
-    } catch (e) {
-      authError.value = e;
-      session.value = null;
-      rethrow;
-    } finally {
-      isBootstrapping.value = false;
     }
   }
 

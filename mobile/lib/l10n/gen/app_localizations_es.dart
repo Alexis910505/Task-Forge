@@ -1241,4 +1241,37 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get routinesCreateSharedOnWeb =>
       'Es una rutina personal: solo la verás tú. Las rutinas para un equipo se crean en la web.';
+
+  @override
+  String get ssoSignInMicrosoft => 'Entrar con Microsoft';
+
+  @override
+  String get ssoMicrosoftHint =>
+      'Usa el mismo usuario y contraseña de tu computadora del trabajo.';
+
+  @override
+  String get ssoOrWithPassword => 'o con correo y contraseña';
+
+  @override
+  String get ssoErrorNotRegistered =>
+      'Tu cuenta de Microsoft no está dada de alta en Task Forge. Pide al encargado que te agregue.';
+
+  @override
+  String get ssoErrorOtherAccount =>
+      'Este usuario ya está vinculado a otra cuenta de Microsoft.';
+
+  @override
+  String get ssoErrorTenant =>
+      'Esa cuenta de Microsoft no pertenece a la empresa.';
+
+  @override
+  String get ssoErrorSession => 'La sesión caducó. Inténtalo de nuevo.';
+
+  @override
+  String get ssoErrorCancelled =>
+      'Se canceló el inicio de sesión con Microsoft.';
+
+  @override
+  String get ssoErrorFailed =>
+      'No se pudo entrar con Microsoft. Inténtalo de nuevo.';
 }

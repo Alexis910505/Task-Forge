@@ -6,6 +6,9 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from '../../core/strategies/jwt.strategy';
 import { JwtRefreshStrategy } from '../../core/strategies/jwt-refresh.strategy';
+import { InvitationsService } from './invitations.service';
+import { MicrosoftAuthService } from './microsoft-auth.service';
+import { SsoController } from './sso.controller';
 
 @Module({
   imports: [
@@ -18,8 +21,8 @@ import { JwtRefreshStrategy } from '../../core/strategies/jwt-refresh.strategy';
       }),
     }),
   ],
-  controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtRefreshStrategy],
-  exports: [AuthService, JwtModule],
+  controllers: [AuthController, SsoController],
+  providers: [AuthService, JwtStrategy, JwtRefreshStrategy, MicrosoftAuthService, InvitationsService],
+  exports: [AuthService, JwtModule, InvitationsService],
 })
 export class AuthModule {}

@@ -645,7 +645,30 @@
     "expansionBody": "Invite users one at a time from the add-user form.",
     "expansionCta": "Add user",
     "moveDeptTitle": "Move to department",
-    "moveDeptSubmit": "Apply"
+    "moveDeptSubmit": "Apply",
+    "invitation": {
+      "howTitle": "How they will sign in",
+      "optionInvite": "Send an invitation (recommended)",
+      "optionInviteHint": "They get a link and sign in with Microsoft or create a password.",
+      "optionPassword": "Set a password now",
+      "optionPasswordHint": "You give them the password.",
+      "resultTitle": "Invitation ready",
+      "resultSent": "The link was emailed to {{email}}. You can also copy it or send it by WhatsApp.",
+      "resultMailFailed": "The email to {{email}} could not be sent. Copy the link and send it to them.",
+      "resultNoMail": "Email sending is not set up. Copy this link and send it to {{email}} (by email or WhatsApp).",
+      "link": "Invitation link",
+      "copy": "Copy",
+      "copied": "Copied",
+      "shareWhatsapp": "Send by WhatsApp",
+      "whatsappText": "Hi, here is your link to sign in to Task Forge: {{url}}",
+      "validity": "The link is valid for 7 days and can be used once.",
+      "close": "Close",
+      "resend": "Send invitation again",
+      "resendFailed": "Could not create the invitation.",
+      "pendingBadge": "Invitation pending",
+      "expiredBadge": "Invitation expired",
+      "microsoftBadge": "Microsoft"
+    }
   },
   "reports": {
     "title": "Reports",
@@ -1001,5 +1024,37 @@
       "history": "4 weeks",
       "legend": "Green: completed · light green: partly done · red: missed · grey: not due."
     }
+  },
+  "sso": {
+    "signInMicrosoft": "Sign in with Microsoft",
+    "microsoftHint": "Use the same account and password as your work computer.",
+    "orWithPassword": "or with email and password",
+    "signingIn": "Signing in…",
+    "errors": {
+      "cancelled": "Microsoft sign-in was cancelled.",
+      "session": "The session expired. Click “Sign in with Microsoft” again.",
+      "not_registered": "Your Microsoft account is not set up in Task Forge. Ask your manager to add you.",
+      "invite_mismatch": "You signed in with a different Microsoft account. Use the one the invitation was sent to.",
+      "invite_invalid": "The invitation is no longer valid. Ask for a new one.",
+      "other_account": "This user is already linked to a different Microsoft account.",
+      "tenant": "That Microsoft account does not belong to the company.",
+      "failed": "Could not sign in with Microsoft. Please try again."
+    }
+  },
+  "invite": {
+    "hello": "Hi, {{name}}",
+    "subtitle": "You were invited to use Task Forge at {{org}}.",
+    "microsoftStep": "Click the button and sign in with your work account:",
+    "microsoftHint": "It is the same account and password as your computer. If you are already signed in, you may not need to type anything.",
+    "usePassword": "I don’t use Microsoft: create a password instead",
+    "passwordStep": "Create a password to sign in to Task Forge.",
+    "password": "Password (at least 8 characters)",
+    "passwordRepeat": "Repeat the password",
+    "activate": "Activate my account",
+    "passwordShort": "The password must be at least 8 characters.",
+    "passwordMismatch": "The passwords do not match.",
+    "activateFailed": "Could not activate the account. Please try again.",
+    "invalid": "This invitation link is not valid or was already used.",
+    "expired": "This link expired. Ask your manager for a new one."
   }
 }

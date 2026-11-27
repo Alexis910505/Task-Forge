@@ -645,7 +645,30 @@
     "expansionBody": "Invita usuarios uno a uno desde el formulario de alta.",
     "expansionCta": "Agregar usuario",
     "moveDeptTitle": "Mover a departamento",
-    "moveDeptSubmit": "Aplicar"
+    "moveDeptSubmit": "Aplicar",
+    "invitation": {
+      "howTitle": "Cómo entrará",
+      "optionInvite": "Enviar invitación (recomendado)",
+      "optionInviteHint": "Recibe un enlace y entra con su cuenta de Microsoft o crea su contraseña.",
+      "optionPassword": "Poner contraseña ahora",
+      "optionPasswordHint": "Tú le das la contraseña.",
+      "resultTitle": "Invitación lista",
+      "resultSent": "Se envió el enlace a {{email}}. También puedes copiarlo o mandarlo por WhatsApp.",
+      "resultMailFailed": "No se pudo enviar el correo a {{email}}. Copia el enlace y envíaselo.",
+      "resultNoMail": "El envío de correos no está configurado. Copia este enlace y envíaselo a {{email}} (por correo o WhatsApp).",
+      "link": "Enlace de invitación",
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "shareWhatsapp": "Enviar por WhatsApp",
+      "whatsappText": "Hola, este es tu enlace para entrar a Task Forge: {{url}}",
+      "validity": "El enlace vale 7 días y solo se puede usar una vez.",
+      "close": "Cerrar",
+      "resend": "Enviar invitación de nuevo",
+      "resendFailed": "No se pudo generar la invitación.",
+      "pendingBadge": "Invitación pendiente",
+      "expiredBadge": "Invitación caducada",
+      "microsoftBadge": "Microsoft"
+    }
   },
   "reports": {
     "title": "Reportes",
@@ -1002,5 +1025,37 @@
       "history": "4 semanas",
       "legend": "Verde: cumplida · verde claro: a medias · rojo: no cumplida · gris: no tocaba."
     }
+  },
+  "sso": {
+    "signInMicrosoft": "Entrar con Microsoft",
+    "microsoftHint": "Usa el mismo usuario y contraseña de tu computadora del trabajo.",
+    "orWithPassword": "o con correo y contraseña",
+    "signingIn": "Entrando…",
+    "errors": {
+      "cancelled": "Se canceló el inicio de sesión con Microsoft.",
+      "session": "La sesión caducó. Vuelve a pulsar «Entrar con Microsoft».",
+      "not_registered": "Tu cuenta de Microsoft no está dada de alta en Task Forge. Pide al encargado que te agregue.",
+      "invite_mismatch": "Entraste con otra cuenta de Microsoft. Usa la del correo de la invitación.",
+      "invite_invalid": "La invitación ya no es válida. Pide que te la envíen de nuevo.",
+      "other_account": "Este usuario ya está vinculado a otra cuenta de Microsoft.",
+      "tenant": "Esa cuenta de Microsoft no pertenece a la empresa.",
+      "failed": "No se pudo entrar con Microsoft. Inténtalo de nuevo."
+    }
+  },
+  "invite": {
+    "hello": "Hola, {{name}}",
+    "subtitle": "Te invitaron a usar Task Forge en {{org}}.",
+    "microsoftStep": "Pulsa el botón y entra con tu cuenta del trabajo:",
+    "microsoftHint": "Es el mismo usuario y contraseña de tu computadora. Si ya la tienes abierta, quizá no tengas que escribir nada.",
+    "usePassword": "No uso Microsoft: prefiero crear una contraseña",
+    "passwordStep": "Crea una contraseña para entrar a Task Forge.",
+    "password": "Contraseña (mínimo 8 caracteres)",
+    "passwordRepeat": "Repite la contraseña",
+    "activate": "Activar mi cuenta",
+    "passwordShort": "La contraseña debe tener al menos 8 caracteres.",
+    "passwordMismatch": "Las contraseñas no coinciden.",
+    "activateFailed": "No se pudo activar la cuenta. Inténtalo de nuevo.",
+    "invalid": "Este enlace de invitación no es válido o ya se usó.",
+    "expired": "Este enlace caducó. Pide al encargado que te envíe uno nuevo."
   }
 }

@@ -1,6 +1,8 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, TaskStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
+import { InvitationsService } from '../auth/invitations.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import {
   canAssignRole,
@@ -15,10 +17,13 @@ type ActorRef = { userId: string; role: string };
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly invitations: InvitationsService,
+  ) {}
 
-  findAll(organizationId: string) {
-    return this.prisma.user.findMany({
+  async findAll(organizationId: string) {
+    const users = await this.prisma.user.findMany({
       where: { organizationId },
       orderBy: { createdAt: 'desc' },
       select: {
@@ -31,8 +36,34 @@ export class UsersService {
         createdAt: true,
         role: true,
         department: true,
+        inviteExpiresAt: true,
+        microsoftOid: true,
       },
     });
+    return users.map(({ inviteExpiresAt, microsoftOid, ...u }) => ({
+      ...u,
+      invitationPending: inviteExpiresAt != null,
+      invitationExpired: inviteExpiresAt != null && inviteExpiresAt < new Date(),
+      microsoftLinked: microsoftOid != null,
+    }));
+  }
+
+  async displayName(userId: string): Promise<string | undefined> {
+    const u = await this.prisma.user.findUnique({ where: { id: userId }, select: { firstName: true, lastName: true } });
+    return u ? `${u.firstName} ${u.lastName}`.trim() || undefined : undefined;
+  }
+
+  /** (Re)envía el enlace de invitación a un usuario. */
+  async invite(organizationId: string, id: string, actor: ActorRef & { name?: string }) {
+    const target = await this.prisma.user.findFirst({
+      where: { id, organizationId },
+      select: { id: true, role: { select: { name: true } } },
+    });
+    if (!target) throw new NotFoundException();
+    if (!canManageUserByHierarchy(actor.role, actor.userId, target.role.name, target.id)) {
+      throw new ForbiddenException();
+    }
+    return this.invitations.invite(organizationId, id, actor.name);
   }
 
   async findOne(organizationId: string, id: string) {
@@ -242,7 +273,7 @@ export class UsersService {
     });
   }
 
-  async create(organizationId: string, dto: CreateUserDto) {
+  async create(organizationId: string, dto: CreateUserDto, inviterName?: string) {
     const role = await this.prisma.role.findFirst({
       where: { id: dto.roleId, organizationId },
     });
@@ -257,8 +288,9 @@ export class UsersService {
         throw new NotFoundException('Departamento no encontrado');
       }
     }
-    const passwordHash = await bcrypt.hash(dto.password, 10);
-    return this.prisma.user.create({
+    // Sin contraseña: contraseña aleatoria inservible + enlace de invitación.
+    const passwordHash = await bcrypt.hash(dto.password ?? crypto.randomBytes(32).toString('hex'), 10);
+    const created = await this.prisma.user.create({
       data: {
         organizationId,
         email: dto.email.toLowerCase().trim(),
@@ -280,6 +312,8 @@ export class UsersService {
         department: true,
       },
     });
+    const invitation = dto.password ? null : await this.invitations.invite(organizationId, created.id, inviterName);
+    return { ...created, invitation };
   }
 
   async update(organizationId: string, id: string, dto: UpdateUserDto, actor: ActorRef) {

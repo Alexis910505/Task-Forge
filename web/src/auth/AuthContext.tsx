@@ -31,6 +31,8 @@ type AuthContextValue = {
   user: AuthUser | null;
   isAuthenticated: boolean;
   login: (input: { organizationSlug: string; email: string; password: string }) => Promise<void>;
+  /** Guarda una sesión ya emitida (Microsoft o invitación) y carga el perfil. */
+  completeLogin: (tokens: { accessToken?: string; refreshToken?: string }) => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 };
@@ -92,6 +94,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  const completeLogin = useCallback(async (data: { accessToken?: string; refreshToken?: string }) => {
+    if (!data.accessToken || !data.refreshToken) {
+      throw new Error(i18n.t('errors.loginInvalidResponse'));
+    }
+    setStoredTokens(data.accessToken, data.refreshToken);
+    const me = await apiFetch('/users/me');
+    if (!me.ok) {
+      clearStoredTokens();
+      throw new Error(i18n.t('errors.profileLoadFailed'));
+    }
+    setUser((await me.json()) as AuthUser);
+  }, []);
+
   const login = useCallback(async (input: { organizationSlug: string; email: string; password: string }) => {
     let res: Response;
     try {
@@ -129,17 +144,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       throw new Error(msg || data.code || `HTTP ${res.status}`);
     }
-    if (!data.accessToken || !data.refreshToken) {
-      throw new Error(i18n.t('errors.loginInvalidResponse'));
-    }
-    setStoredTokens(data.accessToken, data.refreshToken);
-    const me = await apiFetch('/users/me');
-    if (!me.ok) {
-      clearStoredTokens();
-      throw new Error(i18n.t('errors.profileLoadFailed'));
-    }
-    setUser((await me.json()) as AuthUser);
-  }, []);
+    await completeLogin(data);
+  }, [completeLogin]);
 
   const logout = useCallback(async () => {
     const { refresh } = getStoredTokens();
@@ -161,10 +167,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       isAuthenticated: user != null,
       login,
+      completeLogin,
       logout,
       refreshProfile,
     }),
-    [ready, user, login, logout, refreshProfile],
+    [ready, user, login, completeLogin, logout, refreshProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

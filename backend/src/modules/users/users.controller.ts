@@ -58,8 +58,19 @@ export class UsersController {
   @Roles('ADMIN')
   @RequirePermissions('users:write')
   @ApiOperation({ summary: 'Crear usuario (solo administrador)' })
-  create(@Req() req: Request & { user: RequestUser }, @Body() dto: CreateUserDto) {
-    return this.users.create(req.user.organizationId, dto);
+  async create(@Req() req: Request & { user: RequestUser }, @Body() dto: CreateUserDto) {
+    return this.users.create(req.user.organizationId, dto, await this.users.displayName(req.user.userId));
+  }
+
+  @Post(':id/invitation')
+  @RequirePermissions('users:write')
+  @ApiOperation({ summary: 'Enviar de nuevo el enlace de invitación' })
+  async resendInvitation(@Req() req: Request & { user: RequestUser }, @Param('id') id: string) {
+    return this.users.invite(req.user.organizationId, id, {
+      userId: req.user.userId,
+      role: req.user.role,
+      name: await this.users.displayName(req.user.userId),
+    });
   }
 
   @Patch(':id')

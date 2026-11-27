@@ -2329,6 +2329,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This is a personal routine: only you will see it. Routines for a team are created on the web.'**
   String get routinesCreateSharedOnWeb;
+
+  /// No description provided for @ssoSignInMicrosoft.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Microsoft'**
+  String get ssoSignInMicrosoft;
+
+  /// No description provided for @ssoMicrosoftHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the same account and password as your work computer.'**
+  String get ssoMicrosoftHint;
+
+  /// No description provided for @ssoOrWithPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'or with email and password'**
+  String get ssoOrWithPassword;
+
+  /// No description provided for @ssoErrorNotRegistered.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Microsoft account is not set up in Task Forge. Ask your manager to add you.'**
+  String get ssoErrorNotRegistered;
+
+  /// No description provided for @ssoErrorOtherAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'This user is already linked to a different Microsoft account.'**
+  String get ssoErrorOtherAccount;
+
+  /// No description provided for @ssoErrorTenant.
+  ///
+  /// In en, this message translates to:
+  /// **'That Microsoft account does not belong to the company.'**
+  String get ssoErrorTenant;
+
+  /// No description provided for @ssoErrorSession.
+  ///
+  /// In en, this message translates to:
+  /// **'The session expired. Try again.'**
+  String get ssoErrorSession;
+
+  /// No description provided for @ssoErrorCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Microsoft sign-in was cancelled.'**
+  String get ssoErrorCancelled;
+
+  /// No description provided for @ssoErrorFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not sign in with Microsoft. Please try again.'**
+  String get ssoErrorFailed;
 }
 
 class _AppLocalizationsDelegate
