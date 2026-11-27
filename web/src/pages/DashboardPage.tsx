@@ -187,7 +187,7 @@ export function DashboardPage() {
         </div>
       ) : null}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 items-start">
         <StatCard
           label={t('dashboard.totalTasks')}
           value={String(total)}
@@ -494,7 +494,7 @@ function StatCard({
     variant === 'danger' ? 'text-[#93000a]' : variant === 'success' ? 'text-[#006d2e]' : 'text-on-surface-variant';
 
   return (
-    <div className={`rounded-xl border p-5 shadow-sm ${box}`}>
+    <div className={`flex flex-col rounded-xl border p-5 shadow-sm ${box}`}>
       <div className="mb-2 flex items-center justify-between">
         <span className={`text-[10px] font-bold uppercase tracking-wide ${labelCls}`}>{label}</span>
         <span className={`material-symbols-outlined ${iconColor}`}>{icon}</span>
@@ -506,9 +506,11 @@ function StatCard({
       >
         {value}
       </div>
+      {/* Franja inferior de altura fija: todas las tarjetas quedan iguales aunque no tengan pista. */}
+      <div className="mt-3 flex min-h-5 items-center">
       {hint ? (
         <div
-          className={`mt-2 flex items-center gap-1 text-[11px] font-bold ${
+          className={`flex items-center gap-1 text-[11px] font-bold ${
             variant === 'danger' ? 'text-error' : hintPositive ? 'text-tertiary' : 'text-on-surface-variant'
           }`}
         >
@@ -523,10 +525,11 @@ function StatCard({
         </div>
       ) : null}
       {progress != null ? (
-        <div className="mt-4 h-1 w-full rounded-full bg-outline-variant/30">
+        <div className="h-1 w-full rounded-full bg-outline-variant/30">
           <div className="h-1 rounded-full bg-primary" style={{ width: `${progress}%` }} />
         </div>
       ) : null}
+      </div>
     </div>
   );
 }
