@@ -34,6 +34,7 @@ type BoardTask = {
   comments?: { id: string }[];
   attachments?: { id: string }[];
   _count?: { subtasks: number };
+  recurrence?: string | null;
 };
 
 type BoardPayload = { id: string; name: string; columns: BoardColumn[] };
@@ -751,6 +752,15 @@ function KanbanCard({
         </div>
 
         <h4 className="col-span-2 line-clamp-2 text-sm font-semibold leading-snug text-on-surface">
+          {task.recurrence ? (
+            <span
+              className="material-symbols-outlined me-1 align-[-3px] text-base text-primary"
+              title={t(`recurrence.${task.recurrence}`)}
+              aria-label={t(`recurrence.${task.recurrence}`)}
+            >
+              repeat
+            </span>
+          ) : null}
           {task.title}
         </h4>
 

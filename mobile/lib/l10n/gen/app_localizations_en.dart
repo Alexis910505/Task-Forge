@@ -1095,4 +1095,55 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get createTaskBoardRequired =>
       'Open Kanban online once to load a board';
+
+  @override
+  String get createTaskFieldRecurrence => 'Repeat';
+
+  @override
+  String get recurrenceNone => 'Never';
+
+  @override
+  String get recurrenceDaily => 'Daily';
+
+  @override
+  String get recurrenceWeekly => 'Weekly';
+
+  @override
+  String get recurrenceMonthly => 'Monthly';
+
+  @override
+  String get recurrenceYearly => 'Yearly';
+
+  @override
+  String get createTaskRecurrenceHint =>
+      'When completed, an identical task appears in To do after this interval.';
+
+  @override
+  String get taskDetailRecurrenceTitle => 'Repeat';
+
+  @override
+  String taskDetailRecurrenceOccurrence(int n) {
+    return 'Time #$n';
+  }
+
+  @override
+  String taskDetailRecurrenceNextAt(String date) {
+    return 'Next one appears in To do on $date';
+  }
+
+  @override
+  String get taskDetailRecurrenceNextAfterComplete =>
+      'The next one is scheduled when this one is completed';
+
+  @override
+  String get taskDetailRecurrenceNextCreated =>
+      'The next one has already been created';
+
+  @override
+  String get taskDetailRecurrenceStopped => 'No longer repeats';
+
+  @override
+  String taskDetailRecurrenceStats(int done, int total) {
+    return 'Done $done of $total times';
+  }
 }

@@ -4,7 +4,9 @@ App de gestión de tareas y activos para equipos: una API, una web y una app mó
 
 ![Panel](TaskForge/02-dashboard.png)
 
-**Funciones:** tareas y subtareas (lista y kanban) con adjuntos, panel y reportes, equipos y departamentos, catálogo de activos, usuarios con roles y permisos, notificaciones en tiempo real y organizaciones con su propio logo. Hay más capturas en [TaskForge/](TaskForge/).
+**Funciones:** tareas y subtareas (lista y kanban) con adjuntos, tareas repetitivas (diarias, semanales, mensuales o anuales), panel y reportes, equipos y departamentos, catálogo de activos, usuarios con roles y permisos, notificaciones en tiempo real y organizaciones con su propio logo. Hay más capturas en [TaskForge/](TaskForge/).
+
+**Tareas repetitivas:** al crear una tarea se elige si se repite. Cuando se completa, pasado el intervalo (contado desde que se completó) aparece sola en *Por hacer* una tarea nueva con los mismos datos y subtareas. Cada repetición es una tarea distinta, así que su historial y las estadísticas (cuántas veces se hizo) se conservan; se ven en el detalle de la tarea.
 
 > El repositorio es **público**. Nunca subas contraseñas, claves ni archivos `.env.*`.
 

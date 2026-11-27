@@ -26,6 +26,7 @@ export const TaskTimelineAction = {
   TASK_ASSETS_LINKED: 'task.assets_linked',
   TASK_ASSET_UNLINKED: 'task.asset_unlinked',
   TASK_SUBTASK_CREATED: 'task.subtask_created',
+  TASK_RECURRENCE_CHANGED: 'task.recurrence_changed',
   COMMENT_ADDED: 'comment.added',
   ATTACHMENT_ADDED: 'attachment.added',
 } as const;

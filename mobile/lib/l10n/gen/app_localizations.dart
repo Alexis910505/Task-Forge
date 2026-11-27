@@ -2095,6 +2095,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open Kanban online once to load a board'**
   String get createTaskBoardRequired;
+
+  /// No description provided for @createTaskFieldRecurrence.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat'**
+  String get createTaskFieldRecurrence;
+
+  /// No description provided for @recurrenceNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Never'**
+  String get recurrenceNone;
+
+  /// No description provided for @recurrenceDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get recurrenceDaily;
+
+  /// No description provided for @recurrenceWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get recurrenceWeekly;
+
+  /// No description provided for @recurrenceMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get recurrenceMonthly;
+
+  /// No description provided for @recurrenceYearly.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get recurrenceYearly;
+
+  /// No description provided for @createTaskRecurrenceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'When completed, an identical task appears in To do after this interval.'**
+  String get createTaskRecurrenceHint;
+
+  /// No description provided for @taskDetailRecurrenceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat'**
+  String get taskDetailRecurrenceTitle;
+
+  /// No description provided for @taskDetailRecurrenceOccurrence.
+  ///
+  /// In en, this message translates to:
+  /// **'Time #{n}'**
+  String taskDetailRecurrenceOccurrence(int n);
+
+  /// No description provided for @taskDetailRecurrenceNextAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Next one appears in To do on {date}'**
+  String taskDetailRecurrenceNextAt(String date);
+
+  /// No description provided for @taskDetailRecurrenceNextAfterComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'The next one is scheduled when this one is completed'**
+  String get taskDetailRecurrenceNextAfterComplete;
+
+  /// No description provided for @taskDetailRecurrenceNextCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'The next one has already been created'**
+  String get taskDetailRecurrenceNextCreated;
+
+  /// No description provided for @taskDetailRecurrenceStopped.
+  ///
+  /// In en, this message translates to:
+  /// **'No longer repeats'**
+  String get taskDetailRecurrenceStopped;
+
+  /// No description provided for @taskDetailRecurrenceStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Done {done} of {total} times'**
+  String taskDetailRecurrenceStats(int done, int total);
 }
 
 class _AppLocalizationsDelegate

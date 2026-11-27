@@ -8,6 +8,7 @@ export type TaskFormDraft = {
   assigneeId: string;
   location: string;
   dueDate: string;
+  recurrence?: string;
   departmentId: string;
   teamId: string;
   subtasks?: string[];

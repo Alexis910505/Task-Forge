@@ -12,7 +12,7 @@ import {
   MinLength,
   ValidateIf,
 } from 'class-validator';
-import { TaskPriority, TaskStatus } from '@prisma/client';
+import { TaskPriority, TaskRecurrence, TaskStatus } from '@prisma/client';
 
 export class CreateTaskDto {
   @ApiPropertyOptional()
@@ -66,6 +66,14 @@ export class CreateTaskDto {
   @ArrayMaxSize(200)
   @IsString({ each: true })
   assetIds?: string[];
+
+  @ApiPropertyOptional({
+    enum: TaskRecurrence,
+    description: 'Repetición (solo tareas raíz): al completarse se crea otra igual tras este intervalo',
+  })
+  @IsOptional()
+  @IsEnum(TaskRecurrence)
+  recurrence?: TaskRecurrence;
 }
 
 export class UpdateTaskDto {
@@ -109,6 +117,15 @@ export class UpdateTaskDto {
   @Type(() => Number)
   @IsInt()
   sortOrder?: number;
+
+  @ApiPropertyOptional({
+    enum: TaskRecurrence,
+    nullable: true,
+    description: 'Repetición; null para dejar de repetir',
+  })
+  @IsOptional()
+  @IsEnum(TaskRecurrence)
+  recurrence?: TaskRecurrence | null;
 }
 
 export class MoveTaskDto {
