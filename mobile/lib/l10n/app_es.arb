@@ -467,5 +467,34 @@
   "createTaskSave": "Guardar tarea",
   "createTaskSavedOnline": "Tarea creada en el servidor",
   "createTaskSavedOffline": "Tarea guardada localmente; se sincronizará al conectar",
-  "createTaskBoardRequired": "Abre Kanban con conexión al menos una vez para elegir tablero"
+  "createTaskBoardRequired": "Abre Kanban con conexión al menos una vez para elegir tablero",
+  "createTaskFieldRecurrence": "Repetir",
+  "recurrenceNone": "No",
+  "recurrenceDaily": "Diaria",
+  "recurrenceWeekly": "Semanal",
+  "recurrenceMonthly": "Mensual",
+  "recurrenceYearly": "Anual",
+  "createTaskRecurrenceHint": "Al completarla, aparece otra igual en Por hacer pasado este intervalo.",
+  "taskDetailRecurrenceTitle": "Repetición",
+  "taskDetailRecurrenceOccurrence": "Vez n.º {n}",
+  "@taskDetailRecurrenceOccurrence": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "taskDetailRecurrenceNextAt": "La próxima aparece en Por hacer el {date}",
+  "@taskDetailRecurrenceNextAt": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "taskDetailRecurrenceNextAfterComplete": "La próxima se programa cuando se complete esta",
+  "taskDetailRecurrenceNextCreated": "La siguiente ya se creó",
+  "taskDetailRecurrenceStopped": "Ya no se repite",
+  "taskDetailRecurrenceStats": "Hecha {done} de {total} veces",
+  "@taskDetailRecurrenceStats": {
+    "placeholders": {
+      "done": { "type": "int" }, "total": { "type": "int" }
+    }
+  }
 }

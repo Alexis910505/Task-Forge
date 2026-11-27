@@ -1102,4 +1102,54 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get createTaskBoardRequired =>
       'Abre Kanban con conexión al menos una vez para elegir tablero';
+
+  @override
+  String get createTaskFieldRecurrence => 'Repetir';
+
+  @override
+  String get recurrenceNone => 'No';
+
+  @override
+  String get recurrenceDaily => 'Diaria';
+
+  @override
+  String get recurrenceWeekly => 'Semanal';
+
+  @override
+  String get recurrenceMonthly => 'Mensual';
+
+  @override
+  String get recurrenceYearly => 'Anual';
+
+  @override
+  String get createTaskRecurrenceHint =>
+      'Al completarla, aparece otra igual en Por hacer pasado este intervalo.';
+
+  @override
+  String get taskDetailRecurrenceTitle => 'Repetición';
+
+  @override
+  String taskDetailRecurrenceOccurrence(int n) {
+    return 'Vez n.º $n';
+  }
+
+  @override
+  String taskDetailRecurrenceNextAt(String date) {
+    return 'La próxima aparece en Por hacer el $date';
+  }
+
+  @override
+  String get taskDetailRecurrenceNextAfterComplete =>
+      'La próxima se programa cuando se complete esta';
+
+  @override
+  String get taskDetailRecurrenceNextCreated => 'La siguiente ya se creó';
+
+  @override
+  String get taskDetailRecurrenceStopped => 'Ya no se repite';
+
+  @override
+  String taskDetailRecurrenceStats(int done, int total) {
+    return 'Hecha $done de $total veces';
+  }
 }

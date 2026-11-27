@@ -806,7 +806,15 @@
     "subtaskPlaceholder": "p. ej. Revisar inventario de repuestos",
     "addSubtask": "Añadir subtarea",
     "removeSubtask": "Quitar subtarea",
-    "subtaskCreateFailed": "No se pudo crear la subtarea «{{name}}»."
+    "subtaskCreateFailed": "No se pudo crear la subtarea «{{name}}».",
+    "recurrence": "Repetir",
+    "recurrenceHintNone": "La tarea se hace una sola vez.",
+    "recurrenceHint": {
+      "DAILY": "Cuando se complete, se creará otra igual en Por hacer 1 día después.",
+      "WEEKLY": "Cuando se complete, se creará otra igual en Por hacer 1 semana después.",
+      "MONTHLY": "Cuando se complete, se creará otra igual en Por hacer 1 mes después.",
+      "YEARLY": "Cuando se complete, se creará otra igual en Por hacer 1 año después."
+    }
   },
   "taskDetail": {
     "breadcrumbTasks": "Tareas",
@@ -865,7 +873,8 @@
       "task_sort_order_changed": "cambió el orden",
       "task_subtask_created": "añadió una subtarea",
       "comment_added": "añadió un comentario",
-      "attachment_added": "subió un adjunto"
+      "attachment_added": "subió un adjunto",
+      "task_recurrence_changed": "cambió la repetición"
     }
   },
   "errors": {
@@ -873,5 +882,26 @@
     "profileLoadFailed": "No se pudo cargar el perfil",
     "networkUnreachable": "No hay conexión con la API. ¿Está el backend en marcha y la URL/proxy bien configurada?",
     "useAuthOutsideProvider": "useAuth debe usarse dentro de AuthProvider"
+  },
+  "recurrence": {
+    "NONE": "No se repite",
+    "DAILY": "Diaria",
+    "WEEKLY": "Semanal",
+    "MONTHLY": "Mensual",
+    "YEARLY": "Anual"
+  },
+  "recurrencePanel": {
+    "title": "Repetición",
+    "occurrence": "Vez n.º {{n}}",
+    "nextAt": "La próxima aparecerá en Por hacer el {{date}}.",
+    "nextAfterComplete": "La próxima se programa cuando se complete esta.",
+    "nextCreated": "La siguiente ya se creó.",
+    "stopped": "Ya no se repite.",
+    "done": "Hechas",
+    "created": "Creadas",
+    "last": "Última",
+    "history": "Historial",
+    "completedOn": "Completada el {{date}}",
+    "createdOn": "Creada el {{date}}"
   }
 }

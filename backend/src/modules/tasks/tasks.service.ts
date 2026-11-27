@@ -1,5 +1,13 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { NotificationType, Prisma, TaskStatus } from '@prisma/client';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
+import { NotificationType, Prisma, TaskRecurrence, TaskStatus } from '@prisma/client';
+import { nextOccurrenceDate } from './task-recurrence.util';
 import { TaskTimelineAction, timelineSnippet } from '../../core/activity/task-timeline.constants';
 import { SocketEvents } from '../../core/websocket/socket-events.constants';
 import { PrismaService } from '../../core/prisma/prisma.service';
@@ -34,8 +42,18 @@ const subtaskInclude = {
   assignee: { select: { id: true, firstName: true, lastName: true, email: true } },
 } as const;
 
+/** Cada cuánto se revisan las tareas repetitivas pendientes de crear. */
+const RECURRENCE_POLL_MS = 60_000;
+/** Al listar tareas se revisa también, como mucho una vez cada este tiempo. */
+const RECURRENCE_LIST_THROTTLE_MS = 15_000;
+
 @Injectable()
-export class TasksService {
+export class TasksService implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(TasksService.name);
+  private recurrenceTimer: NodeJS.Timeout | null = null;
+  private recurrenceRun: Promise<number> | null = null;
+  private lastRecurrenceRunAt = 0;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly activity: ActivityService,
@@ -44,7 +62,126 @@ export class TasksService {
     private readonly assets: AssetsService,
   ) {}
 
+  onModuleInit() {
+    // En el plan gratis la API se duerme: al despertar se ponen al día las repeticiones vencidas.
+    setTimeout(() => void this.processDueRecurrences(), 2_000).unref();
+    this.recurrenceTimer = setInterval(() => void this.processDueRecurrences(), RECURRENCE_POLL_MS);
+    this.recurrenceTimer.unref();
+  }
+
+  onModuleDestroy() {
+    if (this.recurrenceTimer) clearInterval(this.recurrenceTimer);
+  }
+
+  /**
+   * Crea la siguiente ocurrencia de cada tarea repetitiva cuyo plazo ya llegó.
+   * Es seguro llamarlo en paralelo: cada tarea se "reclama" de forma atómica antes de crear la nueva.
+   * Devuelve cuántas tareas se crearon.
+   */
+  processDueRecurrences(): Promise<number> {
+    if (!this.recurrenceRun) {
+      this.lastRecurrenceRunAt = Date.now();
+      this.recurrenceRun = this.runDueRecurrences()
+        .catch((e: unknown) => {
+          this.logger.error(`Error creando tareas repetitivas: ${String(e)}`);
+          return 0;
+        })
+        .finally(() => {
+          this.recurrenceRun = null;
+        });
+    }
+    return this.recurrenceRun;
+  }
+
+  private async runDueRecurrences(): Promise<number> {
+    const due = await this.prisma.task.findMany({
+      where: {
+        nextOccurrenceAt: { lte: new Date() },
+        spawnedNextId: null,
+        recurrence: { not: null },
+        parentTaskId: null,
+      },
+      orderBy: { nextOccurrenceAt: 'asc' },
+      take: 50,
+      include: {
+        board: { select: { organizationId: true } },
+        subtasks: {
+          orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+          select: { title: true, description: true, assigneeId: true, priority: true },
+        },
+        taskAssets: { select: { assetId: true } },
+      },
+    });
+
+    let created = 0;
+    for (const prev of due) {
+      const dueAt = prev.nextOccurrenceAt;
+      // Reclamo atómico: si otra ejecución ya la tomó, count = 0.
+      const claim = await this.prisma.task.updateMany({
+        where: { id: prev.id, spawnedNextId: null, nextOccurrenceAt: dueAt },
+        data: { nextOccurrenceAt: null },
+      });
+      if (claim.count === 0 || !prev.recurrence) continue;
+
+      try {
+        const organizationId = prev.board.organizationId;
+        // Si tenía fecha límite, la nueva conserva el mismo plazo relativo a su creación.
+        const dueDate = prev.dueDate
+          ? new Date(Date.now() + Math.max(0, prev.dueDate.getTime() - prev.createdAt.getTime()))
+          : null;
+        const next = await this.create(
+          organizationId,
+          prev.createdById,
+          {
+            title: prev.title,
+            description: prev.description ?? undefined,
+            boardId: prev.boardId,
+            priority: prev.priority,
+            status: TaskStatus.TODO,
+            assigneeId: prev.assigneeId ?? undefined,
+            location: prev.location ?? undefined,
+            dueDate: dueDate?.toISOString(),
+            assetIds: prev.taskAssets.map((a) => a.assetId),
+            recurrence: prev.recurrence,
+          },
+          {
+            seriesId: prev.seriesId ?? prev.id,
+            occurrence: prev.occurrence + 1,
+            previousTaskId: prev.id,
+          },
+        );
+        for (const sub of prev.subtasks) {
+          await this.create(organizationId, prev.createdById, {
+            title: sub.title,
+            description: sub.description ?? undefined,
+            parentTaskId: next.id,
+            priority: sub.priority,
+            assigneeId: sub.assigneeId ?? undefined,
+          });
+        }
+        await this.prisma.task.update({
+          where: { id: prev.id },
+          data: { spawnedNextId: next.id, seriesId: prev.seriesId ?? prev.id },
+        });
+        created += 1;
+      } catch (e) {
+        // Devolver el plazo para reintentarlo en la próxima revisión.
+        await this.prisma.task
+          .updateMany({ where: { id: prev.id, spawnedNextId: null }, data: { nextOccurrenceAt: dueAt } })
+          .catch(() => undefined);
+        this.logger.error(`No se pudo repetir la tarea ${prev.id}: ${String(e)}`);
+      }
+    }
+    if (created > 0) {
+      this.logger.log(`Tareas repetitivas creadas: ${created}`);
+    }
+    return created;
+  }
+
   async list(user: RequestUser, query: ListTasksQueryDto) {
+    if (Date.now() - this.lastRecurrenceRunAt > RECURRENCE_LIST_THROTTLE_MS) {
+      await this.processDueRecurrences();
+    }
     const organizationId = user.organizationId;
     const scope = await resolveAccessScope(this.prisma, user.userId, organizationId, user.role);
     const scopeWhere = taskScopeWhere(scope);
@@ -131,9 +268,18 @@ export class TasksService {
     };
   }
 
-  async create(organizationId: string, actorId: string, dto: CreateTaskDto) {
+  async create(
+    organizationId: string,
+    actorId: string,
+    dto: CreateTaskDto,
+    series?: { seriesId: string; occurrence: number; previousTaskId: string },
+  ) {
     const placement = await this.resolveTaskPlacement(organizationId, dto);
-    const task = await this.prisma.task.create({
+    if (dto.recurrence && placement.parentTaskId) {
+      throw new BadRequestException('Las subtareas no pueden repetirse');
+    }
+    const recurrence = placement.parentTaskId ? null : (dto.recurrence ?? null);
+    const created = await this.prisma.task.create({
       data: {
         title: dto.title,
         description: dto.description,
@@ -148,6 +294,9 @@ export class TasksService {
         location: dto.location,
         dueDate: dto.dueDate ? normalizeDueDate(dto.dueDate) : undefined,
         createdById: actorId,
+        recurrence,
+        seriesId: series?.seriesId,
+        occurrence: series?.occurrence ?? 1,
       },
       include: {
         assignee: { select: { id: true, firstName: true, lastName: true } },
@@ -155,6 +304,19 @@ export class TasksService {
         parentTask: { select: { id: true, title: true } },
       },
     });
+    // Primera tarea de una serie: la serie se identifica con su propio id.
+    const task =
+      recurrence && !series
+        ? await this.prisma.task.update({
+            where: { id: created.id },
+            data: { seriesId: created.id },
+            include: {
+              assignee: { select: { id: true, firstName: true, lastName: true } },
+              board: true,
+              parentTask: { select: { id: true, title: true } },
+            },
+          })
+        : created;
     await this.activity.log(
       actorId,
       task.id,
@@ -166,6 +328,10 @@ export class TasksService {
         priority: task.priority,
         assigneeId: task.assigneeId ?? null,
         parentTaskId: task.parentTaskId ?? null,
+        ...(recurrence ? { recurrence } : {}),
+        ...(series
+          ? { recurringFromTaskId: series.previousTaskId, occurrence: series.occurrence }
+          : {}),
       },
       organizationId,
     );
@@ -276,6 +442,43 @@ export class TasksService {
       ...rest,
       subtasks,
       subtaskProgress: this.computeSubtaskProgress(subtasks),
+      recurrenceSeries: task.seriesId
+        ? await this.recurrenceSeries(organizationId, task.seriesId)
+        : null,
+    };
+  }
+
+  /** Estadística de una serie repetitiva: cuántas veces se creó y se completó, e historial. */
+  private async recurrenceSeries(organizationId: string, seriesId: string) {
+    const where = { seriesId, board: { organizationId } };
+    const [total, completed, lastCompleted, occurrences] = await Promise.all([
+      this.prisma.task.count({ where }),
+      this.prisma.task.count({ where: { ...where, status: TaskStatus.COMPLETED } }),
+      this.prisma.task.findFirst({
+        where: { ...where, completedAt: { not: null } },
+        orderBy: { completedAt: 'desc' },
+        select: { completedAt: true },
+      }),
+      this.prisma.task.findMany({
+        where,
+        orderBy: { occurrence: 'desc' },
+        take: 50,
+        select: {
+          id: true,
+          occurrence: true,
+          status: true,
+          createdAt: true,
+          completedAt: true,
+          assignee: { select: { id: true, firstName: true, lastName: true, email: true } },
+        },
+      }),
+    ]);
+    return {
+      seriesId,
+      total,
+      completed,
+      lastCompletedAt: lastCompleted?.completedAt ?? null,
+      occurrences,
     };
   }
 
@@ -373,6 +576,42 @@ export class TasksService {
     }
     if (dto.sortOrder !== undefined) {
       data.sortOrder = dto.sortOrder;
+    }
+    if (dto.recurrence !== undefined && dto.recurrence !== existing.recurrence) {
+      if (existing.parentTaskId && dto.recurrence) {
+        throw new BadRequestException('Las subtareas no pueden repetirse');
+      }
+      data.recurrence = dto.recurrence;
+      if (dto.recurrence && !existing.seriesId) {
+        data.seriesId = existing.id;
+      }
+    }
+
+    // Fecha de finalización y programación de la siguiente ocurrencia.
+    const becameCompleted =
+      dto.status === TaskStatus.COMPLETED && existing.status !== TaskStatus.COMPLETED;
+    const reopened =
+      dto.status !== undefined &&
+      dto.status !== TaskStatus.COMPLETED &&
+      existing.status === TaskStatus.COMPLETED;
+    const completedAt = becameCompleted ? new Date() : existing.completedAt;
+    if (becameCompleted) {
+      data.completedAt = completedAt;
+    }
+    if (reopened) {
+      data.completedAt = null;
+      if (!existing.spawnedNextId) data.nextOccurrenceAt = null;
+    }
+    const recurrenceChanged = data.recurrence !== undefined;
+    const isCompletedNow = (dto.status ?? existing.status) === TaskStatus.COMPLETED;
+    if (
+      isCompletedNow &&
+      !existing.parentTaskId &&
+      !existing.spawnedNextId &&
+      (becameCompleted || recurrenceChanged)
+    ) {
+      const rec = recurrenceChanged ? (data.recurrence as TaskRecurrence | null) : existing.recurrence;
+      data.nextOccurrenceAt = rec ? nextOccurrenceDate(completedAt ?? new Date(), rec) : null;
     }
 
     if (Object.keys(data).length === 0) {
@@ -474,6 +713,12 @@ export class TasksService {
           },
         });
       }
+    }
+    if (recurrenceChanged) {
+      timelineEntries.push({
+        action: TaskTimelineAction.TASK_RECURRENCE_CHANGED,
+        metadata: { from: existing.recurrence, to: data.recurrence },
+      });
     }
     if (dto.sortOrder !== undefined && dto.sortOrder !== existing.sortOrder) {
       timelineEntries.push({

@@ -467,5 +467,34 @@
   "createTaskSave": "Save task",
   "createTaskSavedOnline": "Task created on server",
   "createTaskSavedOffline": "Task saved locally; will sync when online",
-  "createTaskBoardRequired": "Open Kanban online once to load a board"
+  "createTaskBoardRequired": "Open Kanban online once to load a board",
+  "createTaskFieldRecurrence": "Repeat",
+  "recurrenceNone": "Never",
+  "recurrenceDaily": "Daily",
+  "recurrenceWeekly": "Weekly",
+  "recurrenceMonthly": "Monthly",
+  "recurrenceYearly": "Yearly",
+  "createTaskRecurrenceHint": "When completed, an identical task appears in To do after this interval.",
+  "taskDetailRecurrenceTitle": "Repeat",
+  "taskDetailRecurrenceOccurrence": "Time #{n}",
+  "@taskDetailRecurrenceOccurrence": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "taskDetailRecurrenceNextAt": "Next one appears in To do on {date}",
+  "@taskDetailRecurrenceNextAt": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "taskDetailRecurrenceNextAfterComplete": "The next one is scheduled when this one is completed",
+  "taskDetailRecurrenceNextCreated": "The next one has already been created",
+  "taskDetailRecurrenceStopped": "No longer repeats",
+  "taskDetailRecurrenceStats": "Done {done} of {total} times",
+  "@taskDetailRecurrenceStats": {
+    "placeholders": {
+      "done": { "type": "int" }, "total": { "type": "int" }
+    }
+  }
 }

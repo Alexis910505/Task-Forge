@@ -47,11 +47,13 @@ type TaskRow = {
   assignee?: { id: string } | null;
   board?: { name: string; project?: { name: string; departmentId?: string | null } };
   parentTask?: { id: string; title: string } | null;
+  recurrence?: string | null;
 };
 
 const PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const;
 const STATUSES = ['BACKLOG', 'TODO', 'IN_PROGRESS', 'REVIEW', 'COMPLETED'] as const;
 const SUBTASK_STATUSES = ['TODO', 'COMPLETED'] as const;
+const RECURRENCES = ['', 'DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'] as const;
 
 export function CreateTaskPage() {
   const { t } = useTranslation();
@@ -77,6 +79,7 @@ export function CreateTaskPage() {
   const [assigneeId, setAssigneeId] = useState('');
   const [location, setLocation] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [recurrence, setRecurrence] = useState('');
   const [initialDueDate, setInitialDueDate] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [draftNotice, setDraftNotice] = useState<string | null>(null);
@@ -137,6 +140,7 @@ export function CreateTaskPage() {
       setPriority(task.priority);
       setAssigneeId(task.assigneeId ?? task.assignee?.id ?? '');
       setLocation(task.location ?? '');
+      setRecurrence(task.recurrence ?? '');
       const due = apiIsoToLocalDateInput(task.dueDate);
       setDueDate(due);
       setInitialDueDate(due);
@@ -161,6 +165,7 @@ export function CreateTaskPage() {
       setAssigneeId(draft.assigneeId);
       setLocation(draft.location);
       setDueDate(draft.dueDate);
+      setRecurrence(draft.recurrence ?? '');
       setDepartmentId(draft.departmentId);
       setTeamId(draft.teamId);
       setBoardId(draft.boardId);
@@ -277,6 +282,7 @@ export function CreateTaskPage() {
       assigneeId,
       location,
       dueDate,
+      recurrence,
       departmentId,
       teamId,
       subtasks: pendingSubtasks.map((s) => s.title).filter(Boolean),
@@ -316,6 +322,7 @@ export function CreateTaskPage() {
           assigneeId: assigneeId || '',
           location: location.trim() || '',
           dueDate: localDateInputToApiIso(dueDate),
+          ...(isSubtaskEdit ? {} : { recurrence: recurrence || null }),
         }),
       });
       if (!res.ok) {
@@ -353,6 +360,7 @@ export function CreateTaskPage() {
         assigneeId: assigneeId || undefined,
         location: location.trim() || undefined,
         dueDate: localDateInputToApiIso(dueDate),
+        recurrence: recurrence || undefined,
       }),
     });
     if (!res.ok) {
@@ -628,6 +636,37 @@ export function CreateTaskPage() {
                 />
               </div>
             </div>
+
+            {!isSubtaskEdit ? (
+              <div>
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+                  {t('createTask.recurrence')}
+                </label>
+                <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t('createTask.recurrence')}>
+                  {RECURRENCES.map((r) => (
+                    <button
+                      key={r || 'none'}
+                      type="button"
+                      role="radio"
+                      aria-checked={recurrence === r}
+                      onClick={() => setRecurrence(r)}
+                      className={[
+                        'flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-semibold transition-colors',
+                        recurrence === r
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-outline-variant text-on-surface-variant hover:bg-surface-container-high',
+                      ].join(' ')}
+                    >
+                      {r ? <span className="material-symbols-outlined text-base">repeat</span> : null}
+                      {t(`recurrence.${r || 'NONE'}`)}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-2 text-[11px] text-on-surface-variant">
+                  {recurrence ? t(`createTask.recurrenceHint.${recurrence}`) : t('createTask.recurrenceHintNone')}
+                </p>
+              </div>
+            ) : null}
 
             <div>
               <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-on-surface-variant">

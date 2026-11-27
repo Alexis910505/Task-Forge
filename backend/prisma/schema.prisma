@@ -15,6 +15,14 @@ enum TaskStatus {
   COMPLETED
 }
 
+/// Repetición de una tarea: al completarse, se crea una nueva ocurrencia tras este intervalo.
+enum TaskRecurrence {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
 enum TaskPriority {
   LOW
   MEDIUM
@@ -227,6 +235,17 @@ model Task {
   location     String?
   dueDate      DateTime?
   sortOrder    Int            @default(0)
+  completedAt  DateTime?
+  /// Repetición (solo tareas raíz). null = no se repite.
+  recurrence       TaskRecurrence?
+  /// Serie de ocurrencias: id de la primera tarea. Todas las repeticiones comparten este valor.
+  seriesId         String?
+  /// Número de ocurrencia dentro de la serie (1, 2, 3…).
+  occurrence       Int             @default(1)
+  /// Cuándo se creará la siguiente ocurrencia (se fija al completar la tarea).
+  nextOccurrenceAt DateTime?
+  /// Ocurrencia siguiente ya creada a partir de esta tarea.
+  spawnedNextId    String?         @unique
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   comments     TaskComment[]
@@ -238,6 +257,8 @@ model Task {
   @@index([status])
   @@index([assigneeId])
   @@index([parentTaskId])
+  @@unique([seriesId, occurrence])
+  @@index([nextOccurrenceAt])
 }
 
 model TaskComment {

@@ -12,6 +12,7 @@ import '../../../core/network/dio_provider.dart';
 import '../../../core/realtime/realtime_service.dart';
 import '../../my_tasks/application/my_tasks_controller.dart';
 import 'task_detail_subtasks_section.dart';
+import 'task_recurrence_card.dart';
 import 'task_status_presentation.dart';
 
 class TaskCommentVm {
@@ -932,6 +933,7 @@ class _TaskDetailMobilePageState extends State<TaskDetailMobilePage> {
                       ],
                     );
                   }),
+                  if (isRootTask) TaskRecurrenceCard(task: task),
                   if (isRootTask)
                     TaskDetailSubtasksSection(
                       subtasks: _subtasks,

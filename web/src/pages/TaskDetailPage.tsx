@@ -9,6 +9,7 @@ import { canCreateTasks } from '@/lib/projectAccess';
 import { formatDueDateLabel, isDueDateOverdue } from '@/lib/dueDates';
 import { taskPriorityPillClass, taskStatusPillClass } from '@/lib/taskStatusColors';
 import { SubtasksPanel } from '@/components/tasks/SubtasksPanel';
+import { RecurrencePanel, type RecurrenceSeries } from '@/components/tasks/RecurrencePanel';
 
 type TaskUser = { id: string; firstName: string; lastName: string; email: string };
 
@@ -57,6 +58,11 @@ type TaskDetail = {
   subtaskProgress?: SubtaskProgress;
   attachments?: TaskAttachment[];
   comments?: TaskComment[];
+  recurrence?: string | null;
+  occurrence?: number;
+  nextOccurrenceAt?: string | null;
+  spawnedNextId?: string | null;
+  recurrenceSeries?: RecurrenceSeries | null;
 };
 
 type TimelineEntry = {
@@ -527,6 +533,16 @@ export function TaskDetailPage() {
               </div>
             ) : null}
           </div>
+
+          <RecurrencePanel
+            taskId={task.id}
+            recurrence={task.recurrence}
+            occurrence={task.recurrenceSeries ? task.occurrence : undefined}
+            status={task.status}
+            nextOccurrenceAt={task.nextOccurrenceAt}
+            spawnedNextId={task.spawnedNextId}
+            series={task.recurrenceSeries}
+          />
 
           <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
             <h2 className="mb-6 text-xs font-bold uppercase tracking-wider text-on-surface-variant">

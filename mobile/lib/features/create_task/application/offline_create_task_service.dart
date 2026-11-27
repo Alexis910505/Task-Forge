@@ -19,6 +19,7 @@ class OfflineCreateTaskService {
     String? location,
     String? assetLabel,
     String? category,
+    String? recurrence,
     List<String> photoPaths = const [],
     bool preferOnline = true,
   }) async {
@@ -32,6 +33,8 @@ class OfflineCreateTaskService {
       if (description != null && description.isNotEmpty)
         'description': description,
       if (location != null && location.isNotEmpty) 'location': location,
+      // DAILY | WEEKLY | MONTHLY | YEARLY; al completarla se crea otra igual.
+      if (recurrence != null) 'recurrence': recurrence,
     };
 
     final notes = <String>[];

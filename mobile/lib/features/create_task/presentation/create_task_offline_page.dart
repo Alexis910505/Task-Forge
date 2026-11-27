@@ -8,6 +8,7 @@ import 'package:task_forge_app/l10n/gen/app_localizations.dart';
 
 import '../../../core/network/dio_provider.dart';
 import '../../../core/offline/offline_providers.dart';
+import '../../tasks/presentation/task_recurrence_card.dart';
 import '../application/offline_create_task_service.dart';
 
 const _categories = ['Maintenance', 'Repair', 'Safety', 'Audit'];
@@ -24,6 +25,7 @@ class _CreateTaskOfflinePageState extends State<CreateTaskOfflinePage> {
   final _assetCtrl = TextEditingController();
   String _category = _categories.first;
   String _priority = 'MEDIUM';
+  String? _recurrence;
   String? _boardId;
   String? _boardError;
   bool _loadingBoard = true;
@@ -122,6 +124,7 @@ class _CreateTaskOfflinePageState extends State<CreateTaskOfflinePage> {
         location:
             _assetCtrl.text.trim().isEmpty ? null : _assetCtrl.text.trim(),
         category: _category,
+        recurrence: _recurrence,
         assetLabel:
             _assetCtrl.text.trim().isEmpty ? null : _assetCtrl.text.trim(),
         photoPaths: List.from(_photoPaths),
@@ -318,6 +321,63 @@ class _CreateTaskOfflinePageState extends State<CreateTaskOfflinePage> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 24),
+                _FieldLabel(l10n.createTaskFieldRecurrence),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final r in const <String?>[
+                      null,
+                      'DAILY',
+                      'WEEKLY',
+                      'MONTHLY',
+                      'YEARLY',
+                    ])
+                      ChoiceChip(
+                        avatar:
+                            r == null
+                                ? null
+                                : Icon(
+                                  Icons.repeat,
+                                  size: 16,
+                                  color:
+                                      _recurrence == r
+                                          ? scheme.onPrimary
+                                          : scheme.onSurfaceVariant,
+                                ),
+                        label: Text(recurrenceLabel(r, l10n)),
+                        selected: _recurrence == r,
+                        onSelected: (_) => setState(() => _recurrence = r),
+                        selectedColor: scheme.primary,
+                        showCheckmark: false,
+                        labelStyle: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                          color:
+                              _recurrence == r
+                                  ? scheme.onPrimary
+                                  : scheme.onSurfaceVariant,
+                        ),
+                        side: BorderSide(
+                          color:
+                              _recurrence == r
+                                  ? scheme.primary
+                                  : scheme.outlineVariant,
+                        ),
+                      ),
+                  ],
+                ),
+                if (_recurrence != null) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    l10n.createTaskRecurrenceHint,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 28),
                 _FieldLabel(l10n.createTaskFieldPhotos),
                 const SizedBox(height: 8),

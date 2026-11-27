@@ -806,7 +806,15 @@
     "subtaskPlaceholder": "e.g. Check spare parts inventory",
     "addSubtask": "Add subtask",
     "removeSubtask": "Remove subtask",
-    "subtaskCreateFailed": "Could not create subtask «{{name}}»."
+    "subtaskCreateFailed": "Could not create subtask «{{name}}».",
+    "recurrence": "Repeat",
+    "recurrenceHintNone": "The task is done once.",
+    "recurrenceHint": {
+      "DAILY": "When completed, an identical task is created in To do 1 day later.",
+      "WEEKLY": "When completed, an identical task is created in To do 1 week later.",
+      "MONTHLY": "When completed, an identical task is created in To do 1 month later.",
+      "YEARLY": "When completed, an identical task is created in To do 1 year later."
+    }
   },
   "taskDetail": {
     "breadcrumbTasks": "Tasks",
@@ -864,7 +872,8 @@
       "task_due_date_changed": "changed due date",
       "task_subtask_created": "added a subtask",
       "comment_added": "posted a comment",
-      "attachment_added": "uploaded an attachment"
+      "attachment_added": "uploaded an attachment",
+      "task_recurrence_changed": "changed the repeat setting"
     }
   },
   "errors": {
@@ -872,5 +881,26 @@
     "profileLoadFailed": "Could not load profile",
     "networkUnreachable": "Could not reach the API. Is the backend running and the URL/proxy correct?",
     "useAuthOutsideProvider": "useAuth must be used within AuthProvider"
+  },
+  "recurrence": {
+    "NONE": "Does not repeat",
+    "DAILY": "Daily",
+    "WEEKLY": "Weekly",
+    "MONTHLY": "Monthly",
+    "YEARLY": "Yearly"
+  },
+  "recurrencePanel": {
+    "title": "Repeat",
+    "occurrence": "Time #{{n}}",
+    "nextAt": "The next one will appear in To do on {{date}}.",
+    "nextAfterComplete": "The next one is scheduled when this one is completed.",
+    "nextCreated": "The next one has already been created.",
+    "stopped": "No longer repeats.",
+    "done": "Done",
+    "created": "Created",
+    "last": "Last",
+    "history": "History",
+    "completedOn": "Completed {{date}}",
+    "createdOn": "Created {{date}}"
   }
 }
