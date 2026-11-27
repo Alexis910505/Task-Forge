@@ -80,7 +80,7 @@ flutter run --dart-define=API_BASE=https://taskforge-api-rolx.onrender.com
 
 ## Desplegar
 
-Lo que está online sale de la rama `deploy-online`.
+Lo que está online sale de la rama `main`.
 
 **API (Render):** el auto-deploy está apagado. Después de hacer push, ve a Render, `taskforge-api` → *Manual Deploy*. El contenedor **no** aplica migraciones: si cambia el esquema de Prisma, antes de desplegar corre `npx prisma migrate deploy` desde `backend/`, con `DATABASE_URL` apuntando a la URL **directa** de Neon (sin `-pooler`).
 
@@ -124,4 +124,3 @@ Se configuran en Render; los nombres están en [backend/.env.example](backend/.e
   - Crear otro sitio en el mismo proyecto, por ejemplo `taskforge.web.app` (no sabremos si el nombre está libre hasta intentarlo). Después hay que actualizar `CORS_ORIGIN` en Render.
   - Conectar un dominio propio (el dominio cuesta unos $10–15 al año).
 - **Compilar un APK** que apunte a la API online.
-- **Unir `deploy-online` a `main`.**
